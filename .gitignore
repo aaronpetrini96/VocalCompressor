@@ -1,0 +1,85 @@
+############################################
+# Build artifacts / binaries
+############################################
+
+*.d
+*.o
+*.obj
+*.lo
+*.slo
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.log
+
+############################################
+# JUCE – archivos generados
+############################################
+
+**/BinaryData.*
+
+JuceLibraryCode/
+
+############################################
+# Build directories
+############################################
+
+build/
+Builds/
+cmake-build-*/
+out/
+Debug/
+Release/
+x64/
+
+############################################
+# Projucer
+############################################
+
+# COMENTAR esta línea si usás Projucer
+# *.jucer
+
+############################################
+# macOS / Xcode
+############################################
+
+.DS_Store
+DerivedData/
+*.xcworkspace
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+
+############################################
+# Windows / Visual Studio
+############################################
+
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.opendb
+
+############################################
+# Audio plugin outputs
+############################################
+
+*.vst3
+*.vst
+*.component
+*.au
+
+############################################
+# Misc
+############################################
+
+*.bak
+*.tmp
+*.swp
+*~

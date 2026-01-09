@@ -1,0 +1,126 @@
+#include "1176Compressor.h"
+
+void FET1176Compressor::prepare(double newSampleRate, int samplesPerBlock)
+{
+    sampleRate = static_cast<float>(newSampleRate);
+    reset();
+    
+    // 1176-style fast meter ballistics
+    grAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
+    grReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+}
+void FET1176Compressor::reset()
+{
+    env = 0.f;
+    grEnv = 0.f;
+}
+
+
+float FET1176Compressor::getInputGainDB(float normValue)
+{
+    // reverse mapping: at 0 → -inf (or -40dB floor), at 1 → +24dB
+    inGainNorm = normValue;
+    if (normValue < 0.01f)
+        return -40.0f;
+    return juce::jmap(normValue, 0.0f, 1.0f, -20.0f, 24.0f);
+}
+float FET1176Compressor::getOutputGainDB(float normValue)
+{
+    outGainNorm = normValue;
+    // more linear, from -20 to +20 dB
+    return juce::jmap(normValue, 0.0f, 1.0f, -60.0f, 20.0f);
+}
+
+void FET1176Compressor::setParameters(float inDB, float outDB, float attackTime, float releaseTime, float newRatio, float newMix)
+{
+    inputGain = dBToGain(inDB);
+    outputGain = dBToGain(outDB);
+    ratio = newRatio;
+    mix = newMix;
+    
+//  coeff a =e^(−1/(T⋅fs​))
+    attackCoeff = std::exp(-1.f / (attackTime * 0.001f * sampleRate));
+    releaseCoeff = std::exp(-1.f / (releaseTime * 0.001f  * sampleRate));
+}
+
+void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
+{
+    const int numChannels = buffer.getNumChannels();
+    const int numSamples = buffer.getNumSamples();
+    juce::AudioBuffer<float> dryBuffer;
+    dryBuffer.makeCopyOf(buffer);
+    
+    for (int n = 0; n < numSamples; ++n)
+    {
+        float detector = 0.f;
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            float x = buffer.getSample(ch, n) * inputGain; //input affects detection
+//            buffer.setSample(ch, n, x);
+            detector += std::abs(x);
+        }
+        detector /= static_cast<float>(numChannels);
+        
+//        Envelope Filter
+//    y[n]=a⋅y[n−1]+(1−a)⋅x[n]   with  coeff a =e^(−1/(T⋅fs​))
+        if (detector > env)
+            env = attackCoeff * env + (1.0f - attackCoeff) * detector;
+        else
+            env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
+        
+//        convert to dB
+        float levelDB = gainToDB(env);
+        float gainDB = 0.f;
+        
+        if (levelDB > -24.f)
+        {
+            float over = levelDB + 24.f;
+            gainDB = -over * (1.f - (1.f / ratio));
+        }
+        
+        float gain = dBToGain(gainDB);
+        
+        float gainReductionDB = -gainDB;
+        
+//      Meter smoothing
+        if (gainReductionDB > grEnv)
+            grEnv = grAttackCoeff * grEnv + (1.f - grAttackCoeff) * gainReductionDB;
+        else
+            grEnv = grReleaseCoeff * grEnv + (1.f - grReleaseCoeff) * gainReductionDB;
+
+
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            float x = buffer.getSample(ch, n) * inputGain;
+            float y = x * gain; // compressor gain - Dynamics First
+            float satDrive = 1.0f + grEnv * 0.06f; //Drive depende de GR
+            y = revASaturation(y, satDrive);
+            
+            y *= outputGain;
+            buffer.setSample(ch, n, y);
+        }
+    }
+    
+//    Apply Mix
+    
+    if (mix < 1.f)
+    {
+        for (int ch = 0; ch < numChannels; ++ch)
+        {
+            const float* dry = dryBuffer.getReadPointer(ch);
+            float* wet = buffer.getWritePointer(ch);
+            
+            for (int i = 0; i < numSamples; ++i)
+                wet[i] = dry[i] * (1.0f - mix) + wet[i] * mix;
+        }
+    }
+}
+
+
+float FET1176Compressor::revASaturation(float x, float drive)
+{
+    float k = juce::jlimit(1.0f, 6.0f, drive);
+    float y = std::tanh(k * x) / std::tanh(k);
+    return y;
+}
+
