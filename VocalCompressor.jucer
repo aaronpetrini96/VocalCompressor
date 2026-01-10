@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="OMBUAk" name="VocalCompressor" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="Aaron Petrini"
-              cppLanguageStandard="latest" version="1.0">
+              cppLanguageStandard="latest" version="1.1">
   <MAINGROUP id="xeppub" name="VocalCompressor">
     <GROUP id="{E986D978-3120-5354-A5BE-78C9E22E6EC0}" name="Source">
       <GROUP id="{71020267-0B8A-DCFB-E969-E954E8EA6221}" name="Utilities">
