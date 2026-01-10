@@ -95,10 +95,10 @@ private:
     BypassButton bypassPluginButton {"", audioProcessor.apvts, ParamNames::getGeneralBypassName(), 20};
     
 //    RATIO BUTTONS
-    juce::TextButton ratio4Btn{"4"}, ratio8Btn{"8"}, ratio16Btn{"16"}, ratio20Btn{"20"};
+    juce::TextButton ratio4Btn{"4"}, ratio8Btn{"8"}, ratio16Btn{"16"}, ratio20Btn{"20"}, ratioAllBtn{"ALL"};
     std::vector<juce::TextButton*> ratioButtons
     {
-        &ratio4Btn, &ratio8Btn, &ratio16Btn, &ratio20Btn,
+        &ratio4Btn, &ratio8Btn, &ratio16Btn, &ratio20Btn, &ratioAllBtn,
     };
     
     void setupRatioButtons (juce::TextButton* ratioBtn);

@@ -50,6 +50,7 @@ presetManager(p)
     ratio8Btn.onClick = [this] () {setRatioIndex(ParamNames::get1176RatioName(), 1);};
     ratio16Btn.onClick = [this] () {setRatioIndex(ParamNames::get1176RatioName(), 2);};
     ratio20Btn.onClick = [this] () {setRatioIndex(ParamNames::get1176RatioName(), 3);};
+    ratioAllBtn.onClick = [this]() {setRatioIndex(ParamNames::get1176RatioName(), 4);};
     int ratioIndex = static_cast<int>(audioProcessor.apvts.getRawParameterValue(ParamNames::get1176RatioName())->load());
     updateRatioButtons(ratioIndex);
     
@@ -114,7 +115,7 @@ void VocalCompressorAudioProcessorEditor::resized()
     const auto grMeterWidth = 20;
     const auto grMeterHeight = knobSize * 0.8;
     const auto bypassBtnSize = 20;
-    const auto ratioBtnWidth = knobSize * 0.225;
+    const auto ratioBtnWidth = knobSize * 0.25;
     const auto ratioBtnHeight = knobSize * 0.2;
 
     // Top Half - 1176
@@ -131,11 +132,12 @@ void VocalCompressorAudioProcessorEditor::resized()
     release1176Dial.setBounds(attack1176Dial.getX(), attack1176Label.getBottom() * 0.95, knobSize * 0.5, knobSize * 0.5);
     release1176Label.setCentrePosition(release1176Dial.getRight() - knobSize * 0.25, release1176Dial.getBottom() * 1.05);
     
-    ratio20Btn.setBounds(attack1176Dial.getRight() * 1.07, attack1176Dial.getY() * 2.85, ratioBtnWidth, ratioBtnHeight);
+    ratio20Btn.setBounds(attack1176Dial.getRight() * 1.045, attack1176Dial.getY() * 2.85, ratioBtnWidth, ratioBtnHeight);
     ratio16Btn.setBounds(ratio20Btn.getX(), ratio20Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
     ratio8Btn.setBounds(ratio16Btn.getX(), ratio16Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
     ratio4Btn.setBounds(ratio8Btn.getX(), ratio8Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
     ratioLabel.setCentrePosition(ratio4Btn.getRight() - ratioBtnWidth * 0.5, ratio4Btn.getBottom() * 1.12);
+    ratioAllBtn.setBounds(ratio20Btn.getX(), ratio20Btn.getY() - ratio20Btn.getHeight(), ratioBtnWidth, ratioBtnHeight);
     
     grMeter1176Left.setBounds(ratio20Btn.getRight() * 1.034, attack1176Dial.getY() * 2.84, grMeterWidth, grMeterHeight);
     grMeter1176Right.setBounds(grMeter1176Left.getRight(), grMeter1176Left.getY(), grMeterWidth, grMeterHeight);

@@ -136,6 +136,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     ratioArray_1176.add("8");
     ratioArray_1176.add("12");
     ratioArray_1176.add("20");
+    ratioArray_1176.add("ALL");
     params.emplace_back(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(name, versionHint), name, ratioArray_1176, 0));
     
     name = ParamNames::get1176MixName();
