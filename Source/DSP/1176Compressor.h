@@ -12,6 +12,7 @@ public:
     void setParameters(float inputGain, float outputGain, float attack, float release, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
     float revASaturation(float x, float drive);
+    float saturateOS(float x, float drive);
     
     float grEnv = 0.0f;
     float grAttackCoeff = 0.0f;
@@ -21,6 +22,10 @@ public:
 
     
 private:
+    std::unique_ptr<juce::dsp::Oversampling<float>> oversampler;
+    juce::AudioBuffer<float> oversamplingBuffer;
+    
+    
     float sampleRate = 44100.f;
     
 //    Params

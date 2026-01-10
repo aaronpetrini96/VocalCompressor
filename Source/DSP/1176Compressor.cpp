@@ -8,6 +8,13 @@ void FET1176Compressor::prepare(double newSampleRate, int samplesPerBlock)
     // 1176-style fast meter ballistics
     grAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
     grReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+    
+    //4x oversampling, polyphase IIR
+    oversampler.reset(new juce::dsp::Oversampling<float>(1, //num channels to be processed at once
+                                                      2, //oversampling factor 2^2 = 4x
+                                                      juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR));
+    oversampler->initProcessing(samplesPerBlock);
+                                                         
 }
 void FET1176Compressor::reset()
 {
@@ -192,7 +199,8 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             if (allButtonsIn)
                 satDrive *= 1.4f;
             
-            y = revASaturation(y, satDrive);
+//            y = revASaturation(y, satDrive);
+            y = saturateOS(y, satDrive);
             
             y *= outputGain;
             buffer.setSample(ch, n, y);
@@ -207,3 +215,21 @@ float FET1176Compressor::revASaturation(float x, float drive)
     return y;
 }
 
+float FET1176Compressor::saturateOS(float x, float drive)
+{
+    oversamplingBuffer.setSize(1, 1);
+    oversamplingBuffer.setSample(0, 0, x);
+    
+    juce::dsp::AudioBlock<float> block (oversamplingBuffer);
+    auto oversampledBlock = oversampler->processSamplesUp(block);
+    
+    float* samples = oversampledBlock.getChannelPointer(0);
+    int numOs = (int) oversampledBlock.getNumSamples();
+    
+    for (int i = 0; i < numOs; ++i)
+        samples [i] = revASaturation(samples[i], drive);
+    
+    oversampler->processSamplesDown(block);
+    
+    return oversamplingBuffer.getSample(0, 0);
+}
