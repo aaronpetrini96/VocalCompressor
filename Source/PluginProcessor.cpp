@@ -303,7 +303,8 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
         int ratioIndex = ParamPointers::ratio1176Param->getIndex();
         float ratio = (ratioIndex == 0) ? 4.f :
                       (ratioIndex == 1) ? 8.f :
-                      (ratioIndex == 2) ? 12.f : 20.f;
+                      (ratioIndex == 2) ? 12.f :
+                      (ratioIndex == 3) ? 20.f : 100.f;
 
         fet1176.setParameters(inDB, outDB, attack, release, ratio, mix);
         fet1176.process(buffer);
