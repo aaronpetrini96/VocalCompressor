@@ -69,14 +69,14 @@ target_sources(VocalCompressor PRIVATE
 
 # Images are embedded in the plugin (BinaryData::name_png)
 juce_add_binary_data(VocalCompressorAssets SOURCES
-    Source/Assets/Bypass.png
-    Source/Assets/clearSilverBackground.png
-    Source/Assets/darkSilverBackground.png
-    Source/Assets/screw25x25.png
-    Source/Assets/spriteSheet1176.png
-    Source/Assets/spriteSheetLa2a.png
-    Source/Assets/switchDOWN.png
-    Source/Assets/switchUP.png
+        Source/Assets/Images/Bypass.png
+        Source/Assets/Images/clearSilverBackground.png
+        Source/Assets/Images/darkSilverBackground.png
+        Source/Assets/Images/screw25x25.png
+        Source/Assets/Images/spriteSheet1176.png
+        Source/Assets/Images/spriteSheetLa2a.png
+        Source/Assets/Images/switchDOWN.png
+        Source/Assets/Images/switchUP.png
 )
 
 target_include_directories(VocalCompressor PRIVATE Source)
