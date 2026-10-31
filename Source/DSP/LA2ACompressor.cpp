@@ -3,6 +3,9 @@
 void LA2ACompressor::prepare(double newSampleRate, int samplesPerBlock)
 {
     sampleRate = static_cast<float>(newSampleRate);
+    attackCoeff  = std::exp(-1.0f / (0.01f * sampleRate));
+    relFastCoeff = std::exp(-1.0f / (0.06f * sampleRate));
+    relSlowCoeff = std::exp(-1.0f / (2.0f  * sampleRate));
     reset();
 }
 
@@ -37,13 +40,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         detector /= static_cast<float>(numChannels);
         
         // --- T4 Optical Cell Envelope ---
-        const float attackTime = 0.01f;   // ~10 ms
-        const float releaseFast = 0.06f;  // ~60 ms
-        const float releaseSlow = 2.0f;   // ~2 seconds
-        const float attackCoeff  = std::exp(-1.0f / (attackTime * sampleRate));
-        const float relFastCoeff = std::exp(-1.0f / (releaseFast * sampleRate));
-        const float relSlowCoeff = std::exp(-1.0f / (releaseSlow * sampleRate));
-        
+
         // Program-dependent blend
         float releaseCoeff = juce::jmap(env, 0.0f, 1.0f, relFastCoeff, relSlowCoeff);
         if (detector > env)

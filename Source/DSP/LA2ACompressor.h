@@ -24,6 +24,9 @@ public:
     
 //    params
     float sampleRate = 44100.f;
+    float attackCoeff  = 0.f;
+    float relFastCoeff = 0.f;
+    float relSlowCoeff = 0.f;
     float peakReduction = 0.f;
     float outputGain = 1.f;
     float ratio = 3.f;
