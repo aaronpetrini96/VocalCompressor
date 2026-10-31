@@ -110,7 +110,8 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            float x = buffer.getSample(ch, n) * inputGain;
+            const float dry = buffer.getSample(ch, n);
+            float x = dry * inputGain;
             float y = x * gain;
             
             float satDrive = 1.0f + grEnv * 0.06f;
@@ -120,6 +121,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             y = revASaturation(y, satDrive);
             
             y *= outputGain;
+            y = dry * (1.f - mix) + y * mix;
             buffer.setSample(ch, n, y);
         }
     }
