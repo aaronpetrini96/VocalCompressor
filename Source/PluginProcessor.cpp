@@ -116,41 +116,36 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     const int versionHint = 1;
+
+    juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
     
 //    1176
     auto name = ParamNames::get1176InputName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f), 0.3f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
     name = ParamNames::get1176OutputName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f), 0.7f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.7f));
     
     // Attack: 0.02 ms – 0.8 ms  (20 µs – 800 µs)
     name = ParamNames::get1176AttackName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.02f, 0.8f, 0.001f, 0.3f), 0.574f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.02f, 0.8f, 0.0001f, 0.3f), 0.574f));
     // Release: 50 ms – 1100 ms
     name = ParamNames::get1176ReleaseName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(50.f, 1100.0f, 1.f, 0.45f), 369.f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(50.f, 1100.0f, 0.1f, 0.45f), 369.f));
     
     name = ParamNames::get1176RatioName();
-    juce::StringArray ratioArray_1176;
-    ratioArray_1176.add("4");
-    ratioArray_1176.add("8");
-    ratioArray_1176.add("12");
-    ratioArray_1176.add("20");
-    ratioArray_1176.add("ALL");
+    const juce::StringArray ratioArray_1176 {"4", "8", "12", "20", "ALL"};
     params.emplace_back(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(name, versionHint), name, ratioArray_1176, 0));
     
     name = ParamNames::get1176MixName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.f, 1.f, 0.1f, 1.f), 1.0f));
-    
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 1.0f));
     name = ParamNames::get1176BypassName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
     
-    
-//    LA2A
+    //    LA2A
     name = ParamNames::getLA2AGainName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f), 0.3f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
     name = ParamNames::getLA2APeakReductionName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.f, 1.f, 0.01f, 1.f), 0.3f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
     name = ParamNames::getLA2ALimitCompressModeName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
     name = ParamNames::getLA2ABypassName();
