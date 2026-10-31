@@ -1,7 +1,4 @@
 #pragma once
-
-//#include <JuceHeader.h>
-
 // This namespace holds ALL parameter ID strings in one place
 namespace ParamNames
 {
