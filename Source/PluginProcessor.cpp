@@ -293,7 +293,7 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
 }
 
 
-void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
     [[maybe_unused]] auto totalNumInputChannels  = getTotalNumInputChannels();

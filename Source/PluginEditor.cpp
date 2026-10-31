@@ -15,11 +15,13 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 presetManager(p)
 {
     
-    for (auto& imageKnob : imageKnobs)
+    for (const auto& imageKnob : imageKnobs)
     {
         addAndMakeVisible(*imageKnob);
         imageKnob->setAlwaysOnTop(true);
     }
+    addAndMakeVisible(mix1176Knob);
+    mix1176Knob.setAlwaysOnTop(true);
     
     la2aModeButton.setImages(false, true, true,
                              la2aModeImageUP, 0.90f, juce::Colours::transparentBlack,
@@ -30,17 +32,18 @@ presetManager(p)
     la2aModeButton.setAlwaysOnTop(true);
     addAndMakeVisible(la2aModeButton);
     
-    for (auto& label : knobLabels)
+    for (const auto& label : knobLabels)
     {
         labelsGeneralSetup(label);
         addAndMakeVisible(*label);
     }
     attack1176Label.setFont(juce::Font(juce::FontOptions(labelFont, 14.f, juce::Font::FontStyleFlags::plain)));
     release1176Label.setFont(juce::Font(juce::FontOptions(labelFont, 14.f, juce::Font::FontStyleFlags::plain)));
+    mix1176Label.setFont(juce::Font(juce::FontOptions(labelFont, 14.f, juce::Font::FontStyleFlags::plain)));
     la2aCompModeLabel.setFont(juce::Font(juce::FontOptions(labelFont, 14.f, juce::Font::FontStyleFlags::plain)));
     la2aLimitModeLabel.setFont(juce::Font(juce::FontOptions(labelFont, 14.f, juce::Font::FontStyleFlags::plain)));
     
-    for (auto& ratioBtn : ratioButtons)
+    for (const auto& ratioBtn : ratioButtons)
     {
         setupRatioButtons(ratioBtn);
         addAndMakeVisible(*ratioBtn);
@@ -51,10 +54,10 @@ presetManager(p)
     ratio16Btn.onClick = [this] () {setRatioIndex(ParamNames::get1176RatioName(), 2);};
     ratio20Btn.onClick = [this] () {setRatioIndex(ParamNames::get1176RatioName(), 3);};
     ratioAllBtn.onClick = [this]() {setRatioIndex(ParamNames::get1176RatioName(), 4);};
-    int ratioIndex = static_cast<int>(audioProcessor.apvts.getRawParameterValue(ParamNames::get1176RatioName())->load());
+    const int ratioIndex = static_cast<int>(audioProcessor.apvts.getRawParameterValue(ParamNames::get1176RatioName())->load());
     updateRatioButtons(ratioIndex);
     
-    for (auto& grMeter : grMeters)
+    for (const auto& grMeter : grMeters)
     {
         addAndMakeVisible(*grMeter);
     }
@@ -77,8 +80,13 @@ presetManager(p)
     
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    startTimerHz(30);
+
+    setResizable(false, true);
+    setResizeLimits(juce::roundToInt(guiWidth * 0.6f), juce::roundToInt(guiHeightExtended * 0.6f),
+                    juce::roundToInt(guiWidth * 2.f), juce::roundToInt(guiHeightExtended * 2.f));
+    getConstrainer()->setFixedAspectRatio(static_cast<double>(guiWidth) / static_cast<double>(guiHeightExtended));
     setSize (guiWidth, guiHeightExtended);
+    startTimerHz(30);
 }
 
 VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
@@ -109,66 +117,103 @@ void VocalCompressorAudioProcessorEditor::paint(juce::Graphics& g)
 
 void VocalCompressorAudioProcessorEditor::resized()
 {
-    auto boundsBox1 = juce::Rectangle<int>(guiWidth, guiHeight);
-    auto bounds = boundsBox1;
-    const auto halfHeight = bounds.getHeight() * 0.5;
-    const auto grMeterWidth = 20;
-    const auto grMeterHeight = knobSize * 0.8;
-    const auto bypassBtnSize = 20;
-    const auto ratioBtnWidth = knobSize * 0.25;
-    const auto ratioBtnHeight = knobSize * 0.2;
+    const auto boundsF = getLocalBounds().toFloat();
+    const auto boundsFWidth = boundsF.getWidth();
+    const auto boundsFHeight = boundsF.getHeight();
+    const auto mainHeight = boundsFHeight * static_cast<float>(guiHeight) / static_cast<float>(guiHeightExtended);
+
+    const auto knobSizeRef = boundsFWidth * 0.25f;
+    const auto smallKnobSize = knobSizeRef * 0.5f;
+    const auto smallControlSize = knobSizeRef * 0.1333f;
+    const auto knobGap = boundsFWidth * 0.0483f;
+
+    const auto knobBounds = boundsF.withSize(knobSizeRef, knobSizeRef);
+    const auto smallKnobBounds = boundsF.withSize(smallKnobSize, smallKnobSize);
+    const auto labelBounds = boundsF.withSize(knobSizeRef, knobSizeRef * 0.3f);
+    const auto grMeterBounds = boundsF.withSize(smallControlSize, knobSizeRef * 0.8f);
+    const auto grTextBounds = boundsF.withSize(smallControlSize * 2.5f, smallControlSize * 2.f);
+    const auto bypassBounds = boundsF.withSize(smallControlSize, smallControlSize);
 
     // Top Half - 1176
-    const auto topArea = bounds.removeFromTop(halfHeight).reduced(10);
-    const auto knobSpacing = topArea.getWidth() * 0.1;
-    
-    input1176Dial.setBounds(knobSpacing * 0.5, topArea.getY() * 4, knobSize, knobSize);
-    input1176Label.setCentrePosition(input1176Dial.getX() + knobSize * 0.5, input1176Dial.getBottom() * 1.01);
-    output1176Dial.setBounds(input1176Dial.getRight() + knobSpacing * 0.5, input1176Dial.getY(), knobSize, knobSize);
-    output1176Label.setCentrePosition(output1176Dial.getX() + knobSize * 0.5, output1176Dial.getBottom() * 1.01);
-    
-    attack1176Dial.setBounds(output1176Dial.getRight() + knobSpacing * 0.5, output1176Dial.getY() - 22, knobSize * 0.5, knobSize * 0.5);
-    attack1176Label.setCentrePosition(attack1176Dial.getRight() - knobSize * 0.25, attack1176Dial.getBottom() * 1.08);
-    release1176Dial.setBounds(attack1176Dial.getX(), attack1176Label.getBottom() * 0.95, knobSize * 0.5, knobSize * 0.5);
-    release1176Label.setCentrePosition(release1176Dial.getRight() - knobSize * 0.25, release1176Dial.getBottom() * 1.05);
-    
-    ratio20Btn.setBounds(attack1176Dial.getRight() * 1.045, attack1176Dial.getY() * 2.85, ratioBtnWidth, ratioBtnHeight);
-    ratio16Btn.setBounds(ratio20Btn.getX(), ratio20Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
-    ratio8Btn.setBounds(ratio16Btn.getX(), ratio16Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
-    ratio4Btn.setBounds(ratio8Btn.getX(), ratio8Btn.getBottom(), ratioBtnWidth, ratioBtnHeight);
-    ratioLabel.setCentrePosition(ratio4Btn.getRight() - ratioBtnWidth * 0.5, ratio4Btn.getBottom() * 1.12);
-    ratioAllBtn.setBounds(ratio20Btn.getX(), ratio20Btn.getY() - ratio20Btn.getHeight(), ratioBtnWidth, ratioBtnHeight);
-    
-    grMeter1176Left.setBounds(ratio20Btn.getRight() * 1.034, attack1176Dial.getY() * 2.84, grMeterWidth, grMeterHeight);
-    grMeter1176Right.setBounds(grMeter1176Left.getRight(), grMeter1176Left.getY(), grMeterWidth, grMeterHeight);
-    gr1176Label.setCentrePosition(grMeter1176Left.getRight(), grMeter1176Left.getBottom() * 1.12);
-    grTextDisplay1176.setBounds(grMeter1176Left.getX() * 0.992, grMeter1176Left.getY() * 0.4, grMeterWidth * 2.5, grMeterWidth * 2);
-    
-    bypassButton1176.setBounds(bypassBtnSize / 2, bypassBtnSize / 2, bypassBtnSize, bypassBtnSize);
-    
-    // Bottom Half - LA2A
-    const auto bottomArea = bounds.reduced(10);
+    const auto topKnobsCY = mainHeight * 0.2556f;
+    const auto topLabelsCY = topKnobsCY + knobSizeRef * 0.51f;
+    const auto inputCX = knobGap + knobSizeRef * 0.5f;
+    const auto outputCX = inputCX + knobSizeRef + knobGap;
 
-    la2aGainDial.setBounds(knobSpacing * 1.25, bottomArea.getY() * 1.15, knobSize, knobSize);
-    la2aGainLabel.setCentrePosition(la2aGainDial.getX() + knobSize * 0.5, la2aGainDial.getBottom());
-    la2aPeakReductionDial.setBounds(bottomArea.getWidth() - knobSize - knobSpacing, la2aGainDial.getY(), knobSize, knobSize);
-    la2aPeakReductionLabel.setCentrePosition(la2aPeakReductionDial.getX() + knobSize * 0.5, la2aPeakReductionDial.getBottom());
-    
-    la2aModeButton.setBounds(-5, bottomArea.getY() + knobSize * 0.97, knobSize / 2.5, knobSize / 2.5);
-    la2aCompModeLabel.setCentrePosition(la2aModeButton.getRight() * 0.49, la2aModeButton.getBottom() * 0.99);
-    la2aLimitModeLabel.setCentrePosition(la2aModeButton.getRight() * 0.49, la2aModeButton.getY() * 1.01);
- 
-    grMeterLA2ALeft.setBounds((bottomArea.getWidth() - grMeterWidth) * 0.5, la2aGainDial.getY() * 1.06, grMeterWidth, grMeterHeight);
-    grMeterLA2ARight.setBounds(grMeterLA2ALeft.getRight(), grMeterLA2ALeft.getY(), grMeterWidth, grMeterHeight);
-    grLA2ALabel.setCentrePosition(grMeterLA2ALeft.getRight(), grMeterLA2ALeft.getBottom() * 1.035);
-    grTextDisplayLA2A.setBounds(grMeterLA2ALeft.getX() * 0.992, grMeterLA2ALeft.getY() * 0.89, grMeterWidth * 2.5, grMeterWidth * 2);
-    
-    bypassButtonLA2A.setBounds(bypassButton1176.getX(), bottomArea.getY(), bypassBtnSize, bypassBtnSize);
-    
+    input1176Dial.setBounds(knobBounds.withCentre({inputCX, topKnobsCY}).toNearestInt());
+    input1176Label.setBounds(labelBounds.withCentre({inputCX, topLabelsCY}).toNearestInt());
+    output1176Dial.setBounds(knobBounds.withCentre({outputCX, topKnobsCY}).toNearestInt());
+    output1176Label.setBounds(labelBounds.withCentre({outputCX, topLabelsCY}).toNearestInt());
+
+    const auto mixScrewCX = inputCX + (knobSizeRef + knobGap) * 0.5f;
+    const auto mixScrewCY = topKnobsCY + knobSizeRef * 0.5f - smallControlSize;
+    const auto mixScrewBounds = bypassBounds.withCentre({mixScrewCX, mixScrewCY});
+    mix1176Knob.setBounds(mixScrewBounds.toNearestInt());
+    mix1176Label.setBounds(labelBounds.withCentre({mixScrewCX, mixScrewBounds.getBottom() + knobSizeRef * 0.053f}).toNearestInt());
+
+    const auto attackCX = outputCX + (knobSizeRef + smallKnobSize) * 0.5f + knobGap;
+    const auto attackCY = mainHeight * 0.1233f;
+    const auto releaseCY = attackCY + smallKnobSize * 1.3067f;
+    attack1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, attackCY}).toNearestInt());
+    attack1176Label.setBounds(labelBounds.withCentre({attackCX, attackCY + smallKnobSize * 0.5933f}).toNearestInt());
+    release1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, releaseCY}).toNearestInt());
+    release1176Label.setBounds(labelBounds.withCentre({attackCX, releaseCY + smallKnobSize * 0.62f}).toNearestInt());
+
+    const auto ratioColumnCX = boundsFWidth * 0.834f;
+    const auto ratioColumnTopY = mainHeight * 0.0467f;
+    const auto ratioBtnBounds = boundsF.withSize(knobSizeRef * 0.25f, knobSizeRef * 0.2f).withCentre({ratioColumnCX, 0.f});
+    auto ratioBtnY = ratioColumnTopY;
+    for (auto* ratioBtn : {&ratioAllBtn, &ratio20Btn, &ratio16Btn, &ratio8Btn, &ratio4Btn})
+    {
+        ratioBtn->setBounds(ratioBtnBounds.withY(ratioBtnY).toNearestInt());
+        ratioBtnY += ratioBtnBounds.getHeight();
+    }
+    ratioLabel.setBounds(labelBounds.withCentre({ratioColumnCX, topLabelsCY}).toNearestInt());
+
+    const auto grMeters1176CX = boundsFWidth * 0.9267f;
+    const auto grMeters1176TopY = ratioColumnTopY + ratioBtnBounds.getHeight();
+    grMeter1176Left.setBounds(grMeterBounds.withPosition(grMeters1176CX - smallControlSize, grMeters1176TopY).toNearestInt());
+    grMeter1176Right.setBounds(grMeterBounds.withPosition(grMeters1176CX, grMeters1176TopY).toNearestInt());
+    gr1176Label.setBounds(labelBounds.withCentre({grMeters1176CX, topLabelsCY}).toNearestInt());
+    grTextDisplay1176.setBounds(grTextBounds.withCentre({grMeters1176CX, mainHeight * 0.0889f}).toNearestInt());
+
+    bypassButton1176.setBounds(bypassBounds.withPosition(smallControlSize * 0.5f, smallControlSize * 0.5f).toNearestInt());
+
+    // Bottom Half - LA2A
+    const auto bottomKnobsCY = mainHeight * 0.7667f;
+    const auto bottomLabelsCY = bottomKnobsCY + knobSizeRef * 0.5f;
+    const auto la2aGainCX = boundsFWidth * 0.245f;
+    const auto la2aPeakReductionCX = boundsFWidth * 0.745f;
+
+    la2aGainDial.setBounds(knobBounds.withCentre({la2aGainCX, bottomKnobsCY}).toNearestInt());
+    la2aGainLabel.setBounds(labelBounds.withCentre({la2aGainCX, bottomLabelsCY}).toNearestInt());
+    la2aPeakReductionDial.setBounds(knobBounds.withCentre({la2aPeakReductionCX, bottomKnobsCY}).toNearestInt());
+    la2aPeakReductionLabel.setBounds(labelBounds.withCentre({la2aPeakReductionCX, bottomLabelsCY}).toNearestInt());
+
+    const auto modeButtonSize = knobSizeRef * 0.4f;
+    const juce::Point<float> modeButtonCentre {boundsFWidth * 0.0417f, mainHeight * 0.9111f};
+    la2aModeButton.setBounds(boundsF.withSize(modeButtonSize, modeButtonSize).withCentre(modeButtonCentre).toNearestInt());
+    la2aCompModeLabel.setBounds(labelBounds.withCentre(modeButtonCentre.translated(0.f, modeButtonSize * 0.4167f)).toNearestInt());
+    la2aLimitModeLabel.setBounds(labelBounds.withCentre(modeButtonCentre.translated(0.f, -modeButtonSize * 0.45f)).toNearestInt());
+
+    const auto grMetersLA2ACX = boundsF.getCentreX();
+    const auto grMetersLA2ATopY = mainHeight * 0.6356f;
+    grMeterLA2ALeft.setBounds(grMeterBounds.withPosition(grMetersLA2ACX - smallControlSize, grMetersLA2ATopY).toNearestInt());
+    grMeterLA2ARight.setBounds(grMeterBounds.withPosition(grMetersLA2ACX, grMetersLA2ATopY).toNearestInt());
+    grLA2ALabel.setBounds(labelBounds.withCentre({grMetersLA2ACX, bottomLabelsCY}).toNearestInt());
+    grTextDisplayLA2A.setBounds(grTextBounds.withCentre({grMetersLA2ACX, mainHeight * 0.6089f}).toNearestInt());
+
+    bypassButtonLA2A.setBounds(bypassBounds.withPosition(smallControlSize * 0.5f, mainHeight * 0.5222f).toNearestInt());
+
     // PresetManager + Utilities
-    presetManager.setBounds(0, guiHeightExtended - (guiHeightExtended - guiHeight), guiWidth, (guiHeightExtended - guiHeight));
-    bypassPluginButton.setBounds(guiWidth * 0.14, guiHeight + 7, 20, 20);
-    reverseSignalOrderButton.setBounds(guiWidth * 0.7085, guiHeight + presetManager.saveBtnY, 125, presetManager.saveBtnHeight);
+    const auto presetArea = boundsF.withTrimmedTop(mainHeight);
+    presetManager.setBounds(presetArea.toNearestInt());
+    bypassPluginButton.setBounds(bypassBounds.withPosition(boundsFWidth * 0.14f, presetArea.getY() + smallControlSize * 0.35f).toNearestInt());
+    reverseSignalOrderButton.setBounds(presetArea.withX(boundsFWidth * 0.7085f)
+                                                 .withWidth(boundsFWidth * 0.2083f)
+                                                 .withY(presetArea.getY() + presetManager.saveBtnY)
+                                                 .withHeight(static_cast<float>(presetManager.saveBtnHeight))
+                                                 .toNearestInt());
 }
 
 
