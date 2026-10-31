@@ -42,6 +42,7 @@ endif()
 # ---------------------------------------------------------------------------
 juce_add_plugin(VocalCompressor
     COMPANY_NAME "Aaron Petrini"
+    BUNDLE_ID com.AaronPetrini.VocalCompressor
     PRODUCT_NAME "VocalCompressor"
     VERSION ${PROJECT_VERSION}
     PLUGIN_MANUFACTURER_CODE Apau
