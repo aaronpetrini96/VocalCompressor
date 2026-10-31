@@ -62,8 +62,7 @@ target_sources(VocalCompressor PRIVATE
     Source/PluginEditor.cpp
     Source/DSP/1176Compressor.cpp
     Source/DSP/LA2ACompressor.cpp
-        Source/GUI/Components/ImageKnob.cpp
-        Source/GUI/LAF/ImageKnobLookAndFeel.cpp
+    Source/GUI/Components/ImageKnob.cpp
     Source/Utilities/PresetManagerV2.cpp
 )
 
