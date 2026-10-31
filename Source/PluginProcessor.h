@@ -1,18 +1,10 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include <unordered_map>
 #include <vector>
 #include "ParamNames.h"
-#include "ParamPointers.h"
 #include "DSP/1176Compressor.h"
 #include "DSP/LA2ACompressor.h"
-
-struct SmoothedParam
-{
-    juce::AudioParameterFloat* param = nullptr;
-    juce::SmoothedValue<float> smoother;
-};
 
 //==============================================================================
 /**
@@ -80,6 +72,31 @@ private:
     
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
+
+    juce::AudioParameterFloat* input1176Param {nullptr};
+    juce::AudioParameterFloat* output1176Param {nullptr};
+    juce::AudioParameterFloat* attack1176Param {nullptr};
+    juce::AudioParameterFloat* release1176Param {nullptr};
+    juce::AudioParameterFloat* mix1176Param {nullptr};
+    juce::AudioParameterChoice* ratio1176Param {nullptr};
+    juce::AudioParameterBool* bypass1176Param {nullptr};
+    juce::AudioParameterFloat* gainLA2AParam {nullptr};
+    juce::AudioParameterFloat* peakReductionLA2AParam {nullptr};
+    juce::AudioParameterBool* modeLA2AParam {nullptr};
+    juce::AudioParameterBool* bypassLA2AParam {nullptr};
+    juce::AudioParameterBool* pluginBypassParam {nullptr};
+    juce::AudioParameterBool* reverseSignalOrderParam {nullptr};
+
+    juce::SmoothedValue<float>
+    input1176ParamSmoother,
+    output1176ParamSmoother,
+    attack1176ParamSmoother,
+    release1176ParamSmoother,
+    mix1176ParamSmoother,
+    gainLA2AParamSmoother,
+    peakReductionLA2AParamSmoother;
+
+    std::vector<std::pair<juce::AudioParameterFloat*, juce::SmoothedValue<float>*>> smootherBindings;
     
     
     
@@ -106,22 +123,15 @@ private:
         }
     }
 
+    void linkParameters();
+
     enum class SmootherUpdateMode
     {
         initialize,
         liveInRealTime
     };
 
-//    std::vector<juce::SmoothedValue<float>*> getSmoothers();
     void updateSmootherFromParams(int numSamplesToSkip, SmootherUpdateMode init);
-    
-    float getSmoothedValue(const juce::String& paramName) const
-    {
-        auto it = smoothedParamsRegistry.find(paramName);
-        return it != smoothedParamsRegistry.end() ? it->second.smoother.getCurrentValue() : 0.f;
-    }
-    
-    std::unordered_map<juce::String, SmoothedParam> smoothedParamsRegistry;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalCompressorAudioProcessor)
 };

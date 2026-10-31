@@ -25,7 +25,6 @@
         <FILE id="ooSHPG" name="switchDOWN.png" compile="0" resource="1" file="Source/Assets/switchDOWN.png"/>
         <FILE id="qwR35c" name="switchUP.png" compile="0" resource="1" file="Source/Assets/switchUP.png"/>
       </GROUP>
-      <FILE id="ip30hZ" name="ParamPointers.h" compile="0" resource="0" file="Source/ParamPointers.h"/>
       <GROUP id="{AAEA8983-B407-851F-B17D-4CE7A495E913}" name="DSP">
         <FILE id="hoD5I8" name="1176Compressor.cpp" compile="1" resource="0"
               file="Source/DSP/1176Compressor.cpp"/>

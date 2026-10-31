@@ -22,88 +22,7 @@ VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
                        )
 #endif
 {
-//      FLOAT PARAMETERS
-    auto floatParams = std::array
-    {
-//        1176
-        &ParamPointers::input1176Param,
-        &ParamPointers::output1176Param,
-        &ParamPointers::attack1176Param,
-        &ParamPointers::release1176Param,
-        &ParamPointers::mix1176Param,
-        
-//        LA2A
-        &ParamPointers::gainLA2AParam,
-        &ParamPointers::peakReductionLA2AParam,
-    };
-    
-    auto floatNameFuncs = std::array
-    {
-//      1176
-        &ParamNames::get1176InputName,
-        &ParamNames::get1176OutputName,
-        &ParamNames::get1176AttackName,
-        &ParamNames::get1176ReleaseName,
-        &ParamNames::get1176MixName,
-        
-//        LA2A
-        &ParamNames::getLA2AGainName,
-        &ParamNames::getLA2APeakReductionName,
-    };
-    
-    initCachedParams<juce::AudioParameterFloat*>(floatParams, floatNameFuncs);
-    
-//    ADD TO REGISTRY
-    for (auto param : floatParams)
-    {
-        if (*param != nullptr)
-        {
-            juce::String name = (*param)->paramID;
-            smoothedParamsRegistry[name] = SmoothedParam{*param, juce::SmoothedValue<float>()};
-        }
-    }
-    
-//    CHOICE PARAMS
-    auto choiceParams = std::array
-    {
-        &ParamPointers::ratio1176Param,
-        
-        
-    };
-    
-    auto choiceNameFuncs = std::array
-    {
-        &ParamNames::get1176RatioName,
-        
-        
-    };
-    
-    initCachedParams<juce::AudioParameterChoice*>(choiceParams, choiceNameFuncs);
-    
-//    BOOL PARAMS
-    auto boolParams = std::array
-    {
-        &ParamPointers::bypass1176Param,
-        
-        &ParamPointers::modeLA2AParam,
-        &ParamPointers::bypassLA2AParam,
-        
-        &ParamPointers::bypassPluginParam,
-        &ParamPointers::reverseSignalOrder,
-    };
-    
-    auto boolNameFuncs = std::array
-    {
-        &ParamNames::get1176BypassName,
-        
-        &ParamNames::getLA2ALimitCompressModeName,
-        &ParamNames::getLA2ABypassName,
-        
-        &ParamNames::getGeneralBypassName,
-        &ParamNames::getReverseSignalOrderName,
-    };
-    
-    initCachedParams<juce::AudioParameterBool*>(boolParams, boolNameFuncs);
+    linkParameters();
 }
 
 
@@ -226,16 +145,63 @@ void VocalCompressorAudioProcessor::changeProgramName (int index, const juce::St
 //==============================================================================
 
 
+void VocalCompressorAudioProcessor::linkParameters()
+{
+    auto floatParams = std::array
+    {
+        &input1176Param, &output1176Param, &attack1176Param, &release1176Param, &mix1176Param,
+        &gainLA2AParam, &peakReductionLA2AParam
+    };
+
+    auto floatNameFuncs = std::array
+    {
+        &ParamNames::get1176InputName, &ParamNames::get1176OutputName, &ParamNames::get1176AttackName,
+        &ParamNames::get1176ReleaseName, &ParamNames::get1176MixName,
+        &ParamNames::getLA2AGainName, &ParamNames::getLA2APeakReductionName
+    };
+
+    initCachedParams<juce::AudioParameterFloat*>(floatParams, floatNameFuncs);
+
+    auto choiceParams = std::array { &ratio1176Param };
+    auto choiceNameFuncs = std::array { &ParamNames::get1176RatioName };
+
+    initCachedParams<juce::AudioParameterChoice*>(choiceParams, choiceNameFuncs);
+
+    auto boolParams = std::array
+    {
+        &bypass1176Param, &modeLA2AParam, &bypassLA2AParam, &pluginBypassParam, &reverseSignalOrderParam
+    };
+
+    auto boolNameFuncs = std::array
+    {
+        &ParamNames::get1176BypassName, &ParamNames::getLA2ALimitCompressModeName, &ParamNames::getLA2ABypassName,
+        &ParamNames::getGeneralBypassName, &ParamNames::getReverseSignalOrderName
+    };
+
+    initCachedParams<juce::AudioParameterBool*>(boolParams, boolNameFuncs);
+
+    smootherBindings =
+    {
+        {input1176Param, &input1176ParamSmoother},
+        {output1176Param, &output1176ParamSmoother},
+        {attack1176Param, &attack1176ParamSmoother},
+        {release1176Param, &release1176ParamSmoother},
+        {mix1176Param, &mix1176ParamSmoother},
+        {gainLA2AParam, &gainLA2AParamSmoother},
+        {peakReductionLA2AParam, &peakReductionLA2AParamSmoother}
+    };
+}
+
 void VocalCompressorAudioProcessor::updateSmootherFromParams(int numSamplesToSkip, SmootherUpdateMode init)
 {
-    for (auto& [name, smoothedParam] : smoothedParamsRegistry)
+    for (const auto& [param, smoother] : smootherBindings)
     {
         if (init == SmootherUpdateMode::initialize)
-            smoothedParam.smoother.setCurrentAndTargetValue(smoothedParam.param->get());
+            smoother->setCurrentAndTargetValue(param->get());
         else
-            smoothedParam.smoother.setTargetValue(smoothedParam.param->get());
+            smoother->setTargetValue(param->get());
         
-        smoothedParam.smoother.skip(numSamplesToSkip);
+        smoother->skip(numSamplesToSkip);
     }
 }
 
@@ -244,11 +210,9 @@ void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     fet1176.prepare(sampleRate, samplesPerBlock);
     la2aComp.prepare(sampleRate, samplesPerBlock);
-//    for(auto smoother : getSmoothers())
-//        smoother->reset(sampleRate, 0.05);
     //Reset all smoothers
-    for (auto& pair : smoothedParamsRegistry)
-        pair.second.smoother.reset(sampleRate, 0.05);
+    for (const auto& [param, smoother] : smootherBindings)
+        smoother->reset(sampleRate, 0.05);
     
     //Initial sync
     updateSmootherFromParams(1, SmootherUpdateMode::initialize);
@@ -288,14 +252,14 @@ bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 
 void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer)
 {
-    if (ParamPointers::bypass1176Param->get() == false)
+    if (bypass1176Param->get() == false)
     {
-        float inDB = fet1176.getInputGainDB(getSmoothedValue(ParamNames::get1176InputName()));
-        float outDB = fet1176.getOutputGainDB(getSmoothedValue(ParamNames::get1176OutputName()));
-        float attack = getSmoothedValue(ParamNames::get1176AttackName());
-        float release = getSmoothedValue(ParamNames::get1176ReleaseName());
-        float mix = getSmoothedValue(ParamNames::get1176MixName());
-        int ratioIndex = ParamPointers::ratio1176Param->getIndex();
+        float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
+        float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
+        float attack = attack1176ParamSmoother.getCurrentValue();
+        float release = release1176ParamSmoother.getCurrentValue();
+        float mix = mix1176ParamSmoother.getCurrentValue();
+        int ratioIndex = ratio1176Param->getIndex();
         float ratio = (ratioIndex == 0) ? 4.f :
                       (ratioIndex == 1) ? 8.f :
                       (ratioIndex == 2) ? 12.f :
@@ -313,11 +277,11 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
 
 void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer)
 {
-    if (ParamPointers::bypassLA2AParam->get() == false)
+    if (bypassLA2AParam->get() == false)
     {
-        float normGain = getSmoothedValue(ParamNames::getLA2AGainName());
-        float normPeakReduction = getSmoothedValue(ParamNames::getLA2APeakReductionName());
-        bool limitMode = ParamPointers::modeLA2AParam->get();
+        float normGain = gainLA2AParamSmoother.getCurrentValue();
+        float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
+        bool limitMode = modeLA2AParam->get();
         la2aComp.setParameters(normGain, normPeakReduction, limitMode);
         la2aComp.process(buffer);
         grLA2A = la2aComp.getGainReduction();
@@ -338,9 +302,9 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     //Update Smoothers in Real Time
     updateSmootherFromParams(buffer.getNumSamples(), SmootherUpdateMode::liveInRealTime);
     
-    if (ParamPointers::bypassPluginParam->get() == false)
+    if (pluginBypassParam->get() == false)
     {
-        if (ParamPointers::reverseSignalOrder->get() == false)
+        if (reverseSignalOrderParam->get() == false)
         {
             processBlock1176(buffer);
             processBlockLA2A(buffer);
