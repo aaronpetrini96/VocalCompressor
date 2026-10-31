@@ -73,6 +73,7 @@ juce_add_binary_data(VocalCompressorAssets SOURCES
         Source/Assets/Images/clearSilverBackground.png
         Source/Assets/Images/darkSilverBackground.png
         Source/Assets/Images/screw25x25.png
+        Source/Assets/Images/slotScrew256.png
         Source/Assets/Images/spriteSheet1176.png
         Source/Assets/Images/spriteSheetLa2a.png
         Source/Assets/Images/switchDOWN.png
