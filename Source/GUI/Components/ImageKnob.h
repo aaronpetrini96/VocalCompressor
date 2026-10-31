@@ -1,6 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
-#include "ImageKnobLookAndFeel.h"
+#include "../LAF/ImageKnobLookAndFeel.h"
 
 class ImageKnob : public juce::Component
 {

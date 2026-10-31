@@ -10,11 +10,11 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "GUI/ImageKnob.h"
-#include "GUI/GainReductionMeter.h"
-#include "GUI/BypassButton.h"
+#include "GUI/Components/ImageKnob.h"
+#include "GUI/Components/GainReductionMeter.h"
+#include "GUI/Components/BypassButton.h"
 #include "Utilities/PresetManagerV2.h"
-#include "GUI/GRTextDisplay.h"
+#include "GUI/Components/GRTextDisplay.h"
 
 //==============================================================================
 /**

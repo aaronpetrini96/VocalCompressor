@@ -48,6 +48,8 @@
               file="Source/GUI/ImageKnobLookAndFeel.cpp"/>
         <FILE id="gsaGPb" name="ImageKnobLookAndFeel.h" compile="0" resource="0"
               file="Source/GUI/ImageKnobLookAndFeel.h"/>
+        <FILE id="Rk7Lf2" name="RotaryImageKnobLookAndFeel.h" compile="0" resource="0"
+              file="Source/GUI/RotaryImageKnobLookAndFeel.h"/>
       </GROUP>
       <FILE id="AzSEUf" name="ParamNames.h" compile="0" resource="0" file="Source/ParamNames.h"/>
       <FILE id="iiYGDm" name="PluginProcessor.cpp" compile="1" resource="0"

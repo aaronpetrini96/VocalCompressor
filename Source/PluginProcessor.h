@@ -2,7 +2,7 @@
 
 #include <JuceHeader.h>
 #include <vector>
-#include "ParamNames.h"
+#include "Utilities/ParamNames.h"
 #include "DSP/1176Compressor.h"
 #include "DSP/LA2ACompressor.h"
 
