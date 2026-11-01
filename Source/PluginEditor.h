@@ -47,8 +47,8 @@ private:
 
     
 //   IMAGE LOADING
-    const juce::Image darkBackground {juce::ImageCache::getFromMemory(BinaryData::darkSilverBackground_png, BinaryData::darkSilverBackground_pngSize)};
-    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::clearSilverBackground_png, BinaryData::clearSilverBackground_pngSize)};
+    const juce::Image darkBackground {juce::ImageCache::getFromMemory(BinaryData::darkSilverBackground2_png, BinaryData::darkSilverBackground2_pngSize)};
+    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::clearSilverBackground2_png, BinaryData::clearSilverBackground2_pngSize)};
     const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw25x25_png, BinaryData::screw25x25_pngSize)};
     const juce::Image slotScrewImage {juce::ImageCache::getFromMemory(BinaryData::slotScrew256_png, BinaryData::slotScrew256_pngSize)};
     const juce::Image knobImage1176 {juce::ImageCache::getFromMemory(BinaryData::spriteSheet1176_png, BinaryData::spriteSheet1176_pngSize)};

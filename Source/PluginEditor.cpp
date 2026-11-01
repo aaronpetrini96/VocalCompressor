@@ -96,23 +96,35 @@ VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
 //==============================================================================
 void VocalCompressorAudioProcessorEditor::paint(juce::Graphics& g)
 {
+    const auto boundsF = getLocalBounds().toFloat();
+    const auto boundsFWidth = boundsF.getWidth();
+    const auto boundsFHeight = boundsF.getHeight();
+    const auto mainHeight = boundsFHeight * static_cast<float>(guiHeight) / static_cast<float>(guiHeightExtended);
+    const auto halfHeight = mainHeight * 0.5f;
+
     g.fillAll(juce::Colour(41, 42, 48).darker(1));
-    auto halfHeight = guiHeight / 2;
-    g.drawImageWithin(darkBackground, 0, 0, guiWidth, halfHeight, juce::RectanglePlacement::stretchToFit);
-    g.drawImageWithin(clearBackground, 0, halfHeight, guiWidth, halfHeight, juce::RectanglePlacement::stretchToFit);
-    g.drawImageWithin(screwImage, 0, guiHeight + 6.25 , 25, 25, juce::RectanglePlacement::stretchToFit);
-    g.drawImageWithin(screwImage, guiWidth - 25, guiHeight + 6.25 , 25, 25, juce::RectanglePlacement::stretchToFit);
+    const auto topHalf = boundsF.withHeight(halfHeight);
+    const auto bottomHalf = topHalf.withY(halfHeight);
+    g.drawImage(darkBackground, topHalf, juce::RectanglePlacement::stretchToFit);
+    g.drawImage(clearBackground, bottomHalf, juce::RectanglePlacement::stretchToFit);
+
+    const auto screwSize = boundsFWidth * 0.0417f;
+    const auto screwBounds = boundsF.withSize(screwSize, screwSize).withY(mainHeight + screwSize * 0.25f);
+    g.drawImage(screwImage, screwBounds, juce::RectanglePlacement::centred);
+    g.drawImage(screwImage, screwBounds.withRightX(boundsFWidth), juce::RectanglePlacement::centred);
     
     // Horizontal line separating 1176 and LA2A
+    const auto lineThickness = boundsFWidth * 0.0033f;
     g.setColour(juce::Colours::whitesmoke.withAlpha(0.5f));
-    g.drawLine(0.f, (float)halfHeight, (float)guiWidth, (float)halfHeight, 2.f);
-    g.drawLine(0.f, (float)guiHeight, (float)guiWidth, (float)guiHeight, 2.f);
+    g.drawLine(0.f, halfHeight, boundsFWidth, halfHeight, lineThickness);
+    g.drawLine(0.f, mainHeight, boundsFWidth, mainHeight, lineThickness);
     
     // Unit titles
+    const auto titleOffset = mainHeight * 0.0222f;
     g.setColour(juce::Colours::white);
-    g.setFont(juce::Font(juce::FontOptions(titleFont, 20.0f, juce::Font::FontStyleFlags::italic)));
-    g.drawText("FET-76", 0, 10, guiWidth, halfHeight, juce::Justification::centredTop);
-    g.drawText("OPT-2A", 0, halfHeight + 10, guiWidth, halfHeight, juce::Justification::centredTop);
+    g.setFont(juce::Font(juce::FontOptions(titleFont, boundsFWidth * 0.0333f, juce::Font::FontStyleFlags::italic)));
+    g.drawText("FET-76", topHalf.withTrimmedTop(titleOffset), juce::Justification::centredTop);
+    g.drawText("OPT-2A", bottomHalf.withTrimmedTop(titleOffset), juce::Justification::centredTop);
 }
 
 void VocalCompressorAudioProcessorEditor::resized()
