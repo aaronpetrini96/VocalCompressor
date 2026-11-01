@@ -25,7 +25,7 @@ public:
             return;
         button.setClickingTogglesState(true);
         button.setImages(false, true, true,
-                         bypassBtnImg, 0.8f, VCColors::bypassNormal,
+                         bypassBtnImg, 0.8f, juce::Colours::white,
                          bypassBtnImg, 0.8f, VCColors::bypassOver,
                          bypassBtnImg, 0.8f, VCColors::bypassOn,
                                0.f);

@@ -28,9 +28,9 @@ public:
         la2aModeButton.onStateChange = [this] { updateModeLabels(); };
         addAndMakeVisible(la2aModeButton);
 
-        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel})
+        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel, &unitTitleLabel})
         {
-            VCLook::setupLabel(*label);
+            VCLook::setupLabel(*label, juce::Colours::black);
             addAndMakeVisible(*label);
         }
         updateModeLabels();
@@ -45,7 +45,6 @@ public:
     {
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(clearBackground, boundsF, juce::RectanglePlacement::stretchToFit);
-        VCLook::drawUnitTitle(g, "OPT-2A", boundsF);
     }
 
     void resized() override
@@ -62,6 +61,10 @@ public:
             label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
+
+        const auto titleFontHeight = boundsFWidth * 0.03f;
+        unitTitleLabel.setFont(VCFonts::barlowCondensedSemiBoldItalic(titleFontHeight));
+        unitTitleLabel.setBounds(boundsF.withTrimmedTop(boundsFHeight * 0.035f).withHeight(titleFontHeight * 1.3f).toNearestInt());
 
         const auto labelsCY = boundsFHeight * 0.9f;
         la2aGainDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.245f, boundsF.getCentreY()}).toNearestInt());
@@ -119,7 +122,8 @@ private:
 
 //    LABELS
     juce::Label la2aGainLabel {"GAIN"}, la2aPeakReductionLabel {"PEAK REDUCTION"},
-                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"};
+                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"},
+                unitTitleLabel {"OPT-2A"};
 
 //    GAIN REDUCTION + BYPASS
     GainReductionMeter grMeterLA2ALeft, grMeterLA2ARight;

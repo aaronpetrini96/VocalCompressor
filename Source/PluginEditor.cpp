@@ -19,7 +19,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 
     addAndMakeVisible(resizeButton);
     AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeLines_svg, BinaryData::resizeLines_svgSize,
-                                   VCColors::iconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
+                                   juce::Colours::white, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
     resizeButton.setToggleable(true);
     resizeButton.setClickingTogglesState(false);
     resizeButton.onClick = [this] { showUISizeOptions(); };
@@ -78,6 +78,13 @@ void VocalCompressorAudioProcessorEditor::resized()
                                      .withRightX(resizeBtnBounds.getRight())
                                      .withBottomY(resizeBtnBounds.getCentreY())
                                      .toNearestInt());
+}
+
+void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
+{
+    g.setColour(VCColors::separator);
+    for (auto* panel : std::initializer_list<juce::Component*> {&panel1176, &panelLA2A})
+        g.fillRect(panel->getBounds().toFloat().withHeight(static_cast<float>(getWidth()) * 0.0033f));
 }
 
 void VocalCompressorAudioProcessorEditor::timerCallback()

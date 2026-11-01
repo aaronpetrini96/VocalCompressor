@@ -140,6 +140,6 @@ void PresetManagerV2::setButtonStyle()
 {
     savePresetButton.setClickingTogglesState(false);
     savePresetButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
-    savePresetButton.setColour(juce::TextButton::textColourOffId, VCColors::text);
+    savePresetButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
     savePresetButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
 }

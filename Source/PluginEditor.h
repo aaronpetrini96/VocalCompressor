@@ -28,6 +28,7 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void paintOverChildren (juce::Graphics& g) override;
     void timerCallback() override;
     void mouseUp (const juce::MouseEvent& event) override;
     void componentVisibilityChanged (juce::Component& component) override;
@@ -39,8 +40,8 @@ private:
     void updateEditorSize();
 
     //  EDITOR CONSTANTS
-    const int guiWidth = 650;
-    const int guiHeight = 480;
+    const int guiWidth = 780;
+    const int guiHeight = 576;
 
 //    PANELS
     HeaderPanel headerPanel {audioProcessor};

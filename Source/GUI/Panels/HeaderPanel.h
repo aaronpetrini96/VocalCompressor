@@ -17,7 +17,7 @@ public:
         reverseSignalOrderButton.setLookAndFeel(&controlsLAF);
         reverseSignalOrderButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
         reverseSignalOrderButton.setColour(juce::TextButton::buttonOnColourId, VCColors::buttonBackground);
-        reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, VCColors::text);
+        reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
         reverseSignalOrderButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
         reverseSignalOrderButton.setClickingTogglesState(true);
         reverseSignalOrderButton.onStateChange = [this] { updateReverseSignalButtonText(); };

@@ -26,6 +26,8 @@ public:
             VCLook::setupLabel(*label);
             addAndMakeVisible(*label);
         }
+        VCLook::setupLabel(unitTitleLabel, juce::Colours::black);
+        addAndMakeVisible(unitTitleLabel);
 
         for (auto* ratioBtn : ratioButtons)
         {
@@ -51,7 +53,6 @@ public:
     {
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(darkBackground, boundsF, juce::RectanglePlacement::stretchToFit);
-        VCLook::drawUnitTitle(g, "FET-76", boundsF);
     }
 
     void resized() override
@@ -61,7 +62,7 @@ public:
         const auto boundsFHeight = boundsF.getHeight();
 
         const auto knobSize = boundsFHeight * 0.6f;
-        const auto smallKnobsSize = boundsFHeight *  0.25f;
+        const auto smallKnobsSize = boundsFHeight * 0.2f;
 
         const auto knobBounds = boundsF.withSize(knobSize, knobSize);
         const auto smallKnobBounds = boundsF.withSize(smallKnobsSize, smallKnobsSize);
@@ -72,6 +73,10 @@ public:
             label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&attack1176Label, &release1176Label, &mix1176Label})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.075f));
+
+        const auto titleFontHeight = boundsFWidth * 0.03f;
+        unitTitleLabel.setFont(VCFonts::barlowCondensedSemiBoldItalic(titleFontHeight));
+        unitTitleLabel.setBounds(boundsF.withTrimmedTop(boundsFHeight * 0.035f).withHeight(titleFontHeight * 1.3f).toNearestInt());
 
         const auto labelsCY = boundsFHeight * 0.8825f;
 
@@ -144,8 +149,8 @@ private:
         ratioBtn->setColour(juce::TextButton::ColourIds::buttonColourId, VCColors::ratioButtonOff);
         ratioBtn->setColour(juce::TextButton::ColourIds::buttonOnColourId, VCColors::ratioButtonOn);
         ratioBtn->setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
-        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOnId, VCColors::text);
-        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOffId, VCColors::text);
+        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
+        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
     }
 
     VocalCompressorAudioProcessor& audioProcessor;
@@ -167,7 +172,7 @@ private:
     juce::Label input1176Label {"INPUT"}, output1176Label {"OUTPUT"},
                 attack1176Label {"ATTACK"}, release1176Label {"RELEASE"},
                 ratioLabel {"RATIO"}, gr1176Label {"GR"},
-                mix1176Label {"MIX"};
+                mix1176Label {"MIX"}, unitTitleLabel {"FET-76"};
 
 //    RATIO BUTTONS
     VCControlsLAF controlsLAF;

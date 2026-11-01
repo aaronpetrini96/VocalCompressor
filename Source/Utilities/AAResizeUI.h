@@ -76,7 +76,7 @@ private:
         return static_cast<float> (userSettings.getDoubleValue ("DefaultUIScale", fallbackDefaultScale));
     }
 
-    juce::Array<SizeOption> sizeOptionsArray {SizeOption {"X-Small", 0.6f}, SizeOption {"Small", 0.8f}, SizeOption {"Default", 1.0f}, SizeOption {"Large", 1.2f}, SizeOption {"X-Large", 1.4f}, SizeOption {"Huge", 1.75f}};
+    juce::Array<SizeOption> sizeOptionsArray {SizeOption {"X-Small", 0.5f}, SizeOption {"Small", 0.75f}, SizeOption {"Default", 1.0f}, SizeOption {"Large", 1.25f}, SizeOption {"X-Large", 1.5f}, SizeOption {"Huge", 1.75f}};
     const float fallbackDefaultScale {1.0f};
     float& currentScale;
 
