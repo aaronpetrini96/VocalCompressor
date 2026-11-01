@@ -16,8 +16,9 @@ public:
     {
         const auto boundsF = button.getLocalBounds().toFloat();
         const auto cornerSize = boundsF.getHeight() * 0.15f;
-        const auto textColour = button.getToggleState() ? VCColors::popupSelectedText : VCColors::popupText;
-
+        const auto textColour = button.getToggleState() ? VCColors::popupText.withMultipliedBrightness(2.f) : VCColors::popupText.withAlpha(0.8f);
+        const auto fontText = button.getToggleState() ? VCFonts::barlowCondensedSemiBold (boundsF.getHeight() * VCLook::fontHeightPOH) :
+                                                        VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH);
         if (shouldDrawButtonAsHighlighted)
         {
             g.setColour (VCColors::popupRowHighlight);
@@ -27,7 +28,7 @@ public:
         g.setColour (textColour);
         if (!button.isEnabled())
             g.setColour (textColour.withAlpha (0.3f));
-        g.setFont (VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH));
+        g.setFont (fontText);
         const auto textBounds = leftAlignText ? boundsF.withLeft (boundsF.getHeight() * 0.45f) : boundsF;
         g.drawText (button.getButtonText(), textBounds, leftAlignText ? juce::Justification::centredLeft : juce::Justification::centred, true);
     }
@@ -46,7 +47,7 @@ public:
         const auto tickBoxSize = boundsFHeight * 0.55f;
         const auto tickBoxBounds = boundsF.withSizeKeepingCentre (tickBoxSize, tickBoxSize).withRightX (boundsF.getRight() - boundsFHeight * 0.45f);
         const auto tickBoxLineThickness = tickBoxSize * 0.08f;
-        g.setColour (button.getToggleState() ? VCColors::popupSelectedText : (shouldDrawButtonAsHighlighted ? VCColors::iconOver : VCColors::popupText));
+        g.setColour (button.getToggleState() ? VCColors::popupText.withMultipliedBrightness(2.f)  : (shouldDrawButtonAsHighlighted ? VCColors::iconOver : VCColors::popupText));
         g.drawRoundedRectangle (tickBoxBounds, tickBoxSize * 0.2f, tickBoxLineThickness);
 
         if (button.getToggleState())
@@ -55,7 +56,7 @@ public:
             tick.startNewSubPath (tickBoxBounds.getRelativePoint (0.25f, 0.52f));
             tick.lineTo (tickBoxBounds.getRelativePoint (0.43f, 0.7f));
             tick.lineTo (tickBoxBounds.getRelativePoint (0.75f, 0.32f));
-            g.setColour (VCColors::popupSelectedText);
+            g.setColour (VCColors::popupText.withMultipliedBrightness(2.f));
             g.strokePath (tick, juce::PathStrokeType (tickBoxLineThickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
 
