@@ -18,11 +18,25 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     addAndMakeVisible(panel1176);
     addAndMakeVisible(panelLA2A);
 
-    setResizable(false, true);
-    setResizeLimits(juce::roundToInt(guiWidth * 0.6f), juce::roundToInt(guiHeightExtended * 0.6f),
-                    juce::roundToInt(guiWidth * 2.f), juce::roundToInt(guiHeightExtended * 2.f));
-    getConstrainer()->setFixedAspectRatio(static_cast<double>(guiWidth) / static_cast<double>(guiHeightExtended));
-    setSize (guiWidth, guiHeightExtended);
+    addAndMakeVisible(resizeButton);
+    AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeLines_svg, BinaryData::resizeLines_svgSize,
+                                   VCColors::iconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
+    resizeButton.setToggleable(true);
+    resizeButton.setClickingTogglesState(false);
+    resizeButton.onClick = [this] { showUISizeOptions(); };
+
+    addChildComponent(resizeOptionsPopup);
+    resizeOptionsPopup.addComponentListener(this);
+    resizeOptionsPopup.onSizeChanged = [this]
+    {
+        updateEditorSize();
+        uiResize.makeCurrentSizeDefault();
+    };
+
+    addMouseListener(this, true);
+
+    setResizable(false, false);
+    updateEditorSize();
     startTimerHz(30);
 }
 
@@ -53,10 +67,70 @@ void VocalCompressorAudioProcessorEditor::resized()
     headerPanel.setBounds(headerBounds.toNearestInt());
     panel1176.setBounds(panel1176Bounds.toNearestInt());
     panelLA2A.setBounds(panelLA2ABounds.toNearestInt());
+
+    const auto resizeButtonSize = boundsFHeight * 0.057f;
+    const auto resizeBtnGap = resizeButtonSize * 0.5f;
+    const auto resizeBtnBounds = boundsF.withSize(resizeButtonSize, resizeButtonSize)
+                                        .withCentre({boundsF.getWidth() - resizeBtnGap, boundsFHeight - resizeBtnGap});
+    resizeButton.setBounds(resizeBtnBounds.toNearestInt());
+
+    const auto rowH = headerHeight * 0.6f;
+    const auto sizeOptionsWidth = boundsF.getWidth() * 0.2f;
+    const auto sizeOptionsHeight = rowH * resizeOptionsPopup.getNumRows();
+    resizeOptionsPopup.setBounds(juce::Rectangle<float>(sizeOptionsWidth, sizeOptionsHeight)
+                                     .withRightX(resizeBtnBounds.getRight())
+                                     .withBottomY(resizeBtnBounds.getCentreY())
+                                     .toNearestInt());
 }
 
 void VocalCompressorAudioProcessorEditor::timerCallback()
 {
     panel1176.updateGainReduction();
     panelLA2A.updateGainReduction();
+}
+
+void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
+{
+    const auto isClickInside = [&event] (const juce::Component& component)
+    {
+        return event.eventComponent == &component || component.isParentOf(event.eventComponent);
+    };
+
+    const auto hidePopupUnlessClickedIn = [&isClickInside] (juce::Component& popup, const auto&... keepOpenFor)
+    {
+        if (popup.isVisible() && ! isClickInside(popup) && ! (isClickInside(keepOpenFor) || ...))
+            popup.setVisible(false);
+    };
+
+    hidePopupUnlessClickedIn(resizeOptionsPopup, resizeButton);
+}
+
+void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Component& component)
+{
+    if (&component == &resizeOptionsPopup)
+        resizeButton.setToggleState(resizeOptionsPopup.isVisible(), juce::dontSendNotification);
+}
+
+void VocalCompressorAudioProcessorEditor::updateEditorSize()
+{
+    const auto editorSize = uiResize.getEditorSize(getScreenBounds(), 0.0f);
+    setSize(editorSize.getWidth(), editorSize.getHeight());
+}
+
+void VocalCompressorAudioProcessorEditor::showUISizeOptions()
+{
+    if (resizeOptionsPopup.isVisible())
+    {
+        resizeOptionsPopup.setVisible(false);
+        return;
+    }
+    resizeOptionsPopup.updateItems();
+    showPopup(resizeOptionsPopup);
+}
+
+void VocalCompressorAudioProcessorEditor::showPopup(juce::Component& popup)
+{
+    resized();
+    popup.toFront(false);
+    popup.setVisible(true);
 }
