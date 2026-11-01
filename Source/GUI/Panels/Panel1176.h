@@ -53,6 +53,14 @@ public:
     {
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(darkBackground, boundsF, juce::RectanglePlacement::stretchToFit);
+
+        const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.06f);
+        for (auto* dial : {&input1176Dial, &output1176Dial})
+            AAUITools::drawKnobScale(g, dial->getBounds().toFloat(), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
+                                     11, boundsF.getHeight() * 0.018f, {juce::String(juce::CharPointer_UTF8("\xe2\x88\x9e")), "48", "36", "24", "12", "0"}, scaleFont, juce::Colours::white);
+        for (auto* dial : {&attack1176Dial, &release1176Dial})
+            AAUITools::drawKnobScale(g, dial->getBounds().toFloat(), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
+                                     7, boundsF.getHeight() * 0.0132f, {"1", "3", "5", "7"}, scaleFont, juce::Colours::white);
     }
 
     void resized() override
