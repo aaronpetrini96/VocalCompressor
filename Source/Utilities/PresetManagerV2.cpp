@@ -14,6 +14,8 @@
 PresetManagerV2::PresetManagerV2(VocalCompressorAudioProcessor& processor) : audioProcessor(processor)
 {
 //    ComboBox
+    presetBox.setLookAndFeel(&controlsLAF);
+    savePresetButton.setLookAndFeel(&controlsLAF);
     presetBox.setTextWhenNothingSelected("Select Preset");
     presetBox.setColour(juce::ComboBox::backgroundColourId, VCColors::presetBoxBackground);
     presetBox.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);

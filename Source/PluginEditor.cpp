@@ -13,7 +13,6 @@
 VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalCompressorAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    setLookAndFeel(&vcLookAndFeel);
     addAndMakeVisible(headerPanel);
     addAndMakeVisible(panel1176);
     addAndMakeVisible(panelLA2A);
@@ -42,7 +41,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 
 VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
 {
-    setLookAndFeel(nullptr);
 }
 
 //==============================================================================
@@ -55,9 +53,8 @@ void VocalCompressorAudioProcessorEditor::resized()
 {
     const auto boundsF = getLocalBounds().toFloat();
     const auto boundsFHeight = boundsF.getHeight();
-    vcLookAndFeel.setUIScale(boundsF.getWidth() / static_cast<float>(guiWidth));
 
-    const auto headerHeight = boundsFHeight * static_cast<float>(guiHeightExtended - guiHeight) / static_cast<float>(guiHeightExtended);
+    const auto headerHeight = boundsFHeight * 0.07f;
     const auto unitPanelHeight = (boundsFHeight - headerHeight) * 0.5f;
 
     const auto headerBounds = boundsF.withHeight(headerHeight);

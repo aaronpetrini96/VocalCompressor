@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "../PluginProcessor.h"
+#include "../GUI/LAF/VCControlsLAF.h"
 
 class PresetManagerV2 : public juce::Component
 {
@@ -23,7 +24,8 @@ private:
     juce::File getPresetFolder();
     
     VocalCompressorAudioProcessor& audioProcessor;
-    
+
+    VCControlsLAF controlsLAF;
     juce::ComboBox presetBox;
     juce::TextButton savePresetButton {"SAVE"};
     

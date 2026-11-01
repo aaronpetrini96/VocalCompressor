@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "../../PluginProcessor.h"
 #include "../VCLook.h"
+#include "../LAF/VCControlsLAF.h"
 #include "../Components/ImageKnob.h"
 #include "../Components/RotaryImageKnob.h"
 #include "../Components/GainReductionMeter.h"
@@ -35,6 +36,7 @@ public:
         for (auto* ratioBtn : ratioButtons)
         {
             setupRatioButtons(ratioBtn);
+            ratioBtn->setLookAndFeel(&controlsLAF);
             addAndMakeVisible(*ratioBtn);
         }
         ratio4Btn.onClick = [this] { setRatioIndex(0); };
@@ -190,6 +192,7 @@ private:
                 mix1176Label {"MIX"};
 
 //    RATIO BUTTONS
+    VCControlsLAF controlsLAF;
     juce::TextButton ratio4Btn {"4"}, ratio8Btn {"8"}, ratio16Btn {"16"}, ratio20Btn {"20"}, ratioAllBtn {"ALL"};
     std::vector<juce::TextButton*> ratioButtons {&ratio4Btn, &ratio8Btn, &ratio16Btn, &ratio20Btn, &ratioAllBtn};
 

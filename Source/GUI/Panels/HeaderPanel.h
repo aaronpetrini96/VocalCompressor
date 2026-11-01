@@ -3,6 +3,7 @@
 #include "../../PluginProcessor.h"
 #include "../../Utilities/PresetManagerV2.h"
 #include "../VCLook.h"
+#include "../LAF/VCControlsLAF.h"
 #include "../Components/BypassButton.h"
 
 class HeaderPanel : public juce::Component
@@ -13,6 +14,7 @@ public:
       bypassPluginButton("", processor.apvts, ParamNames::getGeneralBypassName(), 20),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), reverseSignalOrderButton)
     {
+        reverseSignalOrderButton.setLookAndFeel(&controlsLAF);
         reverseSignalOrderButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
         reverseSignalOrderButton.setColour(juce::TextButton::buttonOnColourId, VCColors::buttonBackground);
         reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, VCColors::text);
@@ -68,6 +70,7 @@ private:
 
     const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw25x25_png, BinaryData::screw25x25_pngSize)};
 
+    VCControlsLAF controlsLAF;
     PresetManagerV2 presetManager;
     BypassButton bypassPluginButton;
     juce::TextButton reverseSignalOrderButton;

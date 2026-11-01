@@ -64,6 +64,10 @@ namespace VCLook
     inline constexpr float fontHeightPOH {0.625f};
     inline constexpr float popupTitleRowRatio {1.1f};
 
+    inline constexpr float buttonFontPOH {0.5f};
+    inline constexpr float comboBoxFontPOH {0.5f};
+    inline constexpr float comboBoxMenuItemPOH {0.66f};
+
     inline void setupLabel(juce::Label& label, float fontHeight = 16.f)
     {
         label.setText(label.getName(), juce::dontSendNotification);
