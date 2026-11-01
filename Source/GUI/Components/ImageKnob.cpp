@@ -52,5 +52,6 @@ ImageKnob::~ImageKnob()
 
 void ImageKnob::resized()
 {
+    slider.setBounds(getLocalBounds());
     valueLabel.setBounds(0, slider.getBottom() * 0.9, valueLabel.getWidth(), valueLabel.getHeight());
 }

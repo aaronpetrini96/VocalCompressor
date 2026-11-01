@@ -69,15 +69,18 @@ void PresetManagerV2::savePreset()
 
 void PresetManagerV2::resized()
 {
-    auto area = getLocalBounds().reduced(5);
-    auto height = area.getHeight();
-    auto width = area.getWidth();
-    
-    auto comboWidth = width * 0.2f;
-    presetBox.setBounds(width * 0.5 - comboWidth, area.getY(), comboWidth, height);
-    saveBtnY = area.getY();
-    saveBtnHeight = height;
-    savePresetButton.setBounds(width * 0.5 + 10, saveBtnY, comboWidth * 0.75, saveBtnHeight);
+    const auto boundsF = getLocalBounds().toFloat();
+    const auto boundsFWidth = boundsF.getWidth();
+    const auto boundsFHeight = boundsF.getHeight();
+
+    const auto area = boundsF.reduced(boundsFHeight * 0.1429f);
+    const auto areaCentreX = area.getWidth() * 0.5f;
+    const auto comboWidth = area.getWidth() * 0.2f;
+
+    presetBox.setBounds(area.withWidth(comboWidth).withRightX(areaCentreX).toNearestInt());
+    saveBtnY = juce::roundToInt(area.getY());
+    saveBtnHeight = juce::roundToInt(area.getHeight());
+    savePresetButton.setBounds(area.withWidth(comboWidth * 0.75f).withX(areaCentreX + boundsFWidth * 0.0167f).toNearestInt());
 }
 
 void PresetManagerV2::presetSelected()

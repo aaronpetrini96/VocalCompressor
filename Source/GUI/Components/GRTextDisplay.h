@@ -24,7 +24,7 @@ public:
     void paint(juce::Graphics& g) override
     {
         g.setColour(juce::Colours::white.withAlpha(0.9f));
-        g.setFont(juce::Font(juce::FontOptions("Basic Comical NC", 13.f, juce::Font::plain)));
+        g.setFont(juce::Font(juce::FontOptions("Basic Comical NC", getHeight() * 0.325f, juce::Font::plain)));
         g.drawText(juce::String(value, 1) + " dB", getLocalBounds(), juce::Justification::centred);
     }
     

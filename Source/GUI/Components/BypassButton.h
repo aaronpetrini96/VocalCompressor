@@ -34,6 +34,11 @@ public:
     }
     ~BypassButton() override = default;
 
+    void resized() override
+    {
+        button.setBounds(getLocalBounds());
+    }
+
 private:
     const juce::Image bypassBtnImg {juce::ImageCache::getFromMemory(BinaryData::Bypass_png, BinaryData::Bypass_pngSize)};
     juce::ImageButton button;
