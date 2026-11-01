@@ -8,7 +8,6 @@ namespace VCColors
     inline const juce::Colour separator {juce::Colour(245, 245, 245).withAlpha(0.5f)};
     inline const juce::Colour text {juce::Colour(255, 255, 255)};
     inline const juce::Colour displayText {juce::Colour(255, 255, 255).withAlpha(0.9f)};
-    inline const juce::Colour valueText {juce::Colour(255, 255, 255).darker(0.2f)};
 
     inline const juce::Colour buttonBackground {juce::Colour(100, 100, 110).darker(1.f)};
     inline const juce::Colour ratioButtonOff {juce::Colour(100, 100, 110).darker(0.5f)};
@@ -19,9 +18,6 @@ namespace VCColors
     inline const juce::Colour bypassOver {juce::Colour(255, 255, 255).withAlpha(0.8f)};
     inline const juce::Colour bypassOn {juce::Colour(255, 0, 0).withAlpha(0.7f)};
 
-    inline const juce::Colour knobTick {juce::Colour(255, 255, 255)};
-    inline const juce::Colour knobActiveTick {juce::Colour(255, 0, 0).withAlpha(0.9f)};
-    inline const juce::Colour missingImage {juce::Colour(255, 0, 0)};
     inline const juce::Colour ledOff {juce::Colour(100, 100, 110).darker(1.f)};
 
     inline const juce::Colour iconSVG {juce::Colour(255, 255, 255)};

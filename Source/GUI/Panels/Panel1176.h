@@ -60,8 +60,11 @@ public:
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
 
-        const auto knobBounds = boundsF.withSize(boundsFHeight * 0.728f, boundsFHeight * 0.728f);
-        const auto smallKnobBounds = boundsF.withSize(boundsFHeight * 0.364f, boundsFHeight * 0.364f);
+        const auto knobSize = boundsFHeight * 0.6f;
+        const auto smallKnobsSize = boundsFHeight *  0.25f;
+
+        const auto knobBounds = boundsF.withSize(knobSize, knobSize);
+        const auto smallKnobBounds = boundsF.withSize(smallKnobsSize, smallKnobsSize);
         const auto smallControlBounds = boundsF.withSize(boundsFHeight * 0.0971f, boundsFHeight * 0.0971f);
         const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.22f);
 
@@ -72,10 +75,10 @@ public:
 
         const auto labelsCY = boundsFHeight * 0.8825f;
 
-        input1176Dial.setBounds(knobBounds.withCentre({boundsFWidth * 0.1733f, boundsFHeight * 0.5112f}).toNearestInt());
-        input1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.1733f, labelsCY}).toNearestInt());
-        output1176Dial.setBounds(knobBounds.withCentre({boundsFWidth * 0.4716f, boundsFHeight * 0.5112f}).toNearestInt());
-        output1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.4716f, labelsCY}).toNearestInt());
+        input1176Dial.setBounds(knobBounds.withCentre({boundsFWidth * 0.2f, boundsF.getCentreY()}).toNearestInt());
+        input1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.2f, labelsCY}).toNearestInt());
+        output1176Dial.setBounds(knobBounds.withCentre(boundsF.getCentre()).toNearestInt());
+        output1176Label.setBounds(labelBounds.withCentre({boundsF.getCentreX(), labelsCY}).toNearestInt());
 
         mix1176Knob.setBounds(smallControlBounds.withCentre({boundsFWidth * 0.3225f, boundsFHeight * 0.7782f}).toNearestInt());
         mix1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.3225f, boundsFHeight * 0.8653f}).toNearestInt());
@@ -102,7 +105,8 @@ public:
         gr1176Label.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
         grTextDisplay1176.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.1778f}).toNearestInt());
 
-        bypassButton1176.setBounds(smallControlBounds.withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0485f).toNearestInt());
+        const auto bypassSize = boundsFHeight * 0.09f;
+        bypassButton1176.setBounds(knobBounds.withSize(bypassSize, bypassSize).withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0485f).toNearestInt());
     }
 
     void updateGainReduction()
@@ -149,15 +153,15 @@ private:
 //   IMAGE LOADING
     const juce::Image darkBackground {juce::ImageCache::getFromMemory(BinaryData::darkSilverBackground2_png, BinaryData::darkSilverBackground2_pngSize)};
     const juce::Image knobImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Base_png, BinaryData::knob1176Base_pngSize)};
-    const juce::Image knobPointerImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Rotor_png, BinaryData::knob1176Rotor_pngSize)};
-    const juce::Image slotScrewImage {juce::ImageCache::getFromMemory(BinaryData::small1176_png, BinaryData::small1176_pngSize)};
+    const juce::Image knobRotorImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Rotor_png, BinaryData::knob1176Rotor_pngSize)};
+    const juce::Image smallKnobImage1176 {juce::ImageCache::getFromMemory(BinaryData::small1176_png, BinaryData::small1176_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176InputName()), knobImage1176, knobPointerImage1176};
-    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176OutputName()), knobImage1176, knobPointerImage1176};
-    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176AttackName()), slotScrewImage};
-    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176ReleaseName()), slotScrewImage};
-    RotaryImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::get1176MixName()), slotScrewImage};
+    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176InputName()), knobImage1176, knobRotorImage1176};
+    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176OutputName()), knobImage1176, knobRotorImage1176};
+    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176AttackName()), smallKnobImage1176};
+    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176ReleaseName()), smallKnobImage1176};
+    RotaryImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::get1176MixName()), smallKnobImage1176};
 
 //    LABELS
     juce::Label input1176Label {"INPUT"}, output1176Label {"OUTPUT"},

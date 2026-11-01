@@ -54,19 +54,19 @@ public:
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
 
-        const auto knobBounds = boundsF.withSize(boundsFHeight * 0.728f, boundsFHeight * 0.728f);
-        const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.2184f);
+        const auto knobSize = boundsFHeight * 0.65f;
+        const auto knobBounds = boundsF.withSize(knobSize, knobSize);
+        const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.22f);
 
         for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel})
-            label->setFont(label->getFont().withHeight(boundsFHeight * 0.0777f));
+            label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
-            label->setFont(label->getFont().withHeight(boundsFHeight * 0.068f));
+            label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
 
-        const auto labelsCY = boundsFHeight * 0.8974f;
-
-        la2aGainDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.245f, boundsFHeight * 0.5334f}).toNearestInt());
+        const auto labelsCY = boundsFHeight * 0.9f;
+        la2aGainDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.245f, boundsF.getCentreY()}).toNearestInt());
         la2aGainLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.245f, labelsCY}).toNearestInt());
-        la2aPeakReductionDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.745f, boundsFHeight * 0.5334f}).toNearestInt());
+        la2aPeakReductionDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.745f, boundsF.getCentreY()}).toNearestInt());
         la2aPeakReductionLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.745f, labelsCY}).toNearestInt());
 
         const auto modeCX = boundsFWidth * 0.0417f;
@@ -81,7 +81,8 @@ public:
         grLA2ALabel.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
         grTextDisplayLA2A.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.2178f}).toNearestInt());
 
-        bypassButtonLA2A.setBounds(boundsF.withSize(boundsFHeight * 0.0971f, boundsFHeight * 0.0971f).withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0444f).toNearestInt());
+        const auto bypassSize = boundsFHeight * 0.09f;
+        bypassButtonLA2A.setBounds(boundsF.withSize(bypassSize, bypassSize).withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0444f).toNearestInt());
     }
 
     void updateGainReduction()
