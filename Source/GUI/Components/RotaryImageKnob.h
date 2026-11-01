@@ -8,9 +8,9 @@
 class RotaryImageKnob : public juce::Slider
 {
 public:
-    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& pointerImageToUse = {})
+    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {})
     : knobImage(knobImageToUse),
-      pointerImage(pointerImageToUse),
+      rotorImage(rotorImageToUse),
       attachment(parameter, *this)
     {
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
@@ -33,20 +33,20 @@ public:
         const auto angle = rotaryParameters.startAngleRadians + sliderPos * (rotaryParameters.endAngleRadians - rotaryParameters.startAngleRadians);
 
         g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
-        const auto hasPointer = pointerImage.isValid();
+        const auto hasRotor = rotorImage.isValid();
 
-        if (hasPointer)
+        if (hasRotor)
             g.drawImage(knobImage, knobBounds, juce::RectanglePlacement::centred);
 
         juce::Graphics::ScopedSaveState state(g);
         g.addTransform(juce::AffineTransform::rotation(angle, centre.x, centre.y));
-        g.drawImage(hasPointer ? pointerImage : knobImage, knobBounds, juce::RectanglePlacement::centred);
+        g.drawImage(hasRotor ? rotorImage : knobImage, knobBounds, juce::RectanglePlacement::centred);
     }
 
 private:
     const float pi = juce::MathConstants<float>::pi;
     juce::Image knobImage;
-    juce::Image pointerImage;
+    juce::Image rotorImage;
     juce::SliderParameterAttachment attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RotaryImageKnob)
