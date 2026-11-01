@@ -57,27 +57,21 @@ juce_add_plugin(VocalCompressor
     AU_MAIN_TYPE kAudioUnitType_Effect
 )
 
-target_sources(VocalCompressor PRIVATE
-    Source/PluginProcessor.cpp
-    Source/PluginEditor.cpp
-    Source/DSP/1176Compressor.cpp
-    Source/DSP/LA2ACompressor.cpp
-    Source/GUI/Components/ImageKnob.cpp
-    Source/Utilities/PresetManagerV2.cpp
-)
+# Auto-add: any .cpp/.h under Source/ and any file under Source/Assets/ is picked up on the next build
+file(GLOB_RECURSE VOCALCOMPRESSOR_SOURCE_FILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h")
+file(GLOB_RECURSE VOCALCOMPRESSOR_ASSET_FILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/Source/Assets/*")
+list(FILTER VOCALCOMPRESSOR_ASSET_FILES EXCLUDE REGEX "/\\.DS_Store$")
+
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/Source" PREFIX "Source"
+    FILES ${VOCALCOMPRESSOR_SOURCE_FILES} ${VOCALCOMPRESSOR_ASSET_FILES})
+
+target_sources(VocalCompressor PRIVATE ${VOCALCOMPRESSOR_SOURCE_FILES})
 
 # Images are embedded in the plugin (BinaryData::name_png)
-juce_add_binary_data(VocalCompressorAssets SOURCES
-        Source/Assets/Images/Bypass.png
-        Source/Assets/Images/clearSilverBackground.png
-        Source/Assets/Images/darkSilverBackground.png
-        Source/Assets/Images/screw25x25.png
-        Source/Assets/Images/slotScrew256.png
-        Source/Assets/Images/spriteSheet1176.png
-        Source/Assets/Images/spriteSheetLa2a.png
-        Source/Assets/Images/switchDOWN.png
-        Source/Assets/Images/switchUP.png
-)
+juce_add_binary_data(VocalCompressorAssets SOURCES ${VOCALCOMPRESSOR_ASSET_FILES})
 
 target_include_directories(VocalCompressor PRIVATE Source)
 
