@@ -35,10 +35,11 @@ public:
 
         g.fillAll(VCColors::background);
 
-        const auto screwSize = boundsFWidth * 0.0417f;
-        const auto screwBounds = boundsF.withSize(screwSize, screwSize).withCentre({screwSize * 0.5f, boundsF.getCentreY()});
-        g.drawImage(screwImage, screwBounds, juce::RectanglePlacement::centred);
-        g.drawImage(screwImage, screwBounds.withRightX(boundsFWidth), juce::RectanglePlacement::centred);
+        const auto screwSize = boundsF.getHeight() * 0.6f;
+        const auto screwGap = screwSize * 0.5f;
+        const auto screwBounds = boundsF.withSizeKeepingCentre(screwSize, screwSize);
+        g.drawImage(screwImage, screwBounds.withX(screwGap), juce::RectanglePlacement::stretchToFit);
+        g.drawImage(screwImage, screwBounds.withRightX(boundsFWidth - screwGap), juce::RectanglePlacement::stretchToFit);
     }
 
     void resized() override
@@ -68,7 +69,7 @@ private:
                                                                                          : "FET-76 -> OPT-2A");
     }
 
-    const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw25x25_png, BinaryData::screw25x25_pngSize)};
+    const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw_png, BinaryData::screw_pngSize)};
 
     VCControlsLAF controlsLAF;
     PresetManagerV2 presetManager;
