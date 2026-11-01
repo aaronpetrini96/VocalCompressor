@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include "../VCLook.h"
 
 class ImageKnobLookAndFeel : public juce::LookAndFeel_V4
 {
@@ -16,7 +17,7 @@ public:
 {
     if (!knobImage.isValid())
     {
-        g.setColour(juce::Colours::red);
+        g.setColour(VCColors::missingImage);
         g.drawFittedText("No Image", x, y, width, height, juce::Justification::centred, 1);
         return;
     }
@@ -42,7 +43,7 @@ public:
     const float tickLength = usableRadius * 0.1f;      // 10% of radius
     const float tickThickness = juce::jmax(1.0f, usableRadius * 0.02f);
     const float tickMargin = usableRadius * 0.08f;    // space between knob and ticks
-    const juce::Colour tickColor = juce::Colours::white;
+    const juce::Colour tickColor = VCColors::knobTick;
 
     // === Arc radius for ticks ===
     const float tickRadius = usableRadius;
@@ -67,7 +68,7 @@ public:
     juce::Point<float> innerActive = center.getPointOnCircumference(tickRadius - tickLength, activeAngle);
     juce::Point<float> outerActive = center.getPointOnCircumference(tickRadius, activeAngle);
 //    g.setColour(juce::Colour::fromRGB(200, 30, 100).withAlpha(0.8f));
-    g.setColour(juce::Colours::red.withAlpha(0.9f));
+    g.setColour(VCColors::knobActiveTick);
     g.drawLine({innerActive, outerActive}, tickThickness + 1.0f);
     g.restoreState();
 

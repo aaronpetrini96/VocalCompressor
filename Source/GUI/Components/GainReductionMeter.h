@@ -1,5 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
+#include "../VCLook.h"
 
 class GainReductionMeter : public juce::Component
 {
@@ -40,7 +41,7 @@ public:
                       + (ledSpacing - ledHeight) * 0.5f;
 
 //            juce::Colour ledColour = juce::Colours::darkgrey;
-            juce::Colour ledColour = juce::Colour(100, 100, 110).darker(1.f);
+            juce::Colour ledColour = VCColors::ledOff;
 
             if (i < numLit)
             {

@@ -160,11 +160,11 @@ private:
     {
         ratioBtn->setRadioGroupId(1515);
         ratioBtn->setClickingTogglesState(true);
-        ratioBtn->setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colour(100, 100, 110).darker(0.5f));
-        ratioBtn->setColour(juce::TextButton::ColourIds::buttonOnColourId, juce::Colours::red.withAlpha(0.7f).darker(0.15f));
+        ratioBtn->setColour(juce::TextButton::ColourIds::buttonColourId, VCColors::ratioButtonOff);
+        ratioBtn->setColour(juce::TextButton::ColourIds::buttonOnColourId, VCColors::ratioButtonOn);
         ratioBtn->setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
-        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
-        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
+        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOnId, VCColors::text);
+        ratioBtn->setColour(juce::TextButton::ColourIds::textColourOffId, VCColors::text);
     }
 
     VocalCompressorAudioProcessor& audioProcessor;

@@ -10,6 +10,7 @@
 
 #pragma once
 #include <JuceHeader.h>
+#include "../VCLook.h"
 
 //==============================================================================
 /*
@@ -24,9 +25,9 @@ public:
             return;
         button.setClickingTogglesState(true);
         button.setImages(false, true, true,
-                         bypassBtnImg, 0.8f, juce::Colours::white,
-                         bypassBtnImg, 0.8f, juce::Colours::white.withAlpha(0.8f),
-                         bypassBtnImg, 0.8f, juce::Colours::red.withAlpha(0.7f),
+                         bypassBtnImg, 0.8f, VCColors::bypassNormal,
+                         bypassBtnImg, 0.8f, VCColors::bypassOver,
+                         bypassBtnImg, 0.8f, VCColors::bypassOn,
                                0.f);
 
         button.setBounds(0, 0, size, size);

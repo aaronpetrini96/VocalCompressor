@@ -2,6 +2,7 @@
 #include <JuceHeader.h>
 #include "../../PluginProcessor.h"
 #include "../../Utilities/PresetManagerV2.h"
+#include "../VCLook.h"
 #include "../Components/BypassButton.h"
 
 class HeaderPanel : public juce::Component
@@ -12,9 +13,9 @@ public:
       bypassPluginButton("", processor.apvts, ParamNames::getGeneralBypassName(), 20),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), reverseSignalOrderButton)
     {
-        reverseSignalOrderButton.setColour(juce::TextButton::buttonColourId, buttonColour);
-        reverseSignalOrderButton.setColour(juce::TextButton::buttonOnColourId, buttonColour);
-        reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+        reverseSignalOrderButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
+        reverseSignalOrderButton.setColour(juce::TextButton::buttonOnColourId, VCColors::buttonBackground);
+        reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, VCColors::text);
         reverseSignalOrderButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
         reverseSignalOrderButton.setClickingTogglesState(true);
         reverseSignalOrderButton.onStateChange = [this] { updateReverseSignalButtonText(); };
@@ -30,7 +31,7 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto boundsFWidth = boundsF.getWidth();
 
-        g.fillAll(juce::Colour(41, 42, 48).darker(1.f));
+        g.fillAll(VCColors::background);
 
         const auto screwSize = boundsFWidth * 0.0417f;
         const auto screwBounds = boundsF.withSize(screwSize, screwSize).withCentre({screwSize * 0.5f, boundsF.getCentreY()});
@@ -65,7 +66,6 @@ private:
                                                                                          : "FET-76 -> OPT-2A");
     }
 
-    const juce::Colour buttonColour {juce::Colour(100, 100, 110).darker(1.f)};
     const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw25x25_png, BinaryData::screw25x25_pngSize)};
 
     PresetManagerV2 presetManager;

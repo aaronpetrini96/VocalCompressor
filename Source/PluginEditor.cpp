@@ -34,7 +34,7 @@ VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
 //==============================================================================
 void VocalCompressorAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(41, 42, 48).darker(1));
+    g.fillAll(VCColors::background);
 }
 
 void VocalCompressorAudioProcessorEditor::resized()

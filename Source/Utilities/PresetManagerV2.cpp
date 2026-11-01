@@ -9,12 +9,13 @@
 */
 
 #include "PresetManagerV2.h"
+#include "../GUI/VCLook.h"
 
 PresetManagerV2::PresetManagerV2(VocalCompressorAudioProcessor& processor) : audioProcessor(processor)
 {
 //    ComboBox
     presetBox.setTextWhenNothingSelected("Select Preset");
-    presetBox.setColour(juce::ComboBox::backgroundColourId, juce::Colours::darkgrey.darker(0.5f));
+    presetBox.setColour(juce::ComboBox::backgroundColourId, VCColors::presetBoxBackground);
     presetBox.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
     
     presetBox.onChange = [this] {presetSelected();};
@@ -136,7 +137,7 @@ void PresetManagerV2::applyPresetSelection(const juce::String& presetName)
 void PresetManagerV2::setButtonStyle()
 {
     savePresetButton.setClickingTogglesState(false);
-    savePresetButton.setColour(juce::TextButton::buttonColourId, juce::Colour(100, 100, 110).darker(1.f));
-    savePresetButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+    savePresetButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
+    savePresetButton.setColour(juce::TextButton::textColourOffId, VCColors::text);
     savePresetButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
 }

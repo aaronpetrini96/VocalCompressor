@@ -35,7 +35,7 @@ ImageKnob::ImageKnob (const juce::String& sliderName, juce::AudioProcessorValueT
 
     // Value label
     valueLabel.setJustificationType(juce::Justification::centred);
-    valueLabel.setColour(juce::Label::textColourId, juce::Colours::white.darker(0.2f));
+    valueLabel.setColour(juce::Label::textColourId, VCColors::valueText);
     valueLabel.setSize(size, 30);
     if(drawLabel)
         addAndMakeVisible(valueLabel);
