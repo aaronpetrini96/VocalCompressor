@@ -51,7 +51,7 @@ public:
         g.fillRect (titleBounds.withTop (titleBounds.getBottom() - titleDividerThickness));
 
         g.setColour (VCColors::popupText.withBrightness (2.f));
-        g.setFont (VCFonts::montserratSemiBold (titleBounds.getHeight() * VCLook::fontHeightPOH));
+        g.setFont (VCFonts::barlowCondensedSemiBold (titleBounds.getHeight() * VCLook::fontHeightPOH));
         g.drawText (title, titleBounds, juce::Justification::centred, true);
     }
 

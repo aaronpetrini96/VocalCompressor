@@ -39,26 +39,37 @@ namespace VCColors
 
 namespace VCFonts
 {
-    inline juce::Font montserratMedium(const float fontHeight)
+    inline juce::Font barlowCondensedRegular(const float fontHeight)
     {
         static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
-            BinaryData::MontserratMedium_ttf, BinaryData::MontserratMedium_ttfSize);
+            BinaryData::BarlowCondensedRegular_ttf, BinaryData::BarlowCondensedRegular_ttfSize);
         return AAUITools::makeFont(typeface, fontHeight);
     }
 
-    inline juce::Font montserratSemiBold(const float fontHeight)
+    inline juce::Font barlowCondensedMedium(const float fontHeight)
     {
         static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
-            BinaryData::MontserratSemiBold_ttf, BinaryData::MontserratSemiBold_ttfSize);
+            BinaryData::BarlowCondensedMedium_ttf, BinaryData::BarlowCondensedMedium_ttfSize);
+        return AAUITools::makeFont(typeface, fontHeight);
+    }
+
+    inline juce::Font barlowCondensedSemiBold(const float fontHeight)
+    {
+        static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
+            BinaryData::BarlowCondensedSemiBold_ttf, BinaryData::BarlowCondensedSemiBold_ttfSize);
+        return AAUITools::makeFont(typeface, fontHeight);
+    }
+
+    inline juce::Font barlowCondensedSemiBoldItalic(const float fontHeight)
+    {
+        static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
+            BinaryData::BarlowCondensedSemiBoldItalic_ttf, BinaryData::BarlowCondensedSemiBoldItalic_ttfSize);
         return AAUITools::makeFont(typeface, fontHeight);
     }
 }
 
 namespace VCLook
 {
-    inline const juce::String labelFont {"Basic Comical NC"};
-    inline const juce::String titleFont {"Barber Chop"};
-
     inline constexpr float popupCornerPOH {0.0f};
     inline constexpr float outlineThicknessPOH {0.06f};
     inline constexpr float fontHeightPOH {0.625f};
@@ -68,10 +79,9 @@ namespace VCLook
     inline constexpr float comboBoxFontPOH {0.5f};
     inline constexpr float comboBoxMenuItemPOH {0.66f};
 
-    inline void setupLabel(juce::Label& label, float fontHeight = 16.f)
+    inline void setupLabel(juce::Label& label)
     {
         label.setText(label.getName(), juce::dontSendNotification);
-        label.setFont(juce::Font(juce::FontOptions(labelFont, fontHeight, juce::Font::FontStyleFlags::plain)));
         label.setColour(juce::Label::ColourIds::textColourId, VCColors::text);
         label.setJustificationType(juce::Justification::centred);
     }
@@ -86,7 +96,7 @@ namespace VCLook
         g.fillRect(boundsF.withHeight(lineThickness));
 
         g.setColour(VCColors::text);
-        g.setFont(juce::Font(juce::FontOptions(titleFont, boundsFWidth * 0.0333f, juce::Font::FontStyleFlags::italic)));
+        g.setFont(VCFonts::barlowCondensedSemiBoldItalic(boundsFWidth * 0.0333f));
         g.drawText(title, boundsF.withTrimmedTop(boundsFHeight * 0.0444f), juce::Justification::centredTop);
     }
 }

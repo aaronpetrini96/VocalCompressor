@@ -28,15 +28,10 @@ public:
         la2aModeButton.onStateChange = [this] { updateModeLabels(); };
         addAndMakeVisible(la2aModeButton);
 
-        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel})
+        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel})
         {
             VCLook::setupLabel(*label);
             addAndMakeVisible(*label);
-        }
-        for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
-        {
-            VCLook::setupLabel(*label, 14.f);
-            addChildComponent(*label);
         }
         updateModeLabels();
 

@@ -27,7 +27,7 @@ public:
         g.setColour (textColour);
         if (!button.isEnabled())
             g.setColour (textColour.withAlpha (0.3f));
-        g.setFont (VCFonts::montserratMedium (boundsF.getHeight() * VCLook::fontHeightPOH));
+        g.setFont (VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH));
         const auto textBounds = leftAlignText ? boundsF.withLeft (boundsF.getHeight() * 0.45f) : boundsF;
         g.drawText (button.getButtonText(), textBounds, leftAlignText ? juce::Justification::centredLeft : juce::Justification::centred, true);
     }
@@ -60,7 +60,7 @@ public:
         }
 
         g.setColour (VCColors::popupText);
-        g.setFont (VCFonts::montserratMedium (boundsFHeight * VCLook::fontHeightPOH));
+        g.setFont (VCFonts::barlowCondensedMedium (boundsFHeight * VCLook::fontHeightPOH));
         g.drawText (button.getButtonText(), boundsF.withLeft (boundsFHeight * 0.45f).withRight (tickBoxBounds.getX()), juce::Justification::centredLeft, true);
     }
 

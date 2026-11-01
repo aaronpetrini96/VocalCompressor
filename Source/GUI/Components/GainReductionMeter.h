@@ -40,7 +40,6 @@ public:
                       - (i + 1) * ledSpacing
                       + (ledSpacing - ledHeight) * 0.5f;
 
-//            juce::Colour ledColour = juce::Colours::darkgrey;
             juce::Colour ledColour = VCColors::ledOff;
 
             if (i < numLit)

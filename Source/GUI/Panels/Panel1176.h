@@ -21,14 +21,9 @@ public:
         addAndMakeVisible(mix1176Knob);
         mix1176Knob.setAlwaysOnTop(true);
 
-        for (auto* label : {&input1176Label, &output1176Label, &ratioLabel, &gr1176Label})
+        for (auto* label : {&input1176Label, &output1176Label, &ratioLabel, &gr1176Label, &attack1176Label, &release1176Label, &mix1176Label})
         {
             VCLook::setupLabel(*label);
-            addAndMakeVisible(*label);
-        }
-        for (auto* label : {&attack1176Label, &release1176Label, &mix1176Label})
-        {
-            VCLook::setupLabel(*label, 14.f);
             addAndMakeVisible(*label);
         }
 
@@ -68,12 +63,12 @@ public:
         const auto knobBounds = boundsF.withSize(boundsFHeight * 0.728f, boundsFHeight * 0.728f);
         const auto smallKnobBounds = boundsF.withSize(boundsFHeight * 0.364f, boundsFHeight * 0.364f);
         const auto smallControlBounds = boundsF.withSize(boundsFHeight * 0.0971f, boundsFHeight * 0.0971f);
-        const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.2184f);
+        const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.22f);
 
         for (auto* label : {&input1176Label, &output1176Label, &ratioLabel, &gr1176Label})
-            label->setFont(label->getFont().withHeight(boundsFHeight * 0.0777f));
+            label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&attack1176Label, &release1176Label, &mix1176Label})
-            label->setFont(label->getFont().withHeight(boundsFHeight * 0.068f));
+            label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.075f));
 
         const auto labelsCY = boundsFHeight * 0.8825f;
 
