@@ -35,6 +35,31 @@ namespace AAUITools
         g.drawRoundedRectangle (bounds.reduced (outlineThickness * 0.5f), cornerSize, outlineThickness);
     }
 
+    inline void drawKnobScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
+                               const int numberOfDots, const float dotSize, const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
+    {
+        const auto centre = knobBounds.getCentre();
+        const auto fontHeight = font.getHeight();
+        const auto dotRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + dotSize * 1.5f;
+        const auto labelRadius = dotRadius + dotSize * 0.5f + fontHeight * 0.6f;
+
+        g.setColour (colour);
+        g.setFont (font);
+
+        for (int dotIndex = 0; dotIndex < numberOfDots; ++dotIndex)
+        {
+            const auto angle = juce::jmap (static_cast<float> (dotIndex), 0.0f, static_cast<float> (numberOfDots - 1), startAngle, endAngle);
+            g.fillEllipse (juce::Rectangle<float> (dotSize, dotSize).withCentre (centre.getPointOnCircumference (dotRadius, angle)));
+        }
+
+        for (int labelIndex = 0; labelIndex < labels.size(); ++labelIndex)
+        {
+            const auto angle = juce::jmap (static_cast<float> (labelIndex), 0.0f, static_cast<float> (labels.size() - 1), startAngle, endAngle);
+            const auto labelBounds = juce::Rectangle<float> (fontHeight * 2.0f, fontHeight).withCentre (centre.getPointOnCircumference (labelRadius, angle));
+            g.drawText (labels[labelIndex], labelBounds, juce::Justification::centred, false);
+        }
+    }
+
     class PrintedText : public juce::Component
     {
     public:
