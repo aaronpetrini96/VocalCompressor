@@ -14,6 +14,8 @@
 #include "GUI/Panels/Panel1176.h"
 #include "GUI/Panels/PanelLA2A.h"
 #include "GUI/PopupPanels/UISizeOptionsPanel.h"
+#include "GUI/PopupPanels/AAPresetBrowser.h"
+#include "GUI/PopupPanels/AAPresetPopups.h"
 #include "Utilities/AAUITools.h"
 
 //==============================================================================
@@ -37,6 +39,9 @@ private:
     VocalCompressorAudioProcessor& audioProcessor;
     void showUISizeOptions();
     void showPopup (juce::Component& popup);
+    void showPresetBrowser();
+    void showPresetPopup (AAPresetPopup::Action action, const juce::String& presetName);
+    void updatePresetPopupBounds();
     void updateEditorSize();
 
     //  EDITOR CONSTANTS
@@ -52,6 +57,10 @@ private:
     AAResizeUI uiResize {uiScale, guiWidth, guiHeight};
     UISizeOptionsPanel resizeOptionsPopup {uiResize};
     juce::DrawableButton resizeButton {"UI Size", juce::DrawableButton::ImageFitted};
+
+    AAPresetBrowser presetBrowser {audioProcessor.presetManager};
+    AAPresetPopup presetPopup;
+    juce::File presetFileToEdit;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalCompressorAudioProcessorEditor)
 };

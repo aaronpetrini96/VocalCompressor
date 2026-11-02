@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include <vector>
 #include "Utilities/ParamNames.h"
+#include "Utilities/PresetManager.h"
 #include "DSP/1176Compressor.h"
 #include "DSP/LA2ACompressor.h"
 
@@ -51,17 +52,14 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
-    //======================= PRESET MANAGER FUNCTIONS =======================
-    void savePreset(const juce::File& file);
-    void loadPreset(const juce::File& file);
-    void setCurrentPresetName(const juce::String& name) {currentPresetName = name;}
-    juce::String getCurrentPresetName() const {return currentPresetName;}
-    juce::String currentPresetName {""};
-    
     //======================= PARAMETER LAYOUT =======================
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
-    
+
+    //======================= PRESETS =======================
+    juce::UndoManager undoManager;
+    PresetManager presetManager {apvts, undoManager};
+
 
     
     

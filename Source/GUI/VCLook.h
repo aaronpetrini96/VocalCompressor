@@ -12,6 +12,7 @@ namespace VCColors
     inline const juce::Colour ratioButtonOff {juce::Colour(100, 100, 110).darker(0.5f)};
     inline const juce::Colour ratioButtonOn {juce::Colour(255, 0, 0).withAlpha(0.7f).darker(0.15f)};
     inline const juce::Colour presetBoxBackground {juce::Colour(85, 85, 85).darker(0.5f)};
+    inline const juce::Colour presetBoxOutline {juce::Colour(40, 50, 70)};
 
     inline const juce::Colour bypassOver {juce::Colour(255, 255, 255).withAlpha(0.8f)};
     inline const juce::Colour bypassOn {juce::Colour(255, 0, 0).withAlpha(0.7f)};
@@ -27,6 +28,7 @@ namespace VCColors
     inline const juce::Colour popupText {juce::Colour(215, 215, 215)};
     inline const juce::Colour popupRowHighlight {juce::Colour(35, 42, 60)};
     inline const juce::Colour popupIconSVG {juce::Colour(100, 100, 100)};
+    inline const juce::Colour popupSelectedText {juce::Colour(64, 196, 255)};
 }
 
 namespace VCFonts
@@ -66,6 +68,7 @@ namespace VCLook
     inline constexpr float outlineThicknessPOH {0.06f};
     inline constexpr float fontHeightPOH {0.8f};
     inline constexpr float popupTitleRowRatio {1.1f};
+    inline constexpr int presetNameMaxLength {40};
 
     inline constexpr float buttonFontPOH {0.5f};
     inline constexpr float comboBoxFontPOH {0.5f};

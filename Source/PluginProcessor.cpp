@@ -23,6 +23,8 @@ VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
 #endif
 {
     linkParameters();
+    PresetManager::installFactoryPresets();
+    presetManager.loadDefaultPreset();
 }
 
 
@@ -334,7 +336,9 @@ juce::AudioProcessorEditor* VocalCompressorAudioProcessor::createEditor()
 void VocalCompressorAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = apvts.copyState();
-    
+    state.setProperty("CurrentPresetName", presetManager.getCurrentPresetName(), nullptr);
+    state.setProperty("PresetModified", presetManager.isPresetModified(), nullptr);
+
     std::unique_ptr<juce::XmlElement> xml(state.createXml());
     copyXmlToBinary(*xml, destData);
 }
@@ -346,26 +350,11 @@ void VocalCompressorAudioProcessor::setStateInformation (const void* data, int s
     if (xml && xml->hasTagName(apvts.state.getType()))
     {
         juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        const auto restoredPresetName = state.getProperty("CurrentPresetName").toString();
+        const auto restoredPresetModified = static_cast<bool>(state.getProperty("PresetModified", false));
         apvts.replaceState(state);
-    }
-}
-
-void VocalCompressorAudioProcessor::savePreset(const juce::File& file)
-{
-    auto state = apvts.copyState();
-    std::unique_ptr<juce::XmlElement> xml (state.createXml());
-    if (xml) { xml->writeTo(file);}
-}
-
-void VocalCompressorAudioProcessor::loadPreset(const juce::File& file)
-{
-    std::unique_ptr<juce::XmlElement> xml (juce::XmlDocument::parse(file));
-    if (xml && xml->hasTagName(apvts.state.getType()))
-    {
-        juce::ValueTree state = juce::ValueTree::fromXml(*xml);
-        if (auto* presetNameProp = state.getPropertyPointer("CurrentPresetName"))
-            currentPresetName = presetNameProp->toString(); // restore preset name
-        apvts.replaceState(state);
+        presetManager.setCurrentPresetName(restoredPresetName);
+        presetManager.setPresetModified(restoredPresetModified);
     }
 }
 

@@ -32,6 +32,50 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
         uiResize.makeCurrentSizeDefault();
     };
 
+    addChildComponent(presetBrowser);
+    addChildComponent(presetPopup);
+
+    headerPanel.onPresetNameClicked = [this] { showPresetBrowser(); };
+    headerPanel.onSaveClicked = [this]
+    {
+        showPresetPopup(AAPresetPopup::Action::save, audioProcessor.presetManager.getCurrentPresetName());
+    };
+
+    presetBrowser.onRowsChanged = [this] { updatePresetPopupBounds(); };
+    presetBrowser.onRenameRequested = [this] (const juce::File& presetFile)
+    {
+        presetFileToEdit = presetFile;
+        showPresetPopup(AAPresetPopup::Action::rename, presetFile.getFileNameWithoutExtension());
+    };
+    presetBrowser.onDeleteRequested = [this] (const juce::File& presetFile)
+    {
+        presetFileToEdit = presetFile;
+        showPresetPopup(AAPresetPopup::Action::remove, presetFile.getFileNameWithoutExtension());
+    };
+
+    presetPopup.presetExists = [this] (const juce::String& presetName)
+    {
+        return audioProcessor.presetManager.getUserPresetFile(presetName).existsAsFile();
+    };
+    presetPopup.isNameReserved = [this] (const juce::String& presetName)
+    {
+        return audioProcessor.presetManager.isFactoryPresetName(presetName);
+    };
+    presetPopup.onConfirm = [this] (AAPresetPopup::Action action, const juce::String& presetName)
+    {
+        auto& presetManager = audioProcessor.presetManager;
+
+        if (action == AAPresetPopup::Action::save)
+            presetManager.savePreset(presetName);
+        else if (action == AAPresetPopup::Action::rename)
+            presetManager.renamePreset(presetFileToEdit, presetName);
+        else
+            presetManager.deletePreset(presetFileToEdit);
+
+        presetPopup.setVisible(false);
+        presetBrowser.refresh();
+    };
+
     addMouseListener(this, true);
 
     setResizable(false, false);
@@ -78,6 +122,8 @@ void VocalCompressorAudioProcessorEditor::resized()
                                      .withRightX(resizeBtnBounds.getRight())
                                      .withBottomY(resizeBtnBounds.getCentreY())
                                      .toNearestInt());
+
+    updatePresetPopupBounds();
 }
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
@@ -107,6 +153,7 @@ void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
     };
 
     hidePopupUnlessClickedIn(resizeOptionsPopup, resizeButton);
+    hidePopupUnlessClickedIn(presetBrowser, headerPanel.getPresetBox());
 }
 
 void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Component& component)
@@ -137,4 +184,38 @@ void VocalCompressorAudioProcessorEditor::showPopup(juce::Component& popup)
     resized();
     popup.toFront(false);
     popup.setVisible(true);
+}
+
+void VocalCompressorAudioProcessorEditor::showPresetBrowser()
+{
+    if (presetBrowser.isVisible())
+    {
+        presetBrowser.setVisible(false);
+        return;
+    }
+    presetPopup.setVisible(false);
+    resizeOptionsPopup.setVisible(false);
+    presetBrowser.refresh();
+    showPopup(presetBrowser);
+}
+
+void VocalCompressorAudioProcessorEditor::showPresetPopup(AAPresetPopup::Action action, const juce::String& presetName)
+{
+    presetBrowser.setVisible(false);
+    resizeOptionsPopup.setVisible(false);
+    showPopup(presetPopup);
+    presetPopup.prepare(action, presetName);
+}
+
+void VocalCompressorAudioProcessorEditor::updatePresetPopupBounds()
+{
+    const auto boundsF = getLocalBounds().toFloat();
+    const auto rowHeight = boundsF.getHeight() * 0.07f * 0.6f;
+
+    auto& presetBox = headerPanel.getPresetBox();
+    const auto presetBoxBounds = getLocalArea(&presetBox, presetBox.getLocalBounds()).toFloat();
+    const auto browserHeight = juce::jmin(rowHeight * presetBrowser.getNumRows(), boundsF.getHeight() - presetBoxBounds.getBottom());
+    presetBrowser.setBounds(presetBoxBounds.withY(presetBoxBounds.getBottom()).withHeight(browserHeight).toNearestInt());
+
+    presetPopup.setBounds(boundsF.withSizeKeepingCentre(boundsF.getWidth() * 0.42f, boundsF.getHeight() * 0.28f).toNearestInt());
 }

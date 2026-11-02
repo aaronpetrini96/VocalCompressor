@@ -1,16 +1,17 @@
 #pragma once
 #include <JuceHeader.h>
 #include "../../PluginProcessor.h"
-#include "../../Utilities/PresetManagerV2.h"
 #include "../VCLook.h"
 #include "../LAF/VCControlsLAF.h"
 #include "../Components/BypassButton.h"
+#include "../Components/AAPresetBox.h"
 
-class HeaderPanel : public juce::Component
+class HeaderPanel : public juce::Component, private juce::ChangeListener
 {
 public:
     explicit HeaderPanel(VocalCompressorAudioProcessor& processor)
-    : presetManager(processor),
+    : presetManager(processor.presetManager),
+      presetBox(processor.presetManager),
       bypassPluginButton("", processor.apvts, ParamNames::getGeneralBypassName(), 20),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), reverseSignalOrderButton)
     {
@@ -23,9 +24,24 @@ public:
         reverseSignalOrderButton.onStateChange = [this] { updateReverseSignalButtonText(); };
         updateReverseSignalButtonText();
 
-        addAndMakeVisible(presetManager);
+        presetBox.onNameClicked = [this] { if (onPresetNameClicked != nullptr) onPresetNameClicked(); };
+
+        AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize,
+                                       VCColors::popupIconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
+        saveButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
+
+        presetManager.addChangeListener(this);
+        updatePresetName();
+
+        addAndMakeVisible(presetBox);
+        addAndMakeVisible(saveButton);
         addAndMakeVisible(bypassPluginButton);
         addAndMakeVisible(reverseSignalOrderButton);
+    }
+
+    ~HeaderPanel() override
+    {
+        presetManager.removeChangeListener(this);
     }
 
     void paint(juce::Graphics& g) override
@@ -48,21 +64,51 @@ public:
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
 
-        presetManager.setBounds(getLocalBounds());
-
         const auto bypassSize = boundsFWidth * 0.0333f;
         bypassPluginButton.setBounds(boundsF.withSize(bypassSize, bypassSize)
                                             .withPosition(boundsFWidth * 0.14f, boundsFHeight * 0.2f)
                                             .toNearestInt());
 
+        const auto controlY = boundsFHeight * 0.1429f;
+        const auto controlHeight = boundsFHeight * 0.7142f;
+
+        const auto presetBoxBounds = boundsF.withX(boundsFWidth * 0.22f)
+                                            .withWidth(boundsFWidth * 0.32f)
+                                            .withY(controlY)
+                                            .withHeight(controlHeight);
+        presetBox.setBounds(presetBoxBounds.toNearestInt());
+
+        const auto saveButtonSize = controlHeight * 0.8f;
+        saveButton.setBounds(juce::Rectangle<float>(saveButtonSize, saveButtonSize)
+                                 .withX(presetBoxBounds.getRight() + saveButtonSize * 0.3f)
+                                 .withCentre({presetBoxBounds.getRight() + saveButtonSize * 0.8f, presetBoxBounds.getCentreY()})
+                                 .toNearestInt());
+
         reverseSignalOrderButton.setBounds(boundsF.withX(boundsFWidth * 0.7085f)
                                                   .withWidth(boundsFWidth * 0.2083f)
-                                                  .withY(static_cast<float>(presetManager.saveBtnY))
-                                                  .withHeight(static_cast<float>(presetManager.saveBtnHeight))
+                                                  .withY(controlY)
+                                                  .withHeight(controlHeight)
                                                   .toNearestInt());
     }
 
+    AAPresetBox& getPresetBox() { return presetBox; }
+
+    std::function<void()> onPresetNameClicked;
+    std::function<void()> onSaveClicked;
+
 private:
+    void changeListenerCallback(juce::ChangeBroadcaster*) override
+    {
+        updatePresetName();
+    }
+
+    void updatePresetName()
+    {
+        const auto presetName = presetManager.getCurrentPresetName();
+        const auto displayName = presetName.isEmpty() ? juce::String("Untitled") : presetName;
+        presetBox.setPresetName(presetManager.isPresetModified() ? displayName + "*" : displayName);
+    }
+
     void updateReverseSignalButtonText()
     {
         reverseSignalOrderButton.setButtonText(reverseSignalOrderButton.getToggleState() ? "OPT-2A -> FET-76"
@@ -72,7 +118,9 @@ private:
     const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw_png, BinaryData::screw_pngSize)};
 
     VCControlsLAF controlsLAF;
-    PresetManagerV2 presetManager;
+    PresetManager& presetManager;
+    AAPresetBox presetBox;
+    juce::DrawableButton saveButton {"Save preset", juce::DrawableButton::ImageFitted};
     BypassButton bypassPluginButton;
     juce::TextButton reverseSignalOrderButton;
     juce::AudioProcessorValueTreeState::ButtonAttachment reverseSignalOrderButtonAttachment;
