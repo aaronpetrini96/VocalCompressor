@@ -1,0 +1,135 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "TRUE",
+        "CMAKE_CXX_EXTENSIONS": "FALSE",
+        "CMAKE_PRESET_NAME": "${presetName}"
+      }
+    },
+    {
+      "name": "mac_base",
+      "inherits": "base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_FLAGS_RELEASE": "-O3 -DNDEBUG -g",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG -g",
+        "CMAKE_OSX_DEPLOYMENT_TARGET": "10.13",
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "mac_ninja_multi",
+      "displayName": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build-ninja-mac",
+      "generator": "Ninja Multi-Config",
+      "inherits": "mac_base"
+    },
+    {
+      "name": "mac_ninja",
+      "displayName": "Ninja",
+      "binaryDir": "${sourceDir}/build-ninja-mac-single",
+      "generator": "Ninja",
+      "inherits": "mac_base"
+    },
+    {
+      "name": "mac_make",
+      "displayName": "Makefiles",
+      "binaryDir": "${sourceDir}/build-make-mac",
+      "generator": "Unix Makefiles",
+      "inherits": "mac_base"
+    },
+    {
+      "name": "win_base",
+      "inherits": "base",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
+        "CMAKE_C_FLAGS": "/DWIN32 /D_WINDOWS /utf-8",
+        "CMAKE_CXX_FLAGS": "/DWIN32 /D_WINDOWS /EHsc /utf-8",
+        "CMAKE_EXE_LINKER_FLAGS": "/machine:x64",
+
+        "CMAKE_C_FLAGS_RELEASE": "/MD /Ox /Ob3 /DNDEBUG /Gy /Gw /Zi",
+        "CMAKE_CXX_FLAGS_RELEASE": "/MD /Ox /Ob3 /DNDEBUG /Gy /Gw /Zi",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /debug /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB%",
+        "CMAKE_MODULE_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /debug /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB%",
+
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE": "ON"
+      },
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "win_msvc",
+      "displayName": "MSVC",
+      "binaryDir": "${sourceDir}/build-msvc",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "strategy": "set"
+      },
+      "inherits": "win_base"
+    },
+    {
+      "name": "win_ninja_multi",
+      "displayName": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build-ninja-win",
+      "generator": "Ninja Multi-Config",
+      "inherits": "win_base"
+    },
+    {
+      "name": "win_ninja",
+      "displayName": "Ninja",
+      "binaryDir": "${sourceDir}/build-ninja-win-single",
+      "generator": "Ninja",
+      "inherits": "win_base"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "mac_ninja_multi_debug",
+      "displayName": "Ninja Multi-Config (Debug)",
+      "configurePreset": "mac_ninja_multi",
+      "configuration": "Debug"
+    },
+    {
+      "name": "mac_ninja_multi_release",
+      "displayName": "Ninja Multi-Config (Release)",
+      "configurePreset": "mac_ninja_multi",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_ninja_multi_debug",
+      "displayName": "Ninja Multi-Config (Debug)",
+      "configurePreset": "win_ninja_multi",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_ninja_multi_release",
+      "displayName": "Ninja Multi-Config (Release)",
+      "configurePreset": "win_ninja_multi",
+      "configuration": "Release"
+    }
+  ]
+}
