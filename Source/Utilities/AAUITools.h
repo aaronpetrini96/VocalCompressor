@@ -36,12 +36,12 @@ namespace AAUITools
     }
 
     inline void drawKnobScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
-                               const int numberOfDots, const float dotSize, const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
+                               const int numberOfDots, const float dotSize, const float labelGap, const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
     {
         const auto centre = knobBounds.getCentre();
         const auto fontHeight = font.getHeight();
         const auto dotRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + dotSize * 1.5f;
-        const auto labelRadius = dotRadius + dotSize * 0.5f + fontHeight * 0.6f;
+        const auto labelRadius = dotRadius + dotSize * 0.5f + labelGap + fontHeight * 0.5f;
 
         g.setColour (colour);
         g.setFont (font);
@@ -51,6 +51,39 @@ namespace AAUITools
             const auto angle = juce::jmap (static_cast<float> (dotIndex), 0.0f, static_cast<float> (numberOfDots - 1), startAngle, endAngle);
             g.fillEllipse (juce::Rectangle<float> (dotSize, dotSize).withCentre (centre.getPointOnCircumference (dotRadius, angle)));
         }
+
+        for (int labelIndex = 0; labelIndex < labels.size(); ++labelIndex)
+        {
+            const auto angle = juce::jmap (static_cast<float> (labelIndex), 0.0f, static_cast<float> (labels.size() - 1), startAngle, endAngle);
+            const auto labelBounds = juce::Rectangle<float> (fontHeight * 2.0f, fontHeight).withCentre (centre.getPointOnCircumference (labelRadius, angle));
+            g.drawText (labels[labelIndex], labelBounds, juce::Justification::centred, false);
+        }
+    }
+
+    inline void drawKnobArcScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
+                                  const int numberOfTicks, const float tickLength, const float lineThickness,
+                                  const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
+    {
+        const auto centre = knobBounds.getCentre();
+        const auto fontHeight = font.getHeight();
+        const auto arcRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + lineThickness * 2.0f;
+        const auto labelRadius = arcRadius + tickLength + fontHeight * 0.6f;
+        const juce::PathStrokeType stroke (lineThickness, juce::PathStrokeType::curved, juce::PathStrokeType::rounded);
+
+        g.setColour (colour);
+        g.setFont (font);
+
+        juce::Path arc;
+        arc.addCentredArc (centre.x, centre.y, arcRadius, arcRadius, 0.0f, startAngle, endAngle, true);
+
+        for (int tickIndex = 0; tickIndex < numberOfTicks; ++tickIndex)
+        {
+            const auto angle = juce::jmap (static_cast<float> (tickIndex), 0.0f, static_cast<float> (numberOfTicks - 1), startAngle, endAngle);
+            arc.startNewSubPath (centre.getPointOnCircumference (arcRadius, angle));
+            arc.lineTo (centre.getPointOnCircumference (arcRadius + tickLength, angle));
+        }
+
+        g.strokePath (arc, stroke);
 
         for (int labelIndex = 0; labelIndex < labels.size(); ++labelIndex)
         {
