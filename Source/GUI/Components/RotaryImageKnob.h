@@ -17,7 +17,6 @@ public:
         setMouseDragSensitivity(300);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
-
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));
     }
 

@@ -45,6 +45,13 @@ public:
     {
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(clearBackground, boundsF, juce::RectanglePlacement::stretchToFit);
+        g.fillAll(juce::Colours::black.withAlpha(0.25f));
+
+        const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.07f);
+        const auto scaleInset = boundsF.getHeight() * 0.07f;
+        for (auto* dial : {&la2aGainDial, &la2aPeakReductionDial})
+            AAUITools::drawKnobArcScale(g, dial->getBounds().toFloat().reduced(scaleInset), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
+                                        11, boundsF.getHeight() * 0.03f, boundsF.getHeight() * 0.006f, {"0", "20", "40", "60", "80", "100"}, scaleFont, juce::Colours::black);
     }
 
     void resized() override
@@ -108,13 +115,14 @@ private:
 
 //   IMAGE LOADING
     const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::clearSilverBackground2_png, BinaryData::clearSilverBackground2_pngSize)};
-    const juce::Image la2aKnobImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2a_png, BinaryData::knobLa2a_pngSize)};
+    const juce::Image la2aKnobImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aBase_png, BinaryData::knobLa2aBase_pngSize)};
+    const juce::Image la2aKnobRotorImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aRotor_png, BinaryData::knobLa2aRotor_pngSize)};
     const juce::Image la2aModeImageUP {juce::ImageCache::getFromMemory(BinaryData::switchUP_png, BinaryData::switchUP_pngSize)};
     const juce::Image la2aModeImageDOWN {juce::ImageCache::getFromMemory(BinaryData::switchDOWN_png, BinaryData::switchDOWN_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage};
-    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage};
+    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage};
+    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage};
 
 //   COMP / LIMIT SWITCH
     juce::ImageButton la2aModeButton;
