@@ -35,9 +35,13 @@ namespace AAUITools
         g.drawRoundedRectangle (bounds.reduced (outlineThickness * 0.5f), cornerSize, outlineThickness);
     }
 
-    inline void drawKnobScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
-                               const int numberOfDots, const float dotSize, const float labelGap, const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
+    inline void drawKnobScale (juce::Graphics& g, const juce::Slider& knob, const float knobInset,
+                               const int numberOfDots, const float dotSize, const float labelGap,
+                               const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour = juce::Colours::white)
     {
+        const auto knobBounds = knob.getBounds().toFloat().reduced (knobInset);
+        const auto startAngle = knob.getRotaryParameters().startAngleRadians;
+        const auto endAngle = knob.getRotaryParameters().endAngleRadians;
         const auto centre = knobBounds.getCentre();
         const auto fontHeight = font.getHeight();
         const auto dotRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + dotSize * 1.5f;

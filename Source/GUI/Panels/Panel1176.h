@@ -56,19 +56,22 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(darkBackground, boundsF, juce::RectanglePlacement::stretchToFit);
 
-        const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.06f);
-        const auto bigScaleInset = boundsF.getHeight() * 0.015f;
-        const auto bigLabelGap = boundsF.getHeight() * 0.02f;
-        for (auto* dial : {&input1176Dial, &output1176Dial})
-            AAUITools::drawKnobScale(g, dial->getBounds().toFloat().reduced(bigScaleInset), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
-                                     11, boundsF.getHeight() * 0.018f, bigLabelGap, {juce::String(juce::CharPointer_UTF8("\xe2\x88\x9e")), "48", "36", "24", "12", "0"}, scaleFont, juce::Colours::white);
+        const auto bigKnobSize = static_cast<float>(input1176Dial.getWidth());
+        const auto scaleFont = VCFonts::barlowCondensedMedium(bigKnobSize * 0.1f);
+        const auto bigScaleInset = bigKnobSize * 0.025f;
+        const auto bigLabelGap = bigKnobSize * 0.0333f;
+        const auto dotSize = bigKnobSize * 0.03f;
+        for (const auto* dial : {&input1176Dial, &output1176Dial})
+            AAUITools::drawKnobScale(g, *dial, bigScaleInset, 11, dotSize, bigLabelGap,
+                            {static_cast<juce::String>(juce::CharPointer_UTF8("\xe2\x88\x9e")), "48", "36", "24", "12", "0"},
+                                    scaleFont);
 
-        const auto smallScaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.0525f);
-        const auto smallScaleInset = boundsF.getHeight() * 0.0f;
-        const auto smallLabelGap = boundsF.getHeight() * 0.01f;
-        for (auto* dial : {&attack1176Dial, &release1176Dial})
-            AAUITools::drawKnobScale(g, dial->getBounds().toFloat().reduced(smallScaleInset), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
-                                     7, boundsF.getHeight() * 0.0132f, smallLabelGap, {"1", "3", "5", "7"}, smallScaleFont, juce::Colours::white);
+        const auto smallKnobSize = static_cast<float>(attack1176Dial.getWidth());
+        const auto smallScaleFont = VCFonts::barlowCondensedMedium(smallKnobSize * 0.2625f);
+        const auto smallLabelGap = smallKnobSize * 0.05f;
+        const auto smallScaleDotSize = smallKnobSize * 0.065f;
+        for (const auto* dial : {&attack1176Dial, &release1176Dial})
+            AAUITools::drawKnobScale(g, *dial, 0.f, 7, smallScaleDotSize, smallLabelGap, {"1", "3", "5", "7"}, smallScaleFont);
     }
 
     void resized() override
