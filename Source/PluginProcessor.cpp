@@ -37,8 +37,6 @@ VocalCompressorAudioProcessor::~VocalCompressorAudioProcessor()
 juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
-    const int versionHint = 1;
-
     juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
     
 //    1176
@@ -350,7 +348,7 @@ void VocalCompressorAudioProcessor::setStateInformation (const void* data, int s
     
     if (xml && xml->hasTagName(apvts.state.getType()))
     {
-        juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        const juce::ValueTree state = juce::ValueTree::fromXml(*xml);
         const auto restoredPresetName = state.getProperty("CurrentPresetName").toString();
         const auto restoredPresetModified = static_cast<bool>(state.getProperty("PresetModified", false));
         apvts.replaceState(state);
