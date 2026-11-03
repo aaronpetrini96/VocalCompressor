@@ -2,8 +2,7 @@
 #include <JuceHeader.h>
 #include "../../PluginProcessor.h"
 #include "../VCLook.h"
-#include "../LAF/VCControlsLAF.h"
-#include "../Components/BypassButton.h"
+#include "../LAF/UnitTitleButtonLAF.h"
 #include "../Components/AAPresetBox.h"
 
 class HeaderPanel : public juce::Component, private juce::ChangeListener
@@ -13,23 +12,38 @@ public:
     : presetManager(processor.presetManager),
       undoManager(processor.undoManager),
       presetBox(processor.presetManager),
-      bypassPluginButton("", processor.apvts, ParamNames::getGeneralBypassName(), 20),
-      reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), reverseSignalOrderButton)
+      bypassPluginButtonAttachment(processor.apvts, ParamNames::getGeneralBypassName(), bypassPluginButton),
+      unitTitle1176ButtonAttachment(processor.apvts, ParamNames::get1176BypassName(), unitTitle1176Button),
+      unitTitleLA2AButtonAttachment(processor.apvts, ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
+      reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), signalOrderButton)
     {
-        reverseSignalOrderButton.setLookAndFeel(&controlsLAF);
-        reverseSignalOrderButton.setColour(juce::TextButton::buttonColourId, VCColors::buttonBackground);
-        reverseSignalOrderButton.setColour(juce::TextButton::buttonOnColourId, VCColors::buttonBackground);
-        reverseSignalOrderButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
-        reverseSignalOrderButton.setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
-        reverseSignalOrderButton.setClickingTogglesState(true);
-        reverseSignalOrderButton.onStateChange = [this] { updateReverseSignalButtonText(); };
-        updateReverseSignalButtonText();
+        AAUITools::setIconButtonImages(signalOrderButton, BinaryData::arrowsOcon_svg, BinaryData::arrowsOcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        signalOrderButton.setImages(signalOrderButton.getNormalImage(), signalOrderButton.getOverImage(), signalOrderButton.getDownImage());
+        signalOrderButton.setClickingTogglesState(true);
+        signalOrderButton.onStateChange = [this] { resized(); };
+
+        for (auto* unitTitleButton : {&unitTitle1176Button, &unitTitleLA2AButton})
+        {
+            unitTitleButton->setLookAndFeel(&unitTitleLAF);
+            unitTitleButton->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+            unitTitleButton->setClickingTogglesState(true);
+            unitTitleButton->onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
+            addAndMakeVisible(*unitTitleButton);
+        }
 
         presetBox.onNameClicked = [this] { if (onPresetNameClicked != nullptr) onPresetNameClicked(); };
 
-        AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize,
-                                       VCColors::popupIconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
+        AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         saveButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
+
+        AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+
+        bypassPluginButton.setClickingTogglesState(true);
+        bypassPluginButton.onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
+
+        AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare_svg, BinaryData::resizeSquare_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        resizeButton.setToggleable(true);
+        resizeButton.setClickingTogglesState(false);
 
         AAUITools::setIconButtonImages(undoButton, BinaryData::undoIcon_svg, BinaryData::undoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         AAUITools::setIconButtonImages(redoButton, BinaryData::redoIcon_svg, BinaryData::redoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
@@ -39,11 +53,13 @@ public:
         presetManager.addChangeListener(this);
         undoManager.addChangeListener(this);
         updatePresetName();
+        updateUndoRedoButtons();
 
         addAndMakeVisible(presetBox);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(bypassPluginButton);
-        addAndMakeVisible(reverseSignalOrderButton);
+        addAndMakeVisible(signalOrderButton);
+        addAndMakeVisible(resizeButton);
         addAndMakeVisible(undoButton);
         addAndMakeVisible(redoButton);
     }
@@ -51,6 +67,7 @@ public:
     ~HeaderPanel() override
     {
         presetManager.removeChangeListener(this);
+        undoManager.removeChangeListener(this);
     }
 
     void paint(juce::Graphics& g) override
@@ -59,12 +76,6 @@ public:
         const auto boundsFWidth = boundsF.getWidth();
 
         g.fillAll(VCColors::background);
-
-        const auto screwSize = boundsF.getHeight() * 0.6f;
-        const auto screwGap = screwSize * 0.5f;
-        const auto screwBounds = boundsF.withSizeKeepingCentre(screwSize, screwSize);
-        g.drawImage(screwImage, screwBounds.withX(screwGap), juce::RectanglePlacement::stretchToFit);
-        g.drawImage(screwImage, screwBounds.withRightX(boundsFWidth - screwGap), juce::RectanglePlacement::stretchToFit);
     }
 
     void resized() override
@@ -73,31 +84,31 @@ public:
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
 
-        const auto bypassSize = boundsFWidth * 0.0333f;
-        bypassPluginButton.setBounds(boundsF.withSize(bypassSize, bypassSize)
-                                            .withPosition(boundsFWidth * 0.14f, boundsFHeight * 0.2f)
-                                            .toNearestInt());
 
-        const auto controlY = boundsFHeight * 0.1429f;
-        const auto controlHeight = boundsFHeight * 0.7142f;
 
-        const auto presetBoxBounds = boundsF.withX(boundsFWidth * 0.22f)
-                                            .withWidth(boundsFWidth * 0.32f)
-                                            .withY(controlY)
-                                            .withHeight(controlHeight);
+        const auto presetBoxBounds = boundsF.withSizeKeepingCentre(boundsFWidth * 0.33f, boundsFHeight * 0.7f);
         presetBox.setBounds(presetBoxBounds.toNearestInt());
 
-        const auto saveButtonSize = controlHeight * 0.8f;
-        saveButton.setBounds(juce::Rectangle<float>(saveButtonSize, saveButtonSize)
-                                 .withX(presetBoxBounds.getRight() + saveButtonSize * 0.3f)
-                                 .withCentre({presetBoxBounds.getRight() + saveButtonSize * 0.8f, presetBoxBounds.getCentreY()})
-                                 .toNearestInt());
+        const auto iconSize = boundsFHeight * 0.65f;
+        const auto iconButtonBounds = boundsF.withSizeKeepingCentre(iconSize, iconSize);
+        saveButton.setBounds(iconButtonBounds.withX(presetBoxBounds.getRight() + iconSize * 0.5f).toNearestInt());
+        bypassPluginButton.setBounds(iconButtonBounds.withRightX(boundsFWidth - iconSize * 0.5f).toNearestInt());
+        resizeButton.setBounds(iconButtonBounds.withRightX(boundsFWidth - iconSize * 2.f).toNearestInt());
 
-        reverseSignalOrderButton.setBounds(boundsF.withX(boundsFWidth * 0.7085f)
-                                                  .withWidth(boundsFWidth * 0.2083f)
-                                                  .withY(controlY)
-                                                  .withHeight(controlHeight)
-                                                  .toNearestInt());
+        const auto iconGap = iconSize * 0.5f;
+        const auto unitTitleFont = VCFonts::barlowCondensedSemiBoldItalic(iconSize);
+        const auto isOrderReversed = signalOrderButton.getToggleState();
+        auto& firstTitleButton = isOrderReversed ? unitTitleLA2AButton : unitTitle1176Button;
+        auto& secondTitleButton = isOrderReversed ? unitTitle1176Button : unitTitleLA2AButton;
+        const auto titleWidth = juce::jmax(juce::GlyphArrangement::getStringWidth(unitTitleFont, unitTitle1176Button.getButtonText()),
+                                           juce::GlyphArrangement::getStringWidth(unitTitleFont, unitTitleLA2AButton.getButtonText())) + iconGap;
+        const auto titlesGroupX = (presetBoxBounds.getX() - (titleWidth * 2.f + iconSize)) * 0.5f;
+        firstTitleButton.setBounds(juce::Rectangle<float>(titlesGroupX, iconButtonBounds.getY(), titleWidth, iconSize).toNearestInt());
+        signalOrderButton.setBounds(iconButtonBounds.withX(titlesGroupX + titleWidth).toNearestInt());
+        secondTitleButton.setBounds(juce::Rectangle<float>(titlesGroupX + titleWidth + iconSize, iconButtonBounds.getY(), titleWidth, iconSize).toNearestInt());
+
+        const auto saveButtonRight = presetBoxBounds.getRight() + iconGap + iconSize;
+        const auto resizeButtonX = boundsFWidth - iconSize * 3.f;
         const auto undoRedoCentreX = (saveButtonRight + resizeButtonX) * 0.5f;
         const auto undoRedoOffset = (iconSize + iconGap) * 0.5f;
         undoButton.setBounds(iconButtonBounds.withCentre({undoRedoCentreX - undoRedoOffset, boundsF.getCentreY()}).toNearestInt());
@@ -108,6 +119,12 @@ public:
 
     std::function<void()> onPresetNameClicked;
     std::function<void()> onSaveClicked;
+    std::function<void()> onBypassChanged;
+
+    bool isBypassed() const { return bypassPluginButton.getToggleState(); }
+    bool is1176Bypassed() const { return unitTitle1176Button.getToggleState(); }
+    bool isLA2ABypassed() const { return unitTitleLA2AButton.getToggleState(); }
+    juce::DrawableButton& getResizeButton() { return resizeButton; }
 
 private:
     void changeListenerCallback(juce::ChangeBroadcaster*) override
@@ -129,23 +146,21 @@ private:
         presetBox.setPresetName(presetManager.isPresetModified() ? displayName + "*" : displayName);
     }
 
-    void updateReverseSignalButtonText()
-    {
-        reverseSignalOrderButton.setButtonText(reverseSignalOrderButton.getToggleState() ? "OPT-2A -> FET-76"
-                                                                                         : "FET-76 -> OPT-2A");
-    }
+    // const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw_png, BinaryData::screw_pngSize)};
 
-    const juce::Image screwImage {juce::ImageCache::getFromMemory(BinaryData::screw_png, BinaryData::screw_pngSize)};
-
-    VCControlsLAF controlsLAF;
+    UnitTitleButtonLAF unitTitleLAF;
     PresetManager& presetManager;
     juce::UndoManager& undoManager;
     AAPresetBox presetBox;
     juce::DrawableButton saveButton {"Save preset", juce::DrawableButton::ImageFitted};
-    BypassButton bypassPluginButton;
-    juce::TextButton reverseSignalOrderButton;
+    juce::DrawableButton bypassPluginButton {"Bypass", juce::DrawableButton::ImageFitted};
+    juce::DrawableButton resizeButton {"resizeUIButton", juce::DrawableButton::ImageFitted};
     juce::DrawableButton undoButton {"Undo", juce::DrawableButton::ImageFitted};
     juce::DrawableButton redoButton {"Redo", juce::DrawableButton::ImageFitted};
+    juce::AudioProcessorValueTreeState::ButtonAttachment bypassPluginButtonAttachment;
+    juce::TextButton unitTitle1176Button {"FET-76"}, unitTitleLA2AButton {"OPT-2A"};
+    juce::AudioProcessorValueTreeState::ButtonAttachment unitTitle1176ButtonAttachment, unitTitleLA2AButtonAttachment;
+    juce::DrawableButton signalOrderButton {"Signal order", juce::DrawableButton::ImageFitted};
     juce::AudioProcessorValueTreeState::ButtonAttachment reverseSignalOrderButtonAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HeaderPanel)

@@ -6,7 +6,6 @@
 #include "../Components/RotaryImageKnob.h"
 #include "../Components/GainReductionMeter.h"
 #include "../Components/GRTextDisplay.h"
-#include "../Components/BypassButton.h"
 
 class Panel1176 : public juce::Component
 {
@@ -16,20 +15,15 @@ public:
         for (auto* imageKnob : {&input1176Dial, &output1176Dial, &attack1176Dial, &release1176Dial})
         {
             addAndMakeVisible(*imageKnob);
-            imageKnob->setAlwaysOnTop(true);
         }
         addChildComponent(mix1176Knob);
-        mix1176Knob.setAlwaysOnTop(true);
 
         for (auto* label : {&input1176Label, &output1176Label, &ratioLabel, &gr1176Label, &attack1176Label, &release1176Label, &mix1176Label})
         {
-            VCLook::setupLabel(*label);
+            VCLook::setupLabel(*label, juce::Colours::white, juce::Justification::centredTop);
             addAndMakeVisible(*label);
         }
         mix1176Label.setVisible(false);
-
-        VCLook::setupLabel(unitTitleLabel);
-        addAndMakeVisible(unitTitleLabel);
 
         for (auto* ratioBtn : ratioButtons)
         {
@@ -48,7 +42,6 @@ public:
         addAndMakeVisible(grMeter1176Left);
         addAndMakeVisible(grMeter1176Right);
         addAndMakeVisible(grTextDisplay1176);
-        addAndMakeVisible(bypassButton1176);
     }
 
     void paint(juce::Graphics& g) override
@@ -81,40 +74,39 @@ public:
         const auto boundsFHeight = boundsF.getHeight();
 
         const auto knobSize = boundsFHeight * 0.6f;
-        const auto smallKnobsSize = boundsFHeight * 0.2f;
+        const auto smallKnobsSize = boundsFHeight * 0.22f;
+        const auto knobBounds = boundsF.withSizeKeepingCentre(knobSize, knobSize);
+        const auto smallKnobBounds = knobBounds.withSize(smallKnobsSize, smallKnobsSize);
 
-        const auto knobBounds = boundsF.withSize(knobSize, knobSize);
-        const auto smallKnobBounds = boundsF.withSize(smallKnobsSize, smallKnobsSize);
         const auto smallControlBounds = boundsF.withSize(boundsFHeight * 0.0971f, boundsFHeight * 0.0971f);
-        const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.22f);
 
-        for (auto* label : {&input1176Label, &output1176Label, &ratioLabel, &gr1176Label})
-            label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
-        for (auto* label : {&attack1176Label, &release1176Label, &mix1176Label})
-            label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.075f));
 
-        const auto titleFontHeight = boundsFWidth * 0.03f;
-        unitTitleLabel.setFont(VCFonts::barlowCondensedSemiBoldItalic(titleFontHeight));
-        unitTitleLabel.setBounds(boundsF.withTrimmedTop(boundsFHeight * 0.035f).withHeight(titleFontHeight * 1.3f).toNearestInt());
+        input1176Dial.setBounds(knobBounds.translated(-knobSize * 1.5f, 0.f).toNearestInt());
+        output1176Dial.setBounds(knobBounds.toNearestInt());
 
-        const auto labelsCY = boundsFHeight * 0.8825f;
-
-        input1176Dial.setBounds(knobBounds.withCentre({boundsFWidth * 0.2f, boundsF.getCentreY()}).toNearestInt());
-        input1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.2f, labelsCY}).toNearestInt());
-        output1176Dial.setBounds(knobBounds.withCentre(boundsF.getCentre()).toNearestInt());
-        output1176Label.setBounds(labelBounds.withCentre({boundsF.getCentreX(), labelsCY}).toNearestInt());
+        const auto labelBounds = knobBounds.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.2f);
+        const auto labelsCY = knobBounds.getBottom() + labelBounds.getHeight() * 0.5f;
+        for (auto* label : {&input1176Label, &output1176Label})
+            label->setFont(VCFonts::barlowCondensedMedium(labelBounds.getHeight() * 0.5f));
+        for (auto* label : {&attack1176Label, &release1176Label, &mix1176Label, &ratioLabel, &gr1176Label})
+            label->setFont(VCFonts::barlowCondensedRegular(labelBounds.getHeight() * 0.3f));
+        input1176Label.setBounds(labelBounds.withCentre({input1176Dial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
+        output1176Label.setBounds(labelBounds.withCentre({output1176Dial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
 
         mix1176Knob.setBounds(smallControlBounds.withCentre({boundsFWidth * 0.3225f, boundsFHeight * 0.7782f}).toNearestInt());
         mix1176Label.setBounds(labelBounds.withCentre({boundsFWidth * 0.3225f, boundsFHeight * 0.8653f}).toNearestInt());
 
-        const auto attackCX = boundsFWidth * 0.7074f;
-        attack1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, boundsFHeight * 0.2466f}).toNearestInt());
-        attack1176Label.setBounds(labelBounds.withCentre({attackCX, boundsFHeight * 0.4626f}).toNearestInt());
-        release1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, boundsFHeight * 0.7223f}).toNearestInt());
-        release1176Label.setBounds(labelBounds.withCentre({attackCX, boundsFHeight * 0.948f}).toNearestInt());
+        const auto attackCX = boundsFWidth * 0.7f;
+        const auto attackCY = boundsFHeight * 0.3f;
+        const auto releaseCY = boundsFHeight * 0.7f;
+        const auto timeLabelsGap = smallKnobsSize * 1.075f;
+        attack1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, attackCY}).toNearestInt());
+        attack1176Label.setBounds(labelBounds.withCentre({attackCX,  attackCY + timeLabelsGap}).toNearestInt());
+        release1176Dial.setBounds(smallKnobBounds.withCentre({attackCX, releaseCY}).toNearestInt());
+        release1176Label.setBounds(labelBounds.withCentre({attackCX, releaseCY + timeLabelsGap}).toNearestInt());
 
         const auto ratioColumnCX = boundsFWidth * 0.834f;
-        auto ratioBtnBounds = boundsF.withSize(boundsFWidth * 0.0625f, boundsFHeight * 0.1456f).withCentre({ratioColumnCX, 0.f}).withY(boundsFHeight * 0.0934f);
+        auto ratioBtnBounds = boundsF.withSize(boundsFWidth * 0.05f, boundsFHeight * 0.1456f).withCentre({ratioColumnCX, 0.f}).withY(boundsFHeight * 0.0934f);
         for (auto* ratioBtn : {&ratioAllBtn, &ratio20Btn, &ratio16Btn, &ratio8Btn, &ratio4Btn})
         {
             ratioBtn->setBounds(ratioBtnBounds.toNearestInt());
@@ -128,9 +120,12 @@ public:
         grMeter1176Right.setBounds(grMeterBounds.withX(grMetersCX).toNearestInt());
         gr1176Label.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
         grTextDisplay1176.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.1778f}).toNearestInt());
+    }
 
-        const auto bypassSize = boundsFHeight * 0.09f;
-        bypassButton1176.setBounds(knobBounds.withSize(bypassSize, bypassSize).withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0485f).toNearestInt());
+    void paintOverChildren(juce::Graphics& g) override
+    {
+        if (shouldDim)
+            g.fillAll(VCColors::almostBlack.withAlpha(JUCE_LIVE_CONSTANT(0.45f)));
     }
 
     void updateGainReduction()
@@ -140,6 +135,8 @@ public:
         grMeter1176Right.setReduction(gr1176);
         grTextDisplay1176.setValue(gr1176);
     }
+
+    bool shouldDim {false};
 
 private:
     void setRatioIndex(int index)
@@ -166,7 +163,7 @@ private:
         ratioBtn->setRadioGroupId(1515);
         ratioBtn->setClickingTogglesState(true);
         ratioBtn->setColour(juce::TextButton::ColourIds::buttonColourId, VCColors::ratioButtonOff);
-        ratioBtn->setColour(juce::TextButton::ColourIds::buttonOnColourId, VCColors::ratioButtonOn);
+        ratioBtn->setColour(juce::TextButton::ColourIds::buttonOnColourId, VCColors::darkRed);
         ratioBtn->setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
         ratioBtn->setColour(juce::TextButton::ColourIds::textColourOnId, juce::Colours::white);
         ratioBtn->setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
@@ -191,17 +188,16 @@ private:
     juce::Label input1176Label {"INPUT"}, output1176Label {"OUTPUT"},
                 attack1176Label {"ATTACK"}, release1176Label {"RELEASE"},
                 ratioLabel {"RATIO"}, gr1176Label {"GR"},
-                mix1176Label {"MIX"}, unitTitleLabel {"FET-76"};
+                mix1176Label {"MIX"};
 
 //    RATIO BUTTONS
     VCControlsLAF controlsLAF;
     juce::TextButton ratio4Btn {"4"}, ratio8Btn {"8"}, ratio16Btn {"16"}, ratio20Btn {"20"}, ratioAllBtn {"ALL"};
     std::vector<juce::TextButton*> ratioButtons {&ratio4Btn, &ratio8Btn, &ratio16Btn, &ratio20Btn, &ratioAllBtn};
 
-//    GAIN REDUCTION + BYPASS
+//    GAIN REDUCTION
     GainReductionMeter grMeter1176Left, grMeter1176Right;
     GRTextDisplay grTextDisplay1176;
-    BypassButton bypassButton1176 {"", audioProcessor.apvts, ParamNames::get1176BypassName(), 20};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Panel1176)
 };

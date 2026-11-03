@@ -28,15 +28,18 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     };
 
     addChildComponent(presetBrowser);
+    presetBrowser.addComponentListener(this);
     addChildComponent(presetPopup);
+    presetPopup.addComponentListener(this);
 
     headerPanel.onPresetNameClicked = [this] { showPresetBrowser(); };
     headerPanel.onSaveClicked = [this]
     {
         showPresetPopup(AAPresetPopup::Action::save, audioProcessor.presetManager.getCurrentPresetName());
     };
+    headerPanel.onBypassChanged = [this] { updatePanelsDimming(); };
 
-    presetBrowser.onRowsChanged = [this] { updatePresetPopupBounds(); };
+    presetBrowser.onRowsChanged = [this] { resized(); };
     presetBrowser.onRenameRequested = [this] (const juce::File& presetFile)
     {
         presetFileToEdit = presetFile;
@@ -75,6 +78,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 
     setResizable(false, false);
     updateEditorSize();
+    updatePanelsDimming();
     startTimerHz(30);
 }
 
@@ -92,8 +96,9 @@ void VocalCompressorAudioProcessorEditor::resized()
 {
     const auto boundsF = getLocalBounds().toFloat();
     const auto boundsFHeight = boundsF.getHeight();
+    const auto boundsFWidth = boundsF.getWidth();
 
-    const auto headerHeight = boundsFHeight * 0.07f;
+    const auto headerHeight = boundsFHeight * 0.0725f;
     const auto unitPanelHeight = (boundsFHeight - headerHeight) * 0.5f;
 
     const auto headerBounds = boundsF.withHeight(headerHeight);
@@ -105,7 +110,6 @@ void VocalCompressorAudioProcessorEditor::resized()
     panelLA2A.setBounds(panelLA2ABounds.toNearestInt());
 
 
-    const auto rowH = headerHeight * 0.6f;
     const auto resizeBtnBounds = headerPanel.getResizeButton().getBounds().toFloat();
 
     const auto rowH = boundsFHeight * VCLook::rowPOH;
@@ -116,14 +120,30 @@ void VocalCompressorAudioProcessorEditor::resized()
                                      .withY(resizeBtnBounds.getBottom())
                                      .toNearestInt());
 
-    updatePresetPopupBounds();
+    const auto presetBrowserBounds = boundsF.withSizeKeepingCentre(boundsFWidth * 0.3f, presetBrowser.getNumRows() * rowH);
+    presetBrowser.setBounds(presetBrowserBounds.withY(headerBounds.getBottom()).toNearestInt());
+    presetPopup.setBounds(boundsF.withSizeKeepingCentre(presetBrowserBounds.getWidth(), boundsFHeight * 0.3f).toNearestInt());
 }
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
-    g.setColour(VCColors::separator);
-    for (auto* panel : std::initializer_list<juce::Component*> {&panel1176, &panelLA2A})
-        g.fillRect(panel->getBounds().toFloat().withHeight(static_cast<float>(getWidth()) * 0.0033f));
+    const auto isPopupOpen = resizeOptionsPopup.isVisible() || presetBrowser.isVisible() || presetPopup.isVisible();
+
+    for (auto* popup : std::initializer_list<juce::Component*> {&resizeOptionsPopup, &presetBrowser, &presetPopup})
+        if (popup->isVisible())
+            g.excludeClipRegion(popup->getBounds());
+
+    const auto fillDim = [&] (const juce::Component& panel, bool isUnitBypassed)
+    {
+        const auto isBypassed = headerPanel.isBypassed() || isUnitBypassed;
+        const auto dimAmount = isBypassed ? 0.5f : (isPopupOpen ? 0.3f : 0.f);
+
+        g.setColour(VCColors::almostBlack.withAlpha(dimAmount));
+        g.fillRect(panel.getBounds());
+    };
+
+    fillDim(panel1176, headerPanel.is1176Bypassed());
+    fillDim(panelLA2A, headerPanel.isLA2ABypassed());
 }
 
 void VocalCompressorAudioProcessorEditor::timerCallback()
@@ -152,7 +172,14 @@ void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
 void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Component& component)
 {
     if (&component == &resizeOptionsPopup)
-        resizeButton.setToggleState(resizeOptionsPopup.isVisible(), juce::dontSendNotification);
+        headerPanel.getResizeButton().setToggleState(resizeOptionsPopup.isVisible(), juce::dontSendNotification);
+
+    updatePanelsDimming();
+}
+
+void VocalCompressorAudioProcessorEditor::updatePanelsDimming()
+{
+    repaint();
 }
 
 void VocalCompressorAudioProcessorEditor::updateEditorSize()
@@ -198,17 +225,4 @@ void VocalCompressorAudioProcessorEditor::showPresetPopup(AAPresetPopup::Action 
     resizeOptionsPopup.setVisible(false);
     showPopup(presetPopup);
     presetPopup.prepare(action, presetName);
-}
-
-void VocalCompressorAudioProcessorEditor::updatePresetPopupBounds()
-{
-    const auto boundsF = getLocalBounds().toFloat();
-    const auto rowHeight = boundsF.getHeight() * 0.07f * 0.6f;
-
-    auto& presetBox = headerPanel.getPresetBox();
-    const auto presetBoxBounds = getLocalArea(&presetBox, presetBox.getLocalBounds()).toFloat();
-    const auto browserHeight = juce::jmin(rowHeight * presetBrowser.getNumRows(), boundsF.getHeight() - presetBoxBounds.getBottom());
-    presetBrowser.setBounds(presetBoxBounds.withY(presetBoxBounds.getBottom()).withHeight(browserHeight).toNearestInt());
-
-    presetPopup.setBounds(boundsF.withSizeKeepingCentre(boundsF.getWidth() * 0.42f, boundsF.getHeight() * 0.28f).toNearestInt());
 }

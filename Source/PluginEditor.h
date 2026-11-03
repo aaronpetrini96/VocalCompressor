@@ -41,12 +41,12 @@ private:
     void showPopup (juce::Component& popup);
     void showPresetBrowser();
     void showPresetPopup (AAPresetPopup::Action action, const juce::String& presetName);
-    void updatePresetPopupBounds();
+    void updatePanelsDimming();
     void updateEditorSize();
 
     //  EDITOR CONSTANTS
     const int guiWidth = 780;
-    const int guiHeight = 576;
+    const int guiHeight = 520;
 
 //    PANELS
     HeaderPanel headerPanel {audioProcessor};

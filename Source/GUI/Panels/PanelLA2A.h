@@ -5,7 +5,6 @@
 #include "../Components/RotaryImageKnob.h"
 #include "../Components/GainReductionMeter.h"
 #include "../Components/GRTextDisplay.h"
-#include "../Components/BypassButton.h"
 
 class PanelLA2A : public juce::Component
 {
@@ -28,7 +27,7 @@ public:
         la2aModeButton.onStateChange = [this] { updateModeLabels(); };
         addAndMakeVisible(la2aModeButton);
 
-        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel, &unitTitleLabel})
+        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel})
         {
             VCLook::setupLabel(*label, juce::Colours::black);
             addAndMakeVisible(*label);
@@ -38,14 +37,12 @@ public:
         addAndMakeVisible(grMeterLA2ALeft);
         addAndMakeVisible(grMeterLA2ARight);
         addAndMakeVisible(grTextDisplayLA2A);
-        addAndMakeVisible(bypassButtonLA2A);
     }
 
     void paint(juce::Graphics& g) override
     {
         const auto boundsF = getLocalBounds().toFloat();
         g.drawImage(clearBackground, boundsF, juce::RectanglePlacement::stretchToFit);
-        g.fillAll(juce::Colours::black.withAlpha(0.25f));
 
         const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.07f);
         const auto scaleInset = boundsF.getHeight() * 0.07f;
@@ -69,10 +66,6 @@ public:
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
 
-        const auto titleFontHeight = boundsFWidth * 0.03f;
-        unitTitleLabel.setFont(VCFonts::barlowCondensedSemiBoldItalic(titleFontHeight));
-        unitTitleLabel.setBounds(boundsF.withTrimmedTop(boundsFHeight * 0.035f).withHeight(titleFontHeight * 1.3f).toNearestInt());
-
         const auto labelsCY = boundsFHeight * 0.9f;
         la2aGainDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.245f, boundsF.getCentreY()}).toNearestInt());
         la2aGainLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.245f, labelsCY}).toNearestInt());
@@ -90,9 +83,12 @@ public:
         grMeterLA2ARight.setBounds(grMeterBounds.withX(grMetersCX).toNearestInt());
         grLA2ALabel.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
         grTextDisplayLA2A.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.2178f}).toNearestInt());
+    }
 
-        const auto bypassSize = boundsFHeight * 0.09f;
-        bypassButtonLA2A.setBounds(boundsF.withSize(bypassSize, bypassSize).withPosition(boundsFWidth * 0.0167f, boundsFHeight * 0.0444f).toNearestInt());
+    void paintOverChildren(juce::Graphics& g) override
+    {
+        if (shouldDim)
+            g.fillAll(VCColors::almostBlack.withAlpha(0.3f));
     }
 
     void updateGainReduction()
@@ -102,6 +98,8 @@ public:
         grMeterLA2ARight.setReduction(grLA2A);
         grTextDisplayLA2A.setValue(grLA2A);
     }
+
+    bool shouldDim {false};
 
 private:
     void updateModeLabels()
@@ -130,13 +128,11 @@ private:
 
 //    LABELS
     juce::Label la2aGainLabel {"GAIN"}, la2aPeakReductionLabel {"PEAK REDUCTION"},
-                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"},
-                unitTitleLabel {"OPT-2A"};
+                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"};
 
-//    GAIN REDUCTION + BYPASS
+//    GAIN REDUCTION
     GainReductionMeter grMeterLA2ALeft, grMeterLA2ARight;
     GRTextDisplay grTextDisplayLA2A;
-    BypassButton bypassButtonLA2A {"", audioProcessor.apvts, ParamNames::getLA2ABypassName(), 20};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
 };
