@@ -29,6 +29,13 @@ namespace VCColors
 
 namespace VCFonts
 {
+    inline juce::Font barlowCondensedLight(const float fontHeight)
+    {
+        static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
+            BinaryData::BarlowCondensedLight_ttf, BinaryData::BarlowCondensedLight_ttfSize);
+        return AAUITools::makeFont(typeface, fontHeight);
+    }
+
     inline juce::Font barlowCondensedRegular(const float fontHeight)
     {
         static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
@@ -63,7 +70,7 @@ namespace VCLook
     inline constexpr float popupCornerPOH {0.0f};
     inline constexpr float outlineThicknessPOH {0.06f};
     inline constexpr float fontHeightPOH {0.85f};
-    inline constexpr float popupTitleRowRatio {1.1f};
+    inline constexpr float popupTitleRowRatio {1.05f};
     inline constexpr float rowPOH {0.045f};
     inline constexpr int presetNameMaxLength {40};
 

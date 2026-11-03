@@ -20,7 +20,7 @@ public:
     {
         const auto boundsF = button.getLocalBounds().toFloat();
         g.setColour (highlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
-        g.setFont (VCFonts::barlowCondensedRegular (boundsF.getHeight() * VCLook::fontHeightPOH));
+        g.setFont (VCFonts::barlowCondensedRegular (boundsF.getHeight() * VCLook::fontHeightPOH * 0.82f));
         g.drawFittedText (button.getButtonText(), boundsF.toNearestInt(), juce::Justification::centred, 1);
     }
 

@@ -16,7 +16,7 @@ public:
     {
         const auto boundsF = button.getLocalBounds().toFloat();
         const auto cornerSize = boundsF.getHeight() * 0.15f;
-        const auto textColour = button.getToggleState() ? VCColors::popupText.withMultipliedBrightness(2.f) : VCColors::popupText.withAlpha(0.8f);
+        const auto textColour = button.getToggleState() ? VCColors::darkRed : (shouldDrawButtonAsHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
         const auto fontText = button.getToggleState() ? VCFonts::barlowCondensedSemiBold (boundsF.getHeight() * VCLook::fontHeightPOH) :
                                                         VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH);
         if (shouldDrawButtonAsHighlighted)
@@ -60,7 +60,7 @@ public:
             g.strokePath (tick, juce::PathStrokeType (tickBoxLineThickness * 1.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
         }
 
-        g.setColour (VCColors::popupText);
+        g.setColour (shouldDrawButtonAsHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
         g.setFont (VCFonts::barlowCondensedMedium (boundsFHeight * VCLook::fontHeightPOH));
         g.drawText (button.getButtonText(), boundsF.withLeft (boundsFHeight * 0.45f).withRight (tickBoxBounds.getX()), juce::Justification::centredLeft, true);
     }
