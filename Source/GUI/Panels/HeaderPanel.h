@@ -41,7 +41,7 @@ public:
         bypassPluginButton.setClickingTogglesState(true);
         bypassPluginButton.onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
 
-        AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare_svg, BinaryData::resizeSquare_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare2_svg, BinaryData::resizeSquare2_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         resizeButton.setToggleable(true);
         resizeButton.setClickingTogglesState(false);
 
