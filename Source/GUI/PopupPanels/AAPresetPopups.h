@@ -39,7 +39,7 @@ public:
         addChildComponent (messageLabel);
 
         nameLabel.setJustificationType (juce::Justification::centred);
-        nameLabel.setColour (juce::Label::textColourId, VCColors::displayText);
+        nameLabel.setColour (juce::Label::textColourId, VCColors::fadedWhiteText);
         nameLabel.setInterceptsMouseClicks (false, false);
         addChildComponent (nameLabel);
 

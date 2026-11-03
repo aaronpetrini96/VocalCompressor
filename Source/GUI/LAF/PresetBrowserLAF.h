@@ -11,7 +11,7 @@ public:
     PresetBrowserLAF()
     {
         setColour (juce::PopupMenu::textColourId, VCColors::popupText);
-        setColour (juce::PopupMenu::highlightedBackgroundColourId, VCColors::presetBoxBackground);
+        setColour (juce::PopupMenu::highlightedBackgroundColourId, VCColors::popupRowHighlight);
         setColour (juce::PopupMenu::highlightedTextColourId, VCColors::popupText);
     }
 
@@ -40,7 +40,7 @@ public:
             tabShape.addRoundedRectangle (boundsF.getX(), boundsF.getY(), boundsF.getWidth(), boundsF.getHeight(), cornerSize, cornerSize,
                                           button.isConnectedOnRight(), button.isConnectedOnLeft(), false, false);
 
-            g.setColour (isSelected ? VCColors::presetBoxBackground : VCColors::popupBackground);
+            g.setColour (isSelected ? VCColors::popupOutline : VCColors::popupBackground);
             g.fillPath (tabShape);
 
             g.setColour (VCColors::popupOutline);
@@ -55,7 +55,7 @@ public:
 
         if (!isTabButton && isHighlighted)
         {
-            g.setColour (VCColors::presetBoxBackground);
+            g.setColour (VCColors::popupRowHighlight);
             g.fillRoundedRectangle (boundsF.reduced (outlineThickness, 0.f), cornerSize);
         }
     }
@@ -70,7 +70,7 @@ public:
 
         //Colors
         const auto tabButtonTextColour = isSelected || isHighlighted ? VCColors::popupText.withBrightness (2.f) : VCColors::popupText.withMultipliedAlpha (0.4f);
-        const auto presetTextColour = isSelected ? VCColors::popupText.withMultipliedBrightness (2.f) : VCColors::popupText.withAlpha (0.8f);
+        const auto presetTextColour = isSelected ? VCColors::popupSelectedText : VCColors::popupText;
         const auto buttonTextColour = isTabButton ? tabButtonTextColour : presetTextColour;
 
         g.setColour (buttonTextColour);

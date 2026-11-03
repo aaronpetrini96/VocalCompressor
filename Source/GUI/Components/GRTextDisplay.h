@@ -24,7 +24,7 @@ public:
     
     void paint(juce::Graphics& g) override
     {
-        g.setColour(VCColors::displayText);
+        g.setColour(VCColors::fadedWhiteText);
         g.setFont(juce::Font(juce::FontOptions("Basic Comical NC", getHeight() * 0.325f, juce::Font::plain)));
         g.drawText(juce::String(value, 1) + " dB", getLocalBounds(), juce::Justification::centred);
     }

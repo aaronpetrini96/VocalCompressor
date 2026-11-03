@@ -115,12 +115,10 @@ protected:
             };
             addAndMakeVisible (row);
 
-            if (item.icon != nullptr)
-                item.icon->replaceColour(VCColors::popupIconSVG, VCColors::popupText);
             rowIcons.push_back (item.icon);
             rowOverIcons.push_back (item.icon != nullptr ? item.icon->createCopy() : nullptr);
             if (rowOverIcons.back() != nullptr)
-                rowOverIcons.back()->replaceColour (VCColors::popupText, VCColors::iconOver);
+                rowOverIcons.back()->replaceColour (juce::Colours::white, VCColors::iconOver);
         }
 
         resized();
