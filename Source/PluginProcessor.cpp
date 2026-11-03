@@ -23,6 +23,7 @@ VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
 #endif
 {
     linkParameters();
+    undoManager.trackParameters(*this);
     PresetManager::installFactoryPresets();
     presetManager.loadDefaultPreset();
 }

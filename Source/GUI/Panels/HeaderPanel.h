@@ -11,6 +11,7 @@ class HeaderPanel : public juce::Component, private juce::ChangeListener
 public:
     explicit HeaderPanel(VocalCompressorAudioProcessor& processor)
     : presetManager(processor.presetManager),
+      undoManager(processor.undoManager),
       presetBox(processor.presetManager),
       bypassPluginButton("", processor.apvts, ParamNames::getGeneralBypassName(), 20),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), reverseSignalOrderButton)
@@ -30,13 +31,21 @@ public:
                                        VCColors::popupIconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
         saveButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
 
+        AAUITools::setIconButtonImages(undoButton, BinaryData::undoIcon_svg, BinaryData::undoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(redoButton, BinaryData::redoIcon_svg, BinaryData::redoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        undoButton.onClick = [this] { undoManager.undo(); };
+        redoButton.onClick = [this] { undoManager.redo(); };
+
         presetManager.addChangeListener(this);
+        undoManager.addChangeListener(this);
         updatePresetName();
 
         addAndMakeVisible(presetBox);
         addAndMakeVisible(saveButton);
         addAndMakeVisible(bypassPluginButton);
         addAndMakeVisible(reverseSignalOrderButton);
+        addAndMakeVisible(undoButton);
+        addAndMakeVisible(redoButton);
     }
 
     ~HeaderPanel() override
@@ -89,6 +98,10 @@ public:
                                                   .withY(controlY)
                                                   .withHeight(controlHeight)
                                                   .toNearestInt());
+        const auto undoRedoCentreX = (saveButtonRight + resizeButtonX) * 0.5f;
+        const auto undoRedoOffset = (iconSize + iconGap) * 0.5f;
+        undoButton.setBounds(iconButtonBounds.withCentre({undoRedoCentreX - undoRedoOffset, boundsF.getCentreY()}).toNearestInt());
+        redoButton.setBounds(iconButtonBounds.withCentre({undoRedoCentreX + undoRedoOffset, boundsF.getCentreY()}).toNearestInt());
     }
 
     AAPresetBox& getPresetBox() { return presetBox; }
@@ -100,6 +113,13 @@ private:
     void changeListenerCallback(juce::ChangeBroadcaster*) override
     {
         updatePresetName();
+        updateUndoRedoButtons();
+    }
+
+    void updateUndoRedoButtons()
+    {
+        undoButton.setEnabled(undoManager.canUndo());
+        redoButton.setEnabled(undoManager.canRedo());
     }
 
     void updatePresetName()
@@ -119,10 +139,13 @@ private:
 
     VCControlsLAF controlsLAF;
     PresetManager& presetManager;
+    juce::UndoManager& undoManager;
     AAPresetBox presetBox;
     juce::DrawableButton saveButton {"Save preset", juce::DrawableButton::ImageFitted};
     BypassButton bypassPluginButton;
     juce::TextButton reverseSignalOrderButton;
+    juce::DrawableButton undoButton {"Undo", juce::DrawableButton::ImageFitted};
+    juce::DrawableButton redoButton {"Redo", juce::DrawableButton::ImageFitted};
     juce::AudioProcessorValueTreeState::ButtonAttachment reverseSignalOrderButtonAttachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HeaderPanel)

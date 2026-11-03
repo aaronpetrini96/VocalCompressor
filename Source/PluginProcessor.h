@@ -4,6 +4,7 @@
 #include <vector>
 #include "Utilities/ParamNames.h"
 #include "Utilities/PresetManager.h"
+#include "Utilities/AAUndoManager.h"
 #include "DSP/1176Compressor.h"
 #include "DSP/LA2ACompressor.h"
 
@@ -57,7 +58,7 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
 
     //======================= PRESETS =======================
-    juce::UndoManager undoManager;
+    AAUndoManager undoManager;
     PresetManager presetManager {apvts, undoManager};
 
 
