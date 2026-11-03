@@ -10,7 +10,7 @@ class PresetPopupLAF : public juce::LookAndFeel_V4
 public:
     PresetPopupLAF()
     {
-        setColour (juce::TextEditor::backgroundColourId, VCColors::presetBoxBackground);
+        setColour (juce::TextEditor::backgroundColourId, VCColors::popupBackground);
         setColour (juce::TextEditor::textColourId, VCColors::popupText);
     }
 
@@ -25,11 +25,11 @@ public:
 
         if (shouldDrawButtonAsHighlighted)
         {
-            g.setColour (VCColors::presetBoxBackground);
+            g.setColour (VCColors::popupRowHighlight);
             g.fillRoundedRectangle (boundsF, cornerSize);
         }
 
-        g.setColour (VCColors::presetBoxOutline.withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+        g.setColour (VCColors::popupOutline.withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
         g.drawRoundedRectangle (boundsF.reduced (outlineThickness * 0.5f), cornerSize, outlineThickness);
 
         g.setColour ((shouldDrawButtonAsHighlighted ? VCColors::popupText.withMultipliedBrightness (0.6f) : VCColors::popupText).withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
@@ -42,7 +42,7 @@ public:
         const auto boundsF = juce::Rectangle<int> (width, height).toFloat();
         const auto cornerSize = boundsF.getHeight() * VCLook::popupCornerPOH;
         AAUITools::drawOutlinedRoundedRectangle (g, boundsF, cornerSize, boundsF.getHeight() * VCLook::outlineThicknessPOH,
-                                                 textEditor.findColour (juce::TextEditor::backgroundColourId), VCColors::presetBoxOutline);
+                                                 textEditor.findColour (juce::TextEditor::backgroundColourId), VCColors::popupOutline);
     }
 
     void drawTextEditorOutline (juce::Graphics&, int, int, juce::TextEditor&) override { }

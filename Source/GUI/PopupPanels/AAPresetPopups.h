@@ -81,7 +81,7 @@ public:
         juce::Path titleShape;
         titleShape.addRoundedRectangle (titleBounds.getX(), titleBounds.getY(), titleBounds.getWidth(), titleBounds.getHeight(), cornerSize, cornerSize,
                                         true, true, false, false);
-        g.setColour (VCColors::presetBoxBackground);
+        g.setColour (VCColors::popupRowHighlight);
         g.fillPath (titleShape);
 
         g.setColour (VCColors::popupOutline);
