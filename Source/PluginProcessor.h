@@ -72,6 +72,10 @@ private:
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
 
+    juce::dsp::DryWetMixer<float> bypassMixer1176, bypassMixerLA2A, pluginBypassMixer;
+    bool isOrderReversed {false};
+    int orderSwitchSamplesLeft {0};
+
     juce::AudioParameterFloat* input1176Param {nullptr};
     juce::AudioParameterFloat* output1176Param {nullptr};
     juce::AudioParameterFloat* attack1176Param {nullptr};

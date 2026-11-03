@@ -209,8 +209,18 @@ void VocalCompressorAudioProcessor::updateSmootherFromParams(int numSamplesToSki
 //==============================================================================
 void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+    const juce::dsp::ProcessSpec spec {sampleRate, static_cast<juce::uint32>(samplesPerBlock), static_cast<juce::uint32>(getTotalNumOutputChannels())};
     fet1176.prepare(sampleRate);
     la2aComp.prepare(sampleRate);
+
+    bypassMixer1176.setWetMixProportion(bypass1176Param->get() ? 0.f : 1.f);
+    bypassMixerLA2A.setWetMixProportion(bypassLA2AParam->get() ? 0.f : 1.f);
+    pluginBypassMixer.setWetMixProportion(pluginBypassParam->get() ? 0.f : 1.f);
+    for (auto* mixer : {&bypassMixer1176, &bypassMixerLA2A, &pluginBypassMixer})
+        mixer->prepare(spec);
+    isOrderReversed = reverseSignalOrderParam->get();
+    orderSwitchSamplesLeft = 0;
+
     //Reset all smoothers
     for (const auto& [param, smoother] : smootherBindings)
         smoother->reset(sampleRate, 0.05);
@@ -253,44 +263,44 @@ bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 
 void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer)
 {
-    if (bypass1176Param->get() == false)
-    {
-        float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
-        float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
-        float attack = attack1176ParamSmoother.getCurrentValue();
-        float release = release1176ParamSmoother.getCurrentValue();
-        float mix = mix1176ParamSmoother.getCurrentValue();
-        int ratioIndex = ratio1176Param->getIndex();
-        float ratio = (ratioIndex == 0) ? 4.f :
-                      (ratioIndex == 1) ? 8.f :
-                      (ratioIndex == 2) ? 12.f :
-                      (ratioIndex == 3) ? 20.f : 100.f;
+    const auto isBypassed = bypass1176Param->get();
+    juce::dsp::AudioBlock<float> block {buffer};
+    bypassMixer1176.setWetMixProportion(isBypassed ? 0.f : 1.f);
+    bypassMixer1176.pushDrySamples(block);
 
-        fet1176.setParameters(inDB, outDB, attack, release, ratio, mix);
-        fet1176.process(buffer);
-        gR1176 = fet1176.getGainReductionDB();
-    }
-    else
-    {
-        gR1176 = 0.f;
-    }
+    float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
+    float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
+    float attack = attack1176ParamSmoother.getCurrentValue();
+    float release = release1176ParamSmoother.getCurrentValue();
+    float mix = mix1176ParamSmoother.getCurrentValue();
+    int ratioIndex = ratio1176Param->getIndex();
+    float ratio = (ratioIndex == 0) ? 4.f :
+                  (ratioIndex == 1) ? 8.f :
+                  (ratioIndex == 2) ? 12.f :
+                  (ratioIndex == 3) ? 20.f : 100.f;
+
+    fet1176.setParameters(inDB, outDB, attack, release, ratio, mix);
+    fet1176.process(buffer);
+
+    bypassMixer1176.mixWetSamples(block);
+    gR1176 = isBypassed ? 0.f : fet1176.getGainReductionDB();
 }
 
 void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer)
 {
-    if (bypassLA2AParam->get() == false)
-    {
-        float normGain = gainLA2AParamSmoother.getCurrentValue();
-        float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
-        bool limitMode = modeLA2AParam->get();
-        la2aComp.setParameters(normGain, normPeakReduction, limitMode);
-        la2aComp.process(buffer);
-        grLA2A = la2aComp.getGainReduction();
-    }
-    else
-    {
-        grLA2A = 0.f;
-    }
+    const auto isBypassed = bypassLA2AParam->get();
+    juce::dsp::AudioBlock<float> block {buffer};
+    bypassMixerLA2A.setWetMixProportion(isBypassed ? 0.f : 1.f);
+    bypassMixerLA2A.pushDrySamples(block);
+
+    float normGain = gainLA2AParamSmoother.getCurrentValue();
+    float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
+    bool limitMode = modeLA2AParam->get();
+    la2aComp.setParameters(normGain, normPeakReduction, limitMode);
+    la2aComp.process(buffer);
+
+    bypassMixerLA2A.mixWetSamples(block);
+    grLA2A = isBypassed ? 0.f : la2aComp.getGainReduction();
 }
 
 
@@ -299,21 +309,38 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     juce::ScopedNoDenormals noDenormals;
     [[maybe_unused]] auto totalNumInputChannels  = getTotalNumInputChannels();
     [[maybe_unused]] auto totalNumOutputChannels = getTotalNumOutputChannels();
-    
-    //Update Smoothers in Real Time
-    updateSmootherFromParams(buffer.getNumSamples(), SmootherUpdateMode::liveInRealTime);
-    
-    if (pluginBypassParam->get() == false)
+
+    updateSmootherFromParams(buffer.getNumSamples(), SmootherUpdateMode::liveInRealTime); //Update Smoothers in Real Time
+
+    const auto shouldReverseOrder = reverseSignalOrderParam->get();
+    if (shouldReverseOrder != isOrderReversed && orderSwitchSamplesLeft == 0)
+        orderSwitchSamplesLeft = static_cast<int>(getSampleRate() * 0.05);
+
+    const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
+    juce::dsp::AudioBlock<float> block {buffer};
+    pluginBypassMixer.setWetMixProportion(pluginBypassParam->get() || isSwitchingOrder ? 0.f : 1.f);
+    pluginBypassMixer.pushDrySamples(block);
+
+    if (isOrderReversed)
     {
-        if (reverseSignalOrderParam->get() == false)
+        processBlockLA2A(buffer);
+        processBlock1176(buffer);
+    }
+    else
+    {
+        processBlock1176(buffer);
+        processBlockLA2A(buffer);
+    }
+
+    pluginBypassMixer.mixWetSamples(block);
+
+    if (isSwitchingOrder)
+    {
+        orderSwitchSamplesLeft -= buffer.getNumSamples();
+        if (orderSwitchSamplesLeft <= 0)
         {
-            processBlock1176(buffer);
-            processBlockLA2A(buffer);
-        }
-        else
-        {
-            processBlockLA2A(buffer);
-            processBlock1176(buffer);
+            orderSwitchSamplesLeft = 0;
+            isOrderReversed = shouldReverseOrder;
         }
     }
 }
