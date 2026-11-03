@@ -17,12 +17,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     addAndMakeVisible(panel1176);
     addAndMakeVisible(panelLA2A);
 
-    addAndMakeVisible(resizeButton);
-    AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeLines_svg, BinaryData::resizeLines_svgSize,
-                                   juce::Colours::white, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
-    resizeButton.setToggleable(true);
-    resizeButton.setClickingTogglesState(false);
-    resizeButton.onClick = [this] { showUISizeOptions(); };
+    headerPanel.getResizeButton().onClick = [this] { showUISizeOptions(); };
 
     addChildComponent(resizeOptionsPopup);
     resizeOptionsPopup.addComponentListener(this);
@@ -109,18 +104,16 @@ void VocalCompressorAudioProcessorEditor::resized()
     panel1176.setBounds(panel1176Bounds.toNearestInt());
     panelLA2A.setBounds(panelLA2ABounds.toNearestInt());
 
-    const auto resizeButtonSize = boundsFHeight * 0.057f;
-    const auto resizeBtnGap = resizeButtonSize * 0.5f;
-    const auto resizeBtnBounds = boundsF.withSize(resizeButtonSize, resizeButtonSize)
-                                        .withCentre({boundsF.getWidth() - resizeBtnGap, boundsFHeight - resizeBtnGap});
-    resizeButton.setBounds(resizeBtnBounds.toNearestInt());
 
     const auto rowH = headerHeight * 0.6f;
-    const auto sizeOptionsWidth = boundsF.getWidth() * 0.2f;
+    const auto resizeBtnBounds = headerPanel.getResizeButton().getBounds().toFloat();
+
+    const auto rowH = boundsFHeight * VCLook::rowPOH;
+    const auto sizeOptionsWidth = boundsFWidth * 0.2f;
     const auto sizeOptionsHeight = rowH * resizeOptionsPopup.getNumRows();
     resizeOptionsPopup.setBounds(juce::Rectangle<float>(sizeOptionsWidth, sizeOptionsHeight)
                                      .withRightX(resizeBtnBounds.getRight())
-                                     .withBottomY(resizeBtnBounds.getCentreY())
+                                     .withY(resizeBtnBounds.getBottom())
                                      .toNearestInt());
 
     updatePresetPopupBounds();
@@ -152,7 +145,7 @@ void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
             popup.setVisible(false);
     };
 
-    hidePopupUnlessClickedIn(resizeOptionsPopup, resizeButton);
+    hidePopupUnlessClickedIn(resizeOptionsPopup, headerPanel.getResizeButton());
     hidePopupUnlessClickedIn(presetBrowser, headerPanel.getPresetBox());
 }
 

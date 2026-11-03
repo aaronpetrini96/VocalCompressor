@@ -56,7 +56,6 @@ private:
     float uiScale {0.0f};
     AAResizeUI uiResize {uiScale, guiWidth, guiHeight};
     UISizeOptionsPanel resizeOptionsPopup {uiResize};
-    juce::DrawableButton resizeButton {"UI Size", juce::DrawableButton::ImageFitted};
 
     AAPresetBrowser presetBrowser {audioProcessor.presetManager};
     AAPresetPopup presetPopup;
