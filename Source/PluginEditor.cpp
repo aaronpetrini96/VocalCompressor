@@ -31,6 +31,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     presetBrowser.addComponentListener(this);
     addChildComponent(presetPopup);
     presetPopup.addComponentListener(this);
+    addChildComponent(modalBlocker);
 
     headerPanel.onPresetNameClicked = [this] { showPresetBrowser(); };
     headerPanel.onSaveClicked = [this]
@@ -58,12 +59,16 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     {
         auto& presetManager = audioProcessor.presetManager;
 
-        if (action == AAPresetPopup::Action::save)
-            presetManager.savePreset(presetName);
-        else
-            presetManager.deletePreset(presetFileToEdit);
-
         presetPopup.setVisible(false);
+
+        if (action == AAPresetPopup::Action::save)
+        {
+            presetManager.savePreset(presetName);
+            presetBrowser.showUserPresets();
+            return;
+        }
+
+        presetManager.deletePreset(presetFileToEdit);
         presetBrowser.refresh();
     };
 
@@ -116,6 +121,7 @@ void VocalCompressorAudioProcessorEditor::resized()
     const auto presetBrowserBounds = boundsF.withSizeKeepingCentre(boundsFWidth * 0.3f, presetBrowser.getNumRows() * rowH);
     presetBrowser.setBounds(presetBrowserBounds.withY(headerBounds.getBottom()).toNearestInt());
     presetPopup.setBounds(boundsF.withSizeKeepingCentre(presetBrowserBounds.getWidth(), boundsFHeight * 0.3f).toNearestInt());
+    modalBlocker.setBounds(getLocalBounds());
 }
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
@@ -145,6 +151,12 @@ void VocalCompressorAudioProcessorEditor::timerCallback()
     panelLA2A.updateGainReduction();
 }
 
+void VocalCompressorAudioProcessorEditor::mouseDown(const juce::MouseEvent& event)
+{
+    if (event.eventComponent == &modalBlocker)
+        presetPopup.setVisible(false);
+}
+
 void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
 {
     const auto isClickInside = [&event] (const juce::Component& component)
@@ -159,13 +171,18 @@ void VocalCompressorAudioProcessorEditor::mouseUp(const juce::MouseEvent& event)
     };
 
     hidePopupUnlessClickedIn(resizeOptionsPopup, headerPanel.getResizeButton());
-    hidePopupUnlessClickedIn(presetBrowser, headerPanel.getPresetBox());
+    hidePopupUnlessClickedIn(presetBrowser, headerPanel.getPresetBox(), presetPopup, modalBlocker);
 }
 
 void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Component& component)
 {
     if (&component == &resizeOptionsPopup)
         headerPanel.getResizeButton().setToggleState(resizeOptionsPopup.isVisible(), juce::dontSendNotification);
+    else if (&component == &presetPopup)
+    {
+        modalBlocker.setVisible(presetPopup.isVisible());
+        modalBlocker.toBehind(&component);
+    }
 
     updatePanelsDimming();
 }
@@ -206,16 +223,12 @@ void VocalCompressorAudioProcessorEditor::showPresetBrowser()
         presetBrowser.setVisible(false);
         return;
     }
-    presetPopup.setVisible(false);
-    resizeOptionsPopup.setVisible(false);
     presetBrowser.refresh();
     showPopup(presetBrowser);
 }
 
 void VocalCompressorAudioProcessorEditor::showPresetPopup(AAPresetPopup::Action action, const juce::String& presetName)
 {
-    presetBrowser.setVisible(false);
-    resizeOptionsPopup.setVisible(false);
     showPopup(presetPopup);
     presetPopup.prepare(action, presetName);
 }

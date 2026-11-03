@@ -32,6 +32,7 @@ public:
     void resized() override;
     void paintOverChildren (juce::Graphics& g) override;
     void timerCallback() override;
+    void mouseDown (const juce::MouseEvent& event) override;
     void mouseUp (const juce::MouseEvent& event) override;
     void componentVisibilityChanged (juce::Component& component) override;
 
@@ -59,6 +60,7 @@ private:
 
     AAPresetBrowser presetBrowser {audioProcessor.presetManager};
     AAPresetPopup presetPopup;
+    juce::Component modalBlocker;
     juce::File presetFileToEdit;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalCompressorAudioProcessorEditor)

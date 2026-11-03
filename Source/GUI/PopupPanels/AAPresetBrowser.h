@@ -31,7 +31,11 @@ public:
         userTabButton.onClick = [this] { setPresetType (PresetManager::PresetType::user); };
 
         for (auto* tabButton : {&defaultTabButton, &userTabButton})
+        {
+            tabButton->setRadioGroupId (7391);
+            tabButton->setClickingTogglesState (true);
             addAndMakeVisible (tabButton);
+        }
     }
 
     ~AAPresetBrowser() override
