@@ -11,17 +11,17 @@ namespace AAUITools
     }
 
     inline void setIconButtonImages (juce::DrawableButton& button, const void* iconData, const int iconDataSize,
-                                     const juce::Colour iconColour, const juce::Colour normalColour, const juce::Colour overColour, const juce::Colour activeColour)
+                                     const juce::Colour iconColour, const juce::Colour overColour, const juce::Colour activeColour, const juce::Colour activeOverColour)
     {
-        if (const auto icon = juce::Drawable::createFromImageData (iconData, (size_t) iconDataSize))
+        if (const auto iconNormal = juce::Drawable::createFromImageData (iconData,  static_cast<size_t>(iconDataSize)))
         {
-            const auto iconNormal = icon->createCopy();
-            const auto iconOver = icon->createCopy();
-            const auto iconActive = icon->createCopy();
-            iconNormal->replaceColour (iconColour, normalColour);
+            const auto iconOver = iconNormal->createCopy();
+            const auto iconActive = iconNormal->createCopy();
+            const auto iconActiveOver = iconNormal->createCopy();
             iconOver->replaceColour (iconColour, overColour);
             iconActive->replaceColour (iconColour, activeColour);
-            button.setImages (iconNormal.get(), iconOver.get(), iconActive.get(), nullptr, iconActive.get());
+            iconActiveOver->replaceColour (iconColour, activeOverColour);
+            button.setImages (iconNormal.get(), iconOver.get(), iconActive.get(), nullptr, iconActive.get(), iconActiveOver.get());
             button.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
             button.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
         }
