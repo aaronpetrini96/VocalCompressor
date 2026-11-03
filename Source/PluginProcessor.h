@@ -1,6 +1,7 @@
 #pragma once
 
-#include <JuceHeader.h>
+#include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_dsp/juce_dsp.h>
 #include <vector>
 #include "Utilities/ParamNames.h"
 #include "Utilities/PresetManager.h"
@@ -67,7 +68,7 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     float gR1176{0.f}, grLA2A {0.f};
     
 private:
-    
+    const int versionHint = 1;
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
 
