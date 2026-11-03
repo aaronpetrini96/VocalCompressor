@@ -122,7 +122,6 @@ public:
                     {
                         juce::PopupMenu presetMenu;
                         presetMenu.setLookAndFeel (&presetBrowserLAF);
-                        presetMenu.addItem ("Rename", [this, presetFile] { if (onRenameRequested != nullptr) onRenameRequested (presetFile); });
                         presetMenu.addItem ("Delete", [this, presetFile] { if (onDeleteRequested != nullptr) onDeleteRequested (presetFile); });
                         presetMenu.showMenuAsync (juce::PopupMenu::Options().withMousePosition().withDeletionCheck(*this));
                     }
@@ -144,7 +143,6 @@ public:
 
 
     std::function<void (const juce::File& presetFile)> onDeleteRequested;
-    std::function<void (const juce::File& presetFile)> onRenameRequested;
     std::function<void()> onRowsChanged;
 
 private:

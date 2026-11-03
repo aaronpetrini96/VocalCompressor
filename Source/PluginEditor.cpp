@@ -40,11 +40,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     headerPanel.onBypassChanged = [this] { updatePanelsDimming(); };
 
     presetBrowser.onRowsChanged = [this] { resized(); };
-    presetBrowser.onRenameRequested = [this] (const juce::File& presetFile)
-    {
-        presetFileToEdit = presetFile;
-        showPresetPopup(AAPresetPopup::Action::rename, presetFile.getFileNameWithoutExtension());
-    };
     presetBrowser.onDeleteRequested = [this] (const juce::File& presetFile)
     {
         presetFileToEdit = presetFile;
@@ -65,8 +60,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 
         if (action == AAPresetPopup::Action::save)
             presetManager.savePreset(presetName);
-        else if (action == AAPresetPopup::Action::rename)
-            presetManager.renamePreset(presetFileToEdit, presetName);
         else
             presetManager.deletePreset(presetFileToEdit);
 

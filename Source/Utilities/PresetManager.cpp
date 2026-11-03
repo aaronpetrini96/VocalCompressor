@@ -56,20 +56,6 @@ bool PresetManager::deletePreset(const juce::File& presetFile)
     return true;
 }
 
-bool PresetManager::renamePreset(const juce::File& presetFile, const juce::String& newPresetName)
-{
-    const auto renamedPresetFile = getUserPresetFile (newPresetName);
-    const auto legalPresetName = renamedPresetFile.getFileNameWithoutExtension();
-
-    if (legalPresetName.isEmpty() || ! presetFile.existsAsFile() || ! presetFile.moveFileTo (renamedPresetFile))
-        return false;
-
-    if (getCurrentPresetName() == presetFile.getFileNameWithoutExtension())
-        setCurrentPresetName (legalPresetName);
-
-    return true;
-}
-
 void PresetManager::loadPresetFile(const juce::File& presetFile)
 {
     const auto xml = juce::XmlDocument::parse (presetFile);

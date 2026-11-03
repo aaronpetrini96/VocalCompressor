@@ -13,7 +13,7 @@
 class AAPresetPopup : public juce::Component
 {
 public:
-    enum class Action { save, rename, remove };
+    enum class Action { save, remove };
 
     AAPresetPopup()
     {
@@ -147,7 +147,7 @@ public:
         confirmButton.setButtonText (getConfirmText());
 
         const auto isRemove = action == Action::remove;
-        title = isRemove ? "DELETE PRESET" : action == Action::save ? "SAVE PRESET" : "RENAME PRESET";
+        title = isRemove ? "DELETE PRESET" : "SAVE PRESET";
         repaint();
         nameEditor.setVisible (! isRemove);
         messageLabel.setVisible (isRemove);
@@ -175,7 +175,7 @@ public:
 private:
     juce::String getConfirmText() const
     {
-        return action == Action::save ? "Save" : action == Action::rename ? "Rename" : "Delete";
+        return action == Action::save ? "Save" : "Delete";
     }
 
     Action action {Action::save};
