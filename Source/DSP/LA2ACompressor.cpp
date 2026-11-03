@@ -1,6 +1,6 @@
 #include "LA2ACompressor.h"
 
-void LA2ACompressor::prepare(double newSampleRate, int samplesPerBlock)
+void LA2ACompressor::prepare(double newSampleRate)
 {
     sampleRate = static_cast<float>(newSampleRate);
     attackCoeff  = std::exp(-1.0f / (0.01f * sampleRate));

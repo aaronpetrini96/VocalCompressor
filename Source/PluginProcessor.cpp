@@ -211,8 +211,8 @@ void VocalCompressorAudioProcessor::updateSmootherFromParams(int numSamplesToSki
 //==============================================================================
 void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    fet1176.prepare(sampleRate, samplesPerBlock);
-    la2aComp.prepare(sampleRate, samplesPerBlock);
+    fet1176.prepare(sampleRate);
+    la2aComp.prepare(sampleRate);
     //Reset all smoothers
     for (const auto& [param, smoother] : smootherBindings)
         smoother->reset(sampleRate, 0.05);

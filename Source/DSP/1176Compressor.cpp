@@ -1,10 +1,9 @@
 #include "1176Compressor.h"
 
-void FET1176Compressor::prepare(double newSampleRate, int samplesPerBlock)
+void FET1176Compressor::prepare(double newSampleRate)
 {
     sampleRate = static_cast<float>(newSampleRate);
     reset();
-    
     // 1176-style fast meter ballistics
     grAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
     grReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
@@ -16,18 +15,16 @@ void FET1176Compressor::reset()
 }
 
 
-float FET1176Compressor::getInputGainDB(float normValue)
+float FET1176Compressor::getInputGainDB(float normValue) const
 {
     // reverse mapping: at 0 → -inf (or -40dB floor), at 1 → +24dB
-    inGainNorm = normValue;
     if (normValue < 0.01f)
         return -40.0f;
     return juce::jmap(normValue, 0.0f, 1.0f, -20.0f, 24.0f);
 }
-float FET1176Compressor::getOutputGainDB(float normValue)
+float FET1176Compressor::getOutputGainDB(float normValue) const
 {
-    outGainNorm = normValue;
-    // more linear, from -20 to +20 dB
+    // more linear, from -60 to +20 dB
     return juce::jmap(normValue, 0.0f, 1.0f, -60.0f, 20.0f);
 }
 

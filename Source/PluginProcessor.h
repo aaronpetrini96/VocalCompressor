@@ -65,7 +65,6 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     
     
     float gR1176{0.f}, grLA2A {0.f};
-    bool allButtonsIn {false};
     
 private:
     

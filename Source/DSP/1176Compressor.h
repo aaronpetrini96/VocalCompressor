@@ -4,30 +4,29 @@
 class FET1176Compressor
 {
 public:
-    void prepare(double newSampleRate, int samplesPerBlock);
+    void prepare(double newSampleRate);
     void reset();
-    
-    float getInputGainDB(float);
-    float getOutputGainDB(float);
+
+    float getInputGainDB(float) const;
+    float getOutputGainDB(float) const;
     void setParameters(float inputGain, float outputGain, float attack, float release, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
     float revASaturation(float x, float drive);
-    
+
+    float getGainReductionDB() const {return grEnv;}
+
+
+    private:
+    float sampleRate = 44100.f;
+
+//    Gain Reduction Meter
     float grEnv = 0.0f;
     float grAttackCoeff = 0.0f;
     float grReleaseCoeff = 0.0f;
 
-    float getGainReductionDB() const {return grEnv;}
-
-    
-    private:
-    float sampleRate = 44100.f;
-    
 //    Params
     float inputGain = 1.f;
-    float inGainNorm = 0.f;
     float outputGain = 1.f;
-    float outGainNorm = 0.f;
     float attackCoeff = 0.f;
     float releaseCoeff = 0.f;
     float ratio = 4.f;
