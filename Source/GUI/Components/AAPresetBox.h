@@ -19,8 +19,8 @@ public:
     void drawButtonText (juce::Graphics& g, juce::TextButton& button, bool highlighted, bool) override
     {
         const auto boundsF = button.getLocalBounds().toFloat();
-        g.setColour (highlighted ? VCColors::fadedWhiteText.withMultipliedBrightness (0.6f) : VCColors::fadedWhiteText);
-        g.setFont (VCFonts::barlowCondensedSemiBold (boundsF.getHeight() * VCLook::fontHeightPOH));
+        g.setColour (highlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
+        g.setFont (VCFonts::barlowCondensedRegular (boundsF.getHeight() * VCLook::fontHeightPOH));
         g.drawFittedText (button.getButtonText(), boundsF.toNearestInt(), juce::Justification::centred, 1);
     }
 

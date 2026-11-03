@@ -8,7 +8,7 @@ namespace VCColors
     inline const juce::Colour almostBlack {5, 5, 5};
     inline const juce::Colour darkRed {200, 30, 30};
     inline const juce::Colour fadedWhiteText {200, 200, 200};
-    inline const juce::Colour almostWhite {240, 240, 240};
+    inline const juce::Colour almostWhiteText {240, 240, 240};
 
     inline const juce::Colour buttonBackground {50, 50, 55};
     inline const juce::Colour ratioButtonOff {66, 66, 73};
@@ -24,7 +24,7 @@ namespace VCColors
     inline const juce::Colour popupOutline {40, 50, 70};
     inline const juce::Colour popupText = fadedWhiteText;
     inline const juce::Colour popupRowHighlight {35, 42, 60};
-    inline const juce::Colour popupSelectedText = almostWhite;
+    inline const juce::Colour popupSelectedText = almostWhiteText;
 }
 
 namespace VCFonts
@@ -62,7 +62,7 @@ namespace VCLook
 {
     inline constexpr float popupCornerPOH {0.0f};
     inline constexpr float outlineThicknessPOH {0.06f};
-    inline constexpr float fontHeightPOH {0.7f};
+    inline constexpr float fontHeightPOH {0.85f};
     inline constexpr float popupTitleRowRatio {1.1f};
     inline constexpr float rowPOH {0.045f};
     inline constexpr int presetNameMaxLength {40};

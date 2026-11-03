@@ -13,8 +13,6 @@
 class AAPresetPopup : public juce::Component
 {
 public:
-    enum class Action { save, remove };
-
     AAPresetPopup()
     {
         setAlwaysOnTop (true);
@@ -29,7 +27,7 @@ public:
         {
             confirmButton.setEnabled (juce::File::createLegalFileName (nameEditor.getText().trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (nameEditor.getText())));
             isConfirmingOverwrite = false;
-            confirmButton.setButtonText (getConfirmText());
+            confirmButton.setButtonText ("Save");
         };
         addChildComponent (nameEditor);
 
@@ -45,10 +43,9 @@ public:
 
         confirmButton.onClick = [this]
         {
-            const auto isRemove = action == Action::remove;
-            const auto presetName = isRemove ? preparedPresetName : nameEditor.getText();
+            const auto presetName = nameEditor.getText();
 
-            if (! isRemove && ! isConfirmingOverwrite && presetExists != nullptr && presetExists (presetName))
+            if (! isConfirmingOverwrite && presetExists != nullptr && presetExists (presetName))
             {
                 isConfirmingOverwrite = true;
                 confirmButton.setButtonText ("Overwrite");
@@ -61,7 +58,7 @@ public:
             }
 
             if (onConfirm != nullptr)
-                onConfirm (action, presetName);
+                onConfirm (presetName);
         };
         cancelButton.onClick = [this] { setVisible (false); };
 
@@ -139,27 +136,13 @@ public:
         return false;
     }
 
-    void prepare (const Action newAction, const juce::String& presetName)
+    void prepare (const juce::String& presetName)
     {
-        action = newAction;
-        preparedPresetName = presetName;
         isConfirmingOverwrite = false;
-        confirmButton.setButtonText (getConfirmText());
-
-        const auto isRemove = action == Action::remove;
-        title = isRemove ? "DELETE PRESET" : "SAVE PRESET";
-        repaint();
-        nameEditor.setVisible (! isRemove);
-        messageLabel.setVisible (isRemove);
-        nameLabel.setVisible (! isRemove);
-
-        if (isRemove)
-        {
-            messageLabel.setText ("Delete \"" + presetName + "\"?", juce::dontSendNotification);
-            confirmButton.setEnabled (true);
-            grabKeyboardFocus();
-            return;
-        }
+        confirmButton.setButtonText ("Save");
+        nameEditor.setVisible (true);
+        nameLabel.setVisible (true);
+        messageLabel.setVisible (false);
 
         nameEditor.setText (presetName, juce::dontSendNotification);
         confirmButton.setEnabled (juce::File::createLegalFileName (presetName.trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (presetName)));
@@ -167,26 +150,19 @@ public:
         nameEditor.selectAll();
     }
 
-    std::function<void (Action action, const juce::String& presetName)> onConfirm;
+    std::function<void (const juce::String& presetName)> onConfirm;
     std::function<bool (const juce::String& presetName)> presetExists;
     std::function<bool (const juce::String& presetName)> isNameReserved;
     float numRows {6.f};
 
 private:
-    juce::String getConfirmText() const
-    {
-        return action == Action::save ? "Save" : "Delete";
-    }
-
-    Action action {Action::save};
     PresetPopupLAF presetPopupLAF;
-    juce::String title;
+    const juce::String title {"SAVE PRESET"};
     juce::Rectangle<float> titleBounds;
     juce::Label messageLabel {"messageLabel", ""};
     juce::Label nameLabel {"nameLabel", "New preset name"};
     juce::TextEditor nameEditor;
     juce::TextButton confirmButton, cancelButton {"Cancel"};
-    juce::String preparedPresetName;
     bool isConfirmingOverwrite {false};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AAPresetPopup)

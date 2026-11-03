@@ -116,6 +116,7 @@ public:
     }
 
     AAPresetBox& getPresetBox() { return presetBox; }
+    juce::DrawableButton& getResizeButton() { return resizeButton; }
 
     std::function<void()> onPresetNameClicked;
     std::function<void()> onSaveClicked;
@@ -124,7 +125,7 @@ public:
     bool isBypassed() const { return bypassPluginButton.getToggleState(); }
     bool is1176Bypassed() const { return unitTitle1176Button.getToggleState(); }
     bool isLA2ABypassed() const { return unitTitleLA2AButton.getToggleState(); }
-    juce::DrawableButton& getResizeButton() { return resizeButton; }
+
 
 private:
     void changeListenerCallback(juce::ChangeBroadcaster*) override

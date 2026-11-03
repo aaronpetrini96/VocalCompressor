@@ -33,15 +33,12 @@ public:
     void paintOverChildren (juce::Graphics& g) override;
     void timerCallback() override;
     void mouseDown (const juce::MouseEvent& event) override;
-    void mouseUp (const juce::MouseEvent& event) override;
     void componentVisibilityChanged (juce::Component& component) override;
 
 private:
     VocalCompressorAudioProcessor& audioProcessor;
-    void showUISizeOptions();
-    void showPopup (juce::Component& popup);
-    void showPresetBrowser();
-    void showPresetPopup (AAPresetPopup::Action action, const juce::String& presetName);
+    void togglePopup (juce::Component& popup, const std::function<void()>& prepareContent);
+    bool isAnyPopupVisible() const;
     void updatePanelsDimming();
     void updateEditorSize();
 
@@ -60,8 +57,10 @@ private:
 
     AAPresetBrowser presetBrowser {audioProcessor.presetManager};
     AAPresetPopup presetPopup;
+
+    const std::array<juce::Component*, 3> popups {&resizeOptionsPopup, &presetBrowser, &presetPopup};
+    juce::Component* popupClosedOnMouseDown {nullptr};
     juce::Component modalBlocker;
-    juce::File presetFileToEdit;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalCompressorAudioProcessorEditor)
 };

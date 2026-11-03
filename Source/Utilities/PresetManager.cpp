@@ -45,17 +45,6 @@ void PresetManager::savePreset(const juce::String& presetName)
     setCurrentPresetName (legalPresetName);
 }
 
-bool PresetManager::deletePreset(const juce::File& presetFile)
-{
-    if (! presetFile.existsAsFile() || ! presetFile.deleteFile())
-        return false;
-
-    if (getCurrentPresetName() == presetFile.getFileNameWithoutExtension())
-        setCurrentPresetName ({});
-
-    return true;
-}
-
 void PresetManager::loadPresetFile(const juce::File& presetFile)
 {
     const auto xml = juce::XmlDocument::parse (presetFile);

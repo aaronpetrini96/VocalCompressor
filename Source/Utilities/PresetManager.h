@@ -20,7 +20,6 @@ public:
     };
 
     void savePreset(const juce::String& presetName);
-    bool deletePreset(const juce::File& presetFile);
     void loadPresetFile(const juce::File& presetFile);
     void loadAdjacentPreset(int indexOffset);
     juce::Array<juce::File> getPresetFiles(PresetType presetType) const;
