@@ -9,12 +9,13 @@ public:
 
     void drawButtonBackground(juce::Graphics&, juce::Button&, const juce::Colour&, bool, bool) override {}
 
-    void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool isHighlighted, bool) override
+    void drawButtonText(juce::Graphics& g, juce::TextButton& button, bool isHighlighted, bool isDown) override
     {
         const auto boundsF = button.getLocalBounds().toFloat();
         const auto activeColour = isHighlighted ? VCColors::iconActiveOver : VCColors::iconActive;
         const auto inactiveColour = isHighlighted ? VCColors::iconOver : button.findColour(juce::TextButton::textColourOffId);
-        const auto textColour = button.getToggleState() ? activeColour : inactiveColour;
+        const auto isShownActive = button.getToggleState() != isDown;
+        const auto textColour = isShownActive ? activeColour : inactiveColour;
 
         g.setColour(textColour);
         g.setFont(VCFonts::barlowCondensedSemiBoldItalic(boundsF.getHeight()));

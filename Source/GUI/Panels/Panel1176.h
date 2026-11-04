@@ -50,7 +50,7 @@ public:
         g.drawImage(darkBackground, boundsF, juce::RectanglePlacement::stretchToFit);
 
         const auto bigKnobSize = static_cast<float>(input1176Dial.getWidth());
-        const auto scaleFont = VCFonts::barlowCondensedMedium(bigKnobSize * 0.1f);
+        const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.07f);
         const auto bigScaleInset = bigKnobSize * 0.025f;
         const auto bigLabelGap = bigKnobSize * 0.0333f;
         const auto dotSize = bigKnobSize * 0.03f;
