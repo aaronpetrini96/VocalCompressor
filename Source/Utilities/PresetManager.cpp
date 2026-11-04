@@ -60,12 +60,6 @@ void PresetManager::loadPresetFile(const juce::File& presetFile)
                                                  presetState, presetFile.getFileNameWithoutExtension()));
 }
 
-void PresetManager::loadDefaultPreset()
-{
-    loadPresetFile (getPresetFolder().getChildFile ("Default.xml"));
-    undoManager.clearUndoHistory();
-}
-
 void PresetManager::loadAdjacentPreset(const int indexOffset)
 {
     auto presetFiles = getPresetFiles (PresetType::factory);

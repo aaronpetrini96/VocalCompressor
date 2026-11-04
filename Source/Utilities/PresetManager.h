@@ -27,7 +27,6 @@ public:
     bool isFactoryPresetName(const juce::String& presetName) const;
     juce::String getCurrentPresetName() const;
     void setCurrentPresetName (const juce::String& presetName);
-    void loadDefaultPreset();
     void setPresetModified(bool isModified);
     bool isPresetModified() const;
 

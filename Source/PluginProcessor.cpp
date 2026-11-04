@@ -25,7 +25,7 @@ VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
     linkParameters();
     undoManager.trackParameters(*this);
     PresetManager::installFactoryPresets();
-    presetManager.loadDefaultPreset();
+    presetManager.setCurrentPresetName("Default");
 }
 
 
@@ -37,6 +37,7 @@ VocalCompressorAudioProcessor::~VocalCompressorAudioProcessor()
 juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+    const int versionHint = 1;
     juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
     
 //    1176

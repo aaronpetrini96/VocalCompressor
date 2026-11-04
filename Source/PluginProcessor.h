@@ -70,7 +70,6 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     float gR1176{0.f}, grLA2A {0.f};
     
 private:
-    const int versionHint = 1;
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
 
