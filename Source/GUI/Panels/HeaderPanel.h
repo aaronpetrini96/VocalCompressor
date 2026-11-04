@@ -17,7 +17,7 @@ public:
       unitTitleLA2AButtonAttachment(processor.apvts, ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), signalOrderButton)
     {
-        const auto iconNormal = juce::Drawable::createFromImageData (BinaryData::arrowsOcon_svg,  BinaryData::arrowsOcon_svgSize);
+        const auto iconNormal = juce::Drawable::createFromImageData (BinaryData::arrowsIcon_svg,  BinaryData::arrowsIcon_svgSize);
         const auto iconOver = iconNormal->createCopy();
         const auto iconDown = iconNormal->createCopy();
         iconOver->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
