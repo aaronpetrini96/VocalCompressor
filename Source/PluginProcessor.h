@@ -3,7 +3,9 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 #include <vector>
+
 #include "Utilities/ParamNames.h"
+#include "Utilities/AADspTools.h"
 #include "Utilities/PresetManager.h"
 #include "Utilities/AAUndoManager.h"
 #include "DSP/1176Compressor.h"
@@ -72,9 +74,11 @@ private:
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
 
-    juce::dsp::DryWetMixer<float> bypassMixer1176, bypassMixerLA2A, pluginBypassMixer;
+    AADspTools::SmoothedBypass bypass1176, bypassLA2A, pluginBypass;
+
     bool isOrderReversed {false};
     int orderSwitchSamplesLeft {0};
+
 
     juce::AudioParameterFloat* input1176Param {nullptr};
     juce::AudioParameterFloat* output1176Param {nullptr};

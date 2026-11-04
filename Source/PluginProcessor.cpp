@@ -209,15 +209,13 @@ void VocalCompressorAudioProcessor::updateSmootherFromParams(int numSamplesToSki
 //==============================================================================
 void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    const juce::dsp::ProcessSpec spec {sampleRate, static_cast<juce::uint32>(samplesPerBlock), static_cast<juce::uint32>(getTotalNumOutputChannels())};
     fet1176.prepare(sampleRate);
     la2aComp.prepare(sampleRate);
 
-    bypassMixer1176.setWetMixProportion(bypass1176Param->get() ? 0.f : 1.f);
-    bypassMixerLA2A.setWetMixProportion(bypassLA2AParam->get() ? 0.f : 1.f);
-    pluginBypassMixer.setWetMixProportion(pluginBypassParam->get() ? 0.f : 1.f);
-    for (auto* mixer : {&bypassMixer1176, &bypassMixerLA2A, &pluginBypassMixer})
-        mixer->prepare(spec);
+    const auto numChannels = std::max (getTotalNumInputChannels(), getTotalNumOutputChannels());
+    bypass1176.prepare (sampleRate, samplesPerBlock, numChannels, bypass1176Param->get());
+    bypassLA2A.prepare (sampleRate, samplesPerBlock, numChannels, bypassLA2AParam->get());
+    pluginBypass.prepare (sampleRate, samplesPerBlock, numChannels, pluginBypassParam->get());
     isOrderReversed = reverseSignalOrderParam->get();
     orderSwitchSamplesLeft = 0;
 
@@ -264,42 +262,60 @@ bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer)
 {
     const auto isBypassed = bypass1176Param->get();
-    juce::dsp::AudioBlock<float> block {buffer};
-    bypassMixer1176.setWetMixProportion(isBypassed ? 0.f : 1.f);
-    bypassMixer1176.pushDrySamples(block);
 
-    float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
-    float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
-    float attack = attack1176ParamSmoother.getCurrentValue();
-    float release = release1176ParamSmoother.getCurrentValue();
-    float mix = mix1176ParamSmoother.getCurrentValue();
-    int ratioIndex = ratio1176Param->getIndex();
-    float ratio = (ratioIndex == 0) ? 4.f :
+    bypass1176.setBypassed(isBypassed);
+    if (bypass1176.isFullyBypassed())
+    {
+        fet1176.reset();
+        gR1176 = 0.f;
+        return;
+    }
+
+    const float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
+    const float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
+    const float attack = attack1176ParamSmoother.getCurrentValue();
+    const float release = release1176ParamSmoother.getCurrentValue();
+    const float mix = mix1176ParamSmoother.getCurrentValue();
+    const int ratioIndex = ratio1176Param->getIndex();
+    const float ratio = (ratioIndex == 0) ? 4.f :
                   (ratioIndex == 1) ? 8.f :
                   (ratioIndex == 2) ? 12.f :
                   (ratioIndex == 3) ? 20.f : 100.f;
 
     fet1176.setParameters(inDB, outDB, attack, release, ratio, mix);
-    fet1176.process(buffer);
+    bypass1176.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
+                       [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                       {
+                           juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
+                           fet1176.process(chunkBuffer);
+                       });
 
-    bypassMixer1176.mixWetSamples(block);
     gR1176 = isBypassed ? 0.f : fet1176.getGainReductionDB();
 }
 
 void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer)
 {
     const auto isBypassed = bypassLA2AParam->get();
-    juce::dsp::AudioBlock<float> block {buffer};
-    bypassMixerLA2A.setWetMixProportion(isBypassed ? 0.f : 1.f);
-    bypassMixerLA2A.pushDrySamples(block);
+
+    bypassLA2A.setBypassed(isBypassed);
+    if (bypassLA2A.isFullyBypassed())
+    {
+        la2aComp.reset();
+        grLA2A = 0.f;
+        return;
+    }
 
     float normGain = gainLA2AParamSmoother.getCurrentValue();
     float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
     bool limitMode = modeLA2AParam->get();
     la2aComp.setParameters(normGain, normPeakReduction, limitMode);
-    la2aComp.process(buffer);
+    bypassLA2A.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
+                       [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                       {
+                           juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
+                           la2aComp.process(chunkBuffer);
+                       });
 
-    bypassMixerLA2A.mixWetSamples(block);
     grLA2A = isBypassed ? 0.f : la2aComp.getGainReduction();
 }
 
@@ -317,22 +333,23 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         orderSwitchSamplesLeft = static_cast<int>(getSampleRate() * 0.05);
 
     const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
-    juce::dsp::AudioBlock<float> block {buffer};
-    pluginBypassMixer.setWetMixProportion(pluginBypassParam->get() || isSwitchingOrder ? 0.f : 1.f);
-    pluginBypassMixer.pushDrySamples(block);
+    pluginBypass.setBypassed(pluginBypassParam->get() || isSwitchingOrder);
+    pluginBypass.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
+                         [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                         {
+                             juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
 
-    if (isOrderReversed)
-    {
-        processBlockLA2A(buffer);
-        processBlock1176(buffer);
-    }
-    else
-    {
-        processBlock1176(buffer);
-        processBlockLA2A(buffer);
-    }
-
-    pluginBypassMixer.mixWetSamples(block);
+                             if (isOrderReversed)
+                             {
+                                 processBlockLA2A(chunkBuffer);
+                                 processBlock1176(chunkBuffer);
+                             }
+                             else
+                             {
+                                 processBlock1176(chunkBuffer);
+                                 processBlockLA2A(chunkBuffer);
+                             }
+                         });
 
     if (isSwitchingOrder)
     {
