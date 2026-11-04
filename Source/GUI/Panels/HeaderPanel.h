@@ -17,8 +17,14 @@ public:
       unitTitleLA2AButtonAttachment(processor.apvts, ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), signalOrderButton)
     {
-        AAUITools::setIconButtonImages(signalOrderButton, BinaryData::arrowsOcon_svg, BinaryData::arrowsOcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
-        signalOrderButton.setImages(signalOrderButton.getNormalImage(), signalOrderButton.getOverImage(), signalOrderButton.getDownImage());
+        const auto iconNormal = juce::Drawable::createFromImageData (BinaryData::arrowsOcon_svg,  BinaryData::arrowsOcon_svgSize);
+        const auto iconOver = iconNormal->createCopy();
+        const auto iconDown = iconNormal->createCopy();
+        iconOver->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
+        iconDown->replaceColour (VCColors::almostWhiteText,VCColors::iconActive);
+        signalOrderButton.setImages (iconNormal.get(), iconOver.get(), iconDown.get(), nullptr, iconNormal.get(), iconOver.get(), iconDown.get());
+        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
+        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
         signalOrderButton.setClickingTogglesState(true);
         signalOrderButton.onStateChange = [this] { resized(); };
 
@@ -33,20 +39,20 @@ public:
 
         presetBox.onNameClicked = [this] { if (onPresetNameClicked != nullptr) onPresetNameClicked(); };
 
-        AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         saveButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
 
-        AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
 
         bypassPluginButton.setClickingTogglesState(true);
         bypassPluginButton.onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
 
-        AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare2_svg, BinaryData::resizeSquare2_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare2_svg, BinaryData::resizeSquare2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         resizeButton.setToggleable(true);
         resizeButton.setClickingTogglesState(false);
 
-        AAUITools::setIconButtonImages(undoButton, BinaryData::undoIcon_svg, BinaryData::undoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
-        AAUITools::setIconButtonImages(redoButton, BinaryData::redoIcon_svg, BinaryData::redoIcon_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(undoButton, BinaryData::undoIcon_svg, BinaryData::undoIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages(redoButton, BinaryData::redoIcon_svg, BinaryData::redoIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         undoButton.onClick = [this] { undoManager.undo(); };
         redoButton.onClick = [this] { undoManager.redo(); };
 

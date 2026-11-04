@@ -57,13 +57,13 @@ public:
         const auto isSelected = button.getToggleState();
 
         //Colors
-        const auto tabButtonTextColour = isSelected ? VCColors::popupSelectedText : VCColors::popupText.withMultipliedAlpha (isHighlighted ? 0.8f : 0.4f);
+        const auto tabButtonTextColour = isSelected ? VCColors::popupSelectedText : VCColors::fadedWhiteText.withMultipliedAlpha (isHighlighted ? 0.8f : 0.4f);
         const auto presetTextColour = isHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText;
         const auto buttonTextColour = isTabButton ? tabButtonTextColour : presetTextColour;
 
         g.setColour (buttonTextColour);
         const auto fontHeight = boundsF.getHeight() * VCLook::fontHeightPOH;
-        g.setFont (! isTabButton && isSelected ? VCFonts::barlowCondensedSemiBold (fontHeight) : VCFonts::barlowCondensedMedium (fontHeight));
+        g.setFont (isTabButton ?VCFonts::barlowCondensedSemiBold (fontHeight) : VCFonts::barlowCondensedRegular (fontHeight));
         g.drawText (isTabButton ? button.getButtonText().toUpperCase() : button.getButtonText(), boundsF, juce::Justification::centred, true);
     }
 

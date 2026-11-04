@@ -15,10 +15,10 @@ public:
     void drawButtonText (juce::Graphics& g, juce::TextButton& button, const bool shouldDrawButtonAsHighlighted, bool) override
     {
         const auto boundsF = button.getLocalBounds().toFloat();
-        const auto cornerSize = boundsF.getHeight() * 0.15f;
+        const auto cornerSize = boundsF.getHeight() * VCLook::popupCornerPOH;
         const auto textColour = button.getToggleState() ? VCColors::darkRed : (shouldDrawButtonAsHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
-        const auto fontText = button.getToggleState() ? VCFonts::barlowCondensedSemiBold (boundsF.getHeight() * VCLook::fontHeightPOH) :
-                                                        VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH);
+        const auto fontText = VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH);
+
         if (shouldDrawButtonAsHighlighted)
         {
             g.setColour (VCColors::popupRowHighlight);

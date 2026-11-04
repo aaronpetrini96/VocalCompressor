@@ -118,7 +118,7 @@ protected:
             rowIcons.push_back (item.icon);
             rowOverIcons.push_back (item.icon != nullptr ? item.icon->createCopy() : nullptr);
             if (rowOverIcons.back() != nullptr)
-                rowOverIcons.back()->replaceColour (juce::Colours::white, VCColors::iconOver);
+                rowOverIcons.back()->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
         }
 
         resized();

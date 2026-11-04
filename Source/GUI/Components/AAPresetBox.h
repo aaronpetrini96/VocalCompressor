@@ -20,7 +20,7 @@ public:
     {
         const auto boundsF = button.getLocalBounds().toFloat();
         g.setColour (highlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText);
-        g.setFont (VCFonts::barlowCondensedRegular (boundsF.getHeight() * VCLook::fontHeightPOH * 0.82f));
+        g.setFont (VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH * 0.85f));
         g.drawFittedText (button.getButtonText(), boundsF.toNearestInt(), juce::Justification::centred, 1);
     }
 
@@ -37,8 +37,8 @@ public:
         nameButton.onClick = [this] { if (onNameClicked != nullptr) onNameClicked(); };
         addAndMakeVisible (nameButton);
 
-        AAUITools::setIconButtonImages (leftArrowButton, BinaryData::leftChevronArrow_svg, BinaryData::leftChevronArrow_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
-        AAUITools::setIconButtonImages (rightArrowButton, BinaryData::rightChevronArrow_svg, BinaryData::rightChevronArrow_svgSize, juce::Colours::white, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages (leftArrowButton, BinaryData::leftChevronArrow_svg, BinaryData::leftChevronArrow_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages (rightArrowButton, BinaryData::rightChevronArrow_svg, BinaryData::rightChevronArrow_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         leftArrowButton.onClick = [this] { presetManager.loadAdjacentPreset (-1); };
         rightArrowButton.onClick = [this] { presetManager.loadAdjacentPreset (1); };
         addAndMakeVisible (leftArrowButton);

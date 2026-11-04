@@ -11,7 +11,6 @@ public:
     PresetPopupLAF()
     {
         setColour (juce::TextEditor::backgroundColourId, VCColors::popupBackground);
-        setColour (juce::TextEditor::textColourId, VCColors::popupText);
     }
 
     void drawButtonBackground (juce::Graphics&, juce::Button&, const juce::Colour&, bool , bool) override { }
@@ -32,7 +31,7 @@ public:
         g.setColour (VCColors::popupOutline.withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
         g.drawRoundedRectangle (boundsF.reduced (outlineThickness * 0.5f), cornerSize, outlineThickness);
 
-        g.setColour ((shouldDrawButtonAsHighlighted ? VCColors::popupText.withMultipliedBrightness (0.6f) : VCColors::popupText).withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
+        g.setColour ((shouldDrawButtonAsHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText).withMultipliedAlpha (button.isEnabled() ? 1.0f : 0.5f));
         g.setFont (VCFonts::barlowCondensedMedium (fontHeight));
         g.drawFittedText (button.getButtonText(), boundsF.reduced (boundsF.getWidth() * 0.05f, boundsF.getHeight() * 0.04f).toNearestInt(), juce::Justification::centred, 1);
     }
