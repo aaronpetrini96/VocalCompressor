@@ -324,41 +324,47 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
 void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
-    [[maybe_unused]] auto totalNumInputChannels  = getTotalNumInputChannels();
-    [[maybe_unused]] auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    updateSmootherFromParams(buffer.getNumSamples(), SmootherUpdateMode::liveInRealTime); //Update Smoothers in Real Time
+    // Parameters update once per sub-block, so smoothing stays inaudible at any host buffer size
+    constexpr int subBlockSize = 32;
 
-    const auto shouldReverseOrder = reverseSignalOrderParam->get();
-    if (shouldReverseOrder != isOrderReversed && orderSwitchSamplesLeft == 0)
-        orderSwitchSamplesLeft = static_cast<int>(getSampleRate() * 0.05);
-
-    const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
-    pluginBypass.setBypassed(pluginBypassParam->get() || isSwitchingOrder);
-    pluginBypass.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
-                         [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
-                         {
-                             juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
-
-                             if (isOrderReversed)
-                             {
-                                 processBlockLA2A(chunkBuffer);
-                                 processBlock1176(chunkBuffer);
-                             }
-                             else
-                             {
-                                 processBlock1176(chunkBuffer);
-                                 processBlockLA2A(chunkBuffer);
-                             }
-                         });
-
-    if (isSwitchingOrder)
+    for (int blockStart {0}; blockStart < buffer.getNumSamples(); blockStart += subBlockSize)
     {
-        orderSwitchSamplesLeft -= buffer.getNumSamples();
-        if (orderSwitchSamplesLeft <= 0)
+        const auto blockSize = std::min (subBlockSize, buffer.getNumSamples() - blockStart);
+        juce::AudioBuffer<float> subBlock (buffer.getArrayOfWritePointers(), buffer.getNumChannels(), blockStart, blockSize);
+        updateSmootherFromParams (blockSize, SmootherUpdateMode::liveInRealTime);
+
+        const auto shouldReverseOrder = reverseSignalOrderParam->get();
+        if (shouldReverseOrder != isOrderReversed && orderSwitchSamplesLeft == 0)
+            orderSwitchSamplesLeft = static_cast<int>(getSampleRate() * 0.05);
+
+        const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
+        pluginBypass.setBypassed(pluginBypassParam->get() || isSwitchingOrder);
+        pluginBypass.process(subBlock.getArrayOfWritePointers(), subBlock.getNumChannels(), blockSize,
+                             [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                             {
+                                 juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
+
+                                 if (isOrderReversed)
+                                 {
+                                     processBlockLA2A(chunkBuffer);
+                                     processBlock1176(chunkBuffer);
+                                 }
+                                 else
+                                 {
+                                     processBlock1176(chunkBuffer);
+                                     processBlockLA2A(chunkBuffer);
+                                 }
+                             });
+
+        if (isSwitchingOrder)
         {
-            orderSwitchSamplesLeft = 0;
-            isOrderReversed = shouldReverseOrder;
+            orderSwitchSamplesLeft -= blockSize;
+            if (orderSwitchSamplesLeft <= 0)
+            {
+                orderSwitchSamplesLeft = 0;
+                isOrderReversed = shouldReverseOrder;
+            }
         }
     }
 }
