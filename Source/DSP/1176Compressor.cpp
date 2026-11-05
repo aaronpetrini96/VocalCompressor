@@ -105,18 +105,17 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             controlEnvDb = controlAttackCoeff * controlEnvDb + (1.f - controlAttackCoeff) * gainReductionDb;
         else
             controlEnvDb = controlReleaseCoeff * controlEnvDb + (1.f - controlReleaseCoeff) * gainReductionDb;
-        
-        
+
+        float satDrive = 1.0f + controlEnvDb * 0.06f;
+        if (allButtonsIn)
+            satDrive *= 1.4f;
+
         for (int ch = 0; ch < numChannels; ++ch)
         {
             const float dry = buffer.getSample(ch, n);
             float x = dry * inputGain;
             float y = x * gain;
-            
-            float satDrive = 1.0f + controlEnvDb * 0.06f;
-            if (allButtonsIn)
-                satDrive *= 1.4f;
-            
+
             y = revASaturation(y, satDrive);
             
             y *= outputGain;

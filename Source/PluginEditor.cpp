@@ -142,7 +142,6 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 
 void VocalCompressorAudioProcessorEditor::timerCallback()
 {
-    panel1176.updateGainReduction();
     panelLA2A.updateGainReduction();
 }
 

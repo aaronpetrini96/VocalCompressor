@@ -49,7 +49,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         // --- Gain Reduction ---
-        float envDB = gainToDB(env + 1.0e-9f);
+        float envDB = gainToDB(env);
         float over = envDB + peakReduction - (-24.0f);
         float gainDB = 0.0f;
         

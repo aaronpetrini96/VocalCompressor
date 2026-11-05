@@ -128,11 +128,6 @@ public:
             g.fillAll(VCColors::almostBlack.withAlpha(JUCE_LIVE_CONSTANT(0.45f)));
     }
 
-    void updateGainReduction()
-    {
-        const float gr1176 = audioProcessor.gR1176.load();
-    }
-
     bool shouldDim {false};
 
 private:

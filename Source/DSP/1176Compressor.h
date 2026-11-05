@@ -11,7 +11,6 @@ public:
     float getOutputGainDB(float) const;
     void setParameters(float inputGain, float outputGain, float attack, float release, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
-    float revASaturation(float x, float drive);
 
     float getGainReductionDB() const {return gainReductionDb;}
 
@@ -32,12 +31,12 @@ public:
     float releaseCoeff = 0.f;
     float ratio = 4.f;
     float mix = 1.f;
-//    float gainReduction = 0.f;
     
 //    Enveloper Follower
     float env = 0.f;
     
 //    Helper Funcs
+    float revASaturation(float x, float drive);
     inline float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
     inline float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
     static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
