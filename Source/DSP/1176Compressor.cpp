@@ -14,18 +14,19 @@ void FET1176Compressor::reset()
     grEnv = 0.f;
 }
 
+float FET1176Compressor::taperedKnobToDB (float normValue, float minDB, float maxDB, float taper)
+{
+    const auto curvedPosition = 1.f - std::pow (1.f - normValue, taper);
+    return juce::jmap (curvedPosition, minDB, maxDB);
+}
 
 float FET1176Compressor::getInputGainDB(float normValue) const
 {
-    // reverse mapping: at 0 → -inf (or -40dB floor), at 1 → +24dB
-    if (normValue < 0.01f)
-        return -40.0f;
-    return juce::jmap(normValue, 0.0f, 1.0f, -20.0f, 24.0f);
+    return taperedKnobToDB (normValue, -22.f, 32.f, 1.6f);
 }
 float FET1176Compressor::getOutputGainDB(float normValue) const
 {
-    // more linear, from -60 to +20 dB
-    return juce::jmap(normValue, 0.0f, 1.0f, -60.0f, 20.0f);
+    return taperedKnobToDB (normValue, -84.f, 16.f, 2.4f);
 }
 
 void FET1176Compressor::setParameters(float inDB, float outDB, float attackTime, float releaseTime, float newRatio, float newMix)
