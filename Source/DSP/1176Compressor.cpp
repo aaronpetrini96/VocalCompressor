@@ -4,14 +4,15 @@ void FET1176Compressor::prepare(double newSampleRate)
 {
     sampleRate = static_cast<float>(newSampleRate);
     reset();
-    // 1176-style fast meter ballistics
-    grAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
-    grReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+    // control envelope ballistics
+    controlAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
+    controlReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
 }
 void FET1176Compressor::reset()
 {
     env = 0.f;
-    grEnv = 0.f;
+    controlEnvDb = 0.f;
+    gainReductionDb = 0.f;
 }
 
 float FET1176Compressor::taperedKnobToDB (float normValue, float minDB, float maxDB, float taper)
@@ -62,7 +63,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         
         if (allButtonsIn)
         {
-            float speedUp = juce::jmap(grEnv, 0.f, 20.f, 1.f, 0.35f);
+            float speedUp = juce::jmap(controlEnvDb, 0.f, 20.f, 1.f, 0.35f);
             attack = std::pow(attackCoeff, speedUp);
         }
         
@@ -77,7 +78,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         //Threshold
         float effectiveThreshold = -24.f;
         if (allButtonsIn)
-            effectiveThreshold -= grEnv * 0.25f;
+            effectiveThreshold -= controlEnvDb * 0.25f;
         
         float gainDb = 0.f;
         
@@ -97,13 +98,13 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         
         float gain = dBToGain(gainDb);
         
-        //GR meter
-        float gainReductionDb = -gainDb;
-        
-        if (gainReductionDb > grEnv)
-            grEnv = grAttackCoeff * grEnv + (1.f - grAttackCoeff) * gainReductionDb;
+        //Control envelope
+        gainReductionDb = -gainDb;
+
+        if (gainReductionDb > controlEnvDb)
+            controlEnvDb = controlAttackCoeff * controlEnvDb + (1.f - controlAttackCoeff) * gainReductionDb;
         else
-            grEnv = grReleaseCoeff * grEnv + (1.f - grReleaseCoeff) * gainReductionDb;
+            controlEnvDb = controlReleaseCoeff * controlEnvDb + (1.f - controlReleaseCoeff) * gainReductionDb;
         
         
         for (int ch = 0; ch < numChannels; ++ch)
@@ -112,7 +113,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             float x = dry * inputGain;
             float y = x * gain;
             
-            float satDrive = 1.0f + grEnv * 0.06f;
+            float satDrive = 1.0f + controlEnvDb * 0.06f;
             if (allButtonsIn)
                 satDrive *= 1.4f;
             

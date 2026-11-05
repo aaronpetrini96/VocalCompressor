@@ -13,16 +13,17 @@ public:
     void process(juce::AudioBuffer<float>& buffer);
     float revASaturation(float x, float drive);
 
-    float getGainReductionDB() const {return grEnv;}
+    float getGainReductionDB() const {return gainReductionDb;}
 
 
     private:
     float sampleRate = 44100.f;
 
-//    Gain Reduction Meter
-    float grEnv = 0.0f;
-    float grAttackCoeff = 0.0f;
-    float grReleaseCoeff = 0.0f;
+//    Control Envelope (drives ALL-mode threshold, attack speed-up and saturation drive)
+    float controlEnvDb = 0.0f;
+    float controlAttackCoeff = 0.0f;
+    float controlReleaseCoeff = 0.0f;
+    float gainReductionDb = 0.0f;
 
 //    Params
     float inputGain = 1.f;
