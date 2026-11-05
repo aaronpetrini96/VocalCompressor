@@ -38,5 +38,5 @@ public:
     
 //    Helper Funcs
     inline float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
-    inline float gainToDB(float g) {return 20.f * std::log10(g);}
+    inline float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
 };
