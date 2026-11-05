@@ -268,7 +268,7 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
     if (bypass1176.isFullyBypassed())
     {
         fet1176.reset();
-        gR1176 = 0.f;
+        gR1176.store (0.f);
         return;
     }
 
@@ -291,7 +291,7 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
                            fet1176.process(chunkBuffer);
                        });
 
-    gR1176 = isBypassed ? 0.f : fet1176.getGainReductionDB();
+    gR1176.store (isBypassed ? 0.f : fet1176.getGainReductionDB());
 }
 
 void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer)
@@ -302,7 +302,7 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
     if (bypassLA2A.isFullyBypassed())
     {
         la2aComp.reset();
-        grLA2A = 0.f;
+        grLA2A.store (0.f);
         return;
     }
 
@@ -317,7 +317,7 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
                            la2aComp.process(chunkBuffer);
                        });
 
-    grLA2A = isBypassed ? 0.f : la2aComp.getGainReduction();
+    grLA2A.store (isBypassed ? 0.f : la2aComp.getGainReduction());
 }
 
 
