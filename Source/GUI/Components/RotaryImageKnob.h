@@ -8,13 +8,14 @@
 class RotaryImageKnob : public juce::Slider
 {
 public:
-    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {})
-    : knobImage(knobImageToUse),
-      rotorImage(rotorImageToUse),
-      attachment(parameter, *this)
+    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {}, const int mouseSensitivity = 250)
+    : knobImage(knobImageToUse), rotorImage(rotorImageToUse), attachment(parameter, *this)
     {
+        if (!knobImage.isValid())
+            return;
+
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
-        setMouseDragSensitivity(300);
+        setMouseDragSensitivity(mouseSensitivity);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));
@@ -31,6 +32,7 @@ public:
         const auto sliderPos = static_cast<float>(valueToProportionOfLength(getValue()));
         const auto angle = rotaryParameters.startAngleRadians + sliderPos * (rotaryParameters.endAngleRadians - rotaryParameters.startAngleRadians);
 
+        g.setOpacity(0.9f);
         g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
         const auto hasRotor = rotorImage.isValid();
 
@@ -42,11 +44,13 @@ public:
         g.drawImage(hasRotor ? rotorImage : knobImage, knobBounds, juce::RectanglePlacement::centred);
     }
 
+
 private:
     const float pi = juce::MathConstants<float>::pi;
     juce::Image knobImage;
     juce::Image rotorImage;
     juce::SliderParameterAttachment attachment;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RotaryImageKnob)
 };

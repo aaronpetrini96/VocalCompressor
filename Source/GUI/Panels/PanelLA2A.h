@@ -3,7 +3,7 @@
 #include "../../PluginProcessor.h"
 #include "../VCLook.h"
 #include "../Components/RotaryImageKnob.h"
-#include "../Components/GainReductionMeter.h"
+#include "../Components/GRDistressorMeter.h"
 #include "../Components/GRTextDisplay.h"
 
 class PanelLA2A : public juce::Component
@@ -32,11 +32,11 @@ public:
             VCLook::setupLabel(*label, juce::Colours::black);
             addAndMakeVisible(*label);
         }
+        grLA2ALabel.setVisible(false);
         updateModeLabels();
 
-        addAndMakeVisible(grMeterLA2ALeft);
-        addAndMakeVisible(grMeterLA2ARight);
-        addAndMakeVisible(grTextDisplayLA2A);
+        addAndMakeVisible(grMeterLA2A);
+        addChildComponent(grTextDisplayLA2A);
     }
 
     void paint(juce::Graphics& g) override
@@ -53,9 +53,15 @@ public:
 
     void resized() override
     {
-        const auto boundsF = getLocalBounds().toFloat();
-        const auto boundsFWidth = boundsF.getWidth();
+        const auto bounds = getLocalBounds().toFloat();
+        const auto grMeterWidth = bounds.getWidth() * 0.6f;
+        const auto grMeterHeight = bounds.getHeight() * 0.14f;
+        const auto grMeterCentre = juce::Point<float> (bounds.getCentreX(), grMeterHeight * 0.5f);
+        grMeterLA2A.setBounds(bounds.withSize(grMeterWidth, grMeterHeight).withCentre(grMeterCentre).toNearestInt());
+
+        const auto boundsF = bounds.withTrimmedTop(grMeterHeight);
         const auto boundsFHeight = boundsF.getHeight();
+        const auto boundsFWidth = boundsF.getWidth();
 
         const auto knobSize = boundsFHeight * 0.65f;
         const auto knobBounds = boundsF.withSize(knobSize, knobSize);
@@ -66,7 +72,7 @@ public:
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
 
-        const auto labelsCY = boundsFHeight * 0.9f;
+        const auto labelsCY = boundsF.getCentreY() + knobSize * 0.5f + labelBounds.getHeight() * 0.5f;
         la2aGainDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.245f, boundsF.getCentreY()}).toNearestInt());
         la2aGainLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.245f, labelsCY}).toNearestInt());
         la2aPeakReductionDial.setBounds(knobBounds.withCentre({boundsFWidth * 0.745f, boundsF.getCentreY()}).toNearestInt());
@@ -78,9 +84,6 @@ public:
         la2aLimitModeLabel.setBounds(labelBounds.withCentre({modeCX, boundsFHeight * 0.6911f}).toNearestInt());
 
         const auto grMetersCX = boundsF.getCentreX();
-        const auto grMeterBounds = boundsF.withSize(boundsFWidth * 0.0333f, boundsFHeight * 0.5824f).withY(boundsFHeight * 0.2712f);
-        grMeterLA2ALeft.setBounds(grMeterBounds.withRightX(grMetersCX).toNearestInt());
-        grMeterLA2ARight.setBounds(grMeterBounds.withX(grMetersCX).toNearestInt());
         grLA2ALabel.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
         grTextDisplayLA2A.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.2178f}).toNearestInt());
     }
@@ -93,9 +96,7 @@ public:
 
     void updateGainReduction()
     {
-        const float grLA2A = audioProcessor.grLA2A;
-        grMeterLA2ALeft.setReduction(grLA2A);
-        grMeterLA2ARight.setReduction(grLA2A);
+        const float grLA2A = audioProcessor.grLA2A.load();
         grTextDisplayLA2A.setValue(grLA2A);
     }
 
@@ -131,7 +132,7 @@ private:
                 la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"};
 
 //    GAIN REDUCTION
-    GainReductionMeter grMeterLA2ALeft, grMeterLA2ARight;
+    GRDistressorMeter grMeterLA2A {audioProcessor.grLA2A, juce::Colours::black};
     GRTextDisplay grTextDisplayLA2A;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
