@@ -4,7 +4,6 @@
 #include "../VCLook.h"
 #include "../Components/RotaryImageKnob.h"
 #include "../Components/GRDistressorMeter.h"
-#include "../Components/GRTextDisplay.h"
 
 class PanelLA2A : public juce::Component
 {
@@ -27,16 +26,14 @@ public:
         la2aModeButton.onStateChange = [this] { updateModeLabels(); };
         addAndMakeVisible(la2aModeButton);
 
-        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel, &la2aCompModeLabel, &la2aLimitModeLabel})
+        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &la2aCompModeLabel, &la2aLimitModeLabel})
         {
             VCLook::setupLabel(*label, juce::Colours::black);
             addAndMakeVisible(*label);
         }
-        grLA2ALabel.setVisible(false);
         updateModeLabels();
 
         addAndMakeVisible(grMeterLA2A);
-        addChildComponent(grTextDisplayLA2A);
     }
 
     void paint(juce::Graphics& g) override
@@ -67,7 +64,7 @@ public:
         const auto knobBounds = boundsF.withSize(knobSize, knobSize);
         const auto labelBounds = boundsF.withSize(boundsFWidth * 0.25f, boundsFHeight * 0.22f);
 
-        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &grLA2ALabel})
+        for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel})
             label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
@@ -82,22 +79,12 @@ public:
         la2aModeButton.setBounds(boundsF.withSize(boundsFHeight * 0.2912f, boundsFHeight * 0.2912f).withCentre({modeCX, boundsFHeight * 0.8222f}).toNearestInt());
         la2aCompModeLabel.setBounds(labelBounds.withCentre({modeCX, boundsFHeight * 0.9435f}).toNearestInt());
         la2aLimitModeLabel.setBounds(labelBounds.withCentre({modeCX, boundsFHeight * 0.6911f}).toNearestInt());
-
-        const auto grMetersCX = boundsF.getCentreX();
-        grLA2ALabel.setBounds(labelBounds.withCentre({grMetersCX, labelsCY}).toNearestInt());
-        grTextDisplayLA2A.setBounds(boundsF.withSize(boundsFWidth * 0.0833f, boundsFHeight * 0.1941f).withCentre({grMetersCX, boundsFHeight * 0.2178f}).toNearestInt());
     }
 
     void paintOverChildren(juce::Graphics& g) override
     {
         if (shouldDim)
             g.fillAll(VCColors::almostBlack.withAlpha(0.3f));
-    }
-
-    void updateGainReduction()
-    {
-        const float grLA2A = audioProcessor.grLA2A.load();
-        grTextDisplayLA2A.setValue(grLA2A);
     }
 
     bool shouldDim {false};
@@ -129,11 +116,10 @@ private:
 
 //    LABELS
     juce::Label la2aGainLabel {"GAIN"}, la2aPeakReductionLabel {"PEAK REDUCTION"},
-                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, grLA2ALabel {"GR"};
+                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"};
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeterLA2A {audioProcessor.grLA2A, juce::Colours::black};
-    GRTextDisplay grTextDisplayLA2A;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
 };

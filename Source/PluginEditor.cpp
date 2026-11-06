@@ -72,7 +72,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     setResizable(false, false);
     updateEditorSize();
     updatePanelsDimming();
-    startTimerHz(30);
 }
 
 VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
@@ -138,11 +137,6 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 
     fillDim(panel1176, headerPanel.is1176Bypassed());
     fillDim(panelLA2A, headerPanel.isLA2ABypassed());
-}
-
-void VocalCompressorAudioProcessorEditor::timerCallback()
-{
-    panelLA2A.updateGainReduction();
 }
 
 void VocalCompressorAudioProcessorEditor::mouseDown(const juce::MouseEvent& event)

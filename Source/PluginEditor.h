@@ -21,7 +21,7 @@
 //==============================================================================
 /**
 */
-class VocalCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, juce::Timer, private juce::ComponentListener
+class VocalCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::ComponentListener
 {
 public:
     VocalCompressorAudioProcessorEditor (VocalCompressorAudioProcessor&);
@@ -31,7 +31,6 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void paintOverChildren (juce::Graphics& g) override;
-    void timerCallback() override;
     void mouseDown (const juce::MouseEvent& event) override;
     void componentVisibilityChanged (juce::Component& component) override;
 

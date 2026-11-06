@@ -5,7 +5,6 @@
 #include "../LAF/VCControlsLAF.h"
 #include "../Components/RotaryImageKnob.h"
 #include "../Components/GRDistressorMeter.h"
-#include "../Components/GRTextDisplay.h"
 
 class Panel1176 : public juce::Component
 {
