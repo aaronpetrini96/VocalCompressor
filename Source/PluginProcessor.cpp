@@ -325,9 +325,7 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 {
     juce::ScopedNoDenormals noDenormals;
 
-    // Parameters update once per sub-block, so smoothing stays inaudible at any host buffer size
-    constexpr int subBlockSize = 32;
-
+    constexpr int subBlockSize = 32; // Parameters update once per sub-block, so smoothing stays inaudible at any host buffer size
     for (int blockStart {0}; blockStart < buffer.getNumSamples(); blockStart += subBlockSize)
     {
         const auto blockSize = std::min (subBlockSize, buffer.getNumSamples() - blockStart);
@@ -340,22 +338,33 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
         const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
         pluginBypass.setBypassed(pluginBypassParam->get() || isSwitchingOrder);
-        pluginBypass.process(subBlock.getArrayOfWritePointers(), subBlock.getNumChannels(), blockSize,
-                             [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
-                             {
-                                 juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
 
-                                 if (isOrderReversed)
+        if (pluginBypass.isFullyBypassed())
+        {
+            fet1176.reset();
+            la2aComp.reset();
+            gR1176.store(0.f);
+            grLA2A.store(0.f);
+        }
+        else
+        {
+            pluginBypass.process(subBlock.getArrayOfWritePointers(), subBlock.getNumChannels(), blockSize,
+                                 [this](float* const* chunkData, int chunkChannels, int chunkSamples)
                                  {
-                                     processBlockLA2A(chunkBuffer);
-                                     processBlock1176(chunkBuffer);
-                                 }
-                                 else
-                                 {
-                                     processBlock1176(chunkBuffer);
-                                     processBlockLA2A(chunkBuffer);
-                                 }
-                             });
+                                     juce::AudioBuffer<float> chunkBuffer(chunkData, chunkChannels, chunkSamples);
+
+                                     if (isOrderReversed)
+                                     {
+                                         processBlockLA2A(chunkBuffer);
+                                         processBlock1176(chunkBuffer);
+                                     }
+                                     else
+                                     {
+                                         processBlock1176(chunkBuffer);
+                                         processBlockLA2A(chunkBuffer);
+                                     }
+                                 });
+        }
 
         if (isSwitchingOrder)
         {
