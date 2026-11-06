@@ -71,8 +71,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             buffer.setSample(ch, n, y * outputGain);
         }
         
-        float targetGR =-gainDB;
-        gainReduction = 0.9f * gainReduction + 0.1f * targetGR;
+        gainReduction = -gainDB;
     }
 }
 
