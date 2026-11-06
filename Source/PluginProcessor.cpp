@@ -348,7 +348,9 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         }
         else
         {
-            pluginBypass.process(subBlock.getArrayOfWritePointers(), subBlock.getNumChannels(), blockSize,
+            pluginBypass.process(subBlock.getArrayOfWritePointers(),
+                                 subBlock.getNumChannels(),
+                                 blockSize,
                                  [this](float* const* chunkData, int chunkChannels, int chunkSamples)
                                  {
                                      juce::AudioBuffer<float> chunkBuffer(chunkData, chunkChannels, chunkSamples);
