@@ -10,6 +10,7 @@
   <PARAM id="LA2AGain" value="0.3"/>
   <PARAM id="LA2APeakReduction" value="0.3"/>
   <PARAM id="LA2AMode" value="0"/>
+  <PARAM id="LA2AMix" value="1"/>
   <PARAM id="LA2ABypass" value="0"/>
   <PARAM id="ReverseSignalOrder" value="0"/>
 </Parameters>
