@@ -3,7 +3,6 @@
 //
 
 #pragma once
-
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class ArcImageKnob : public juce::Slider
@@ -38,7 +37,7 @@ public:
 
         juce::Path trackArc;
         trackArc.addCentredArc(centre.x, centre.y, arcRadius, arcRadius, 0.f, rotaryParameters.startAngleRadians, rotaryParameters.endAngleRadians, true);
-        g.setColour(findColour(juce::Slider::rotarySliderOutlineColourId));
+        g.setColour(trackColour);
         g.strokePath(trackArc, arcStroke);
 
         if (angle > rotaryParameters.startAngleRadians)
@@ -60,6 +59,7 @@ public:
 
 private:
     const float pi = juce::MathConstants<float>::pi;
+    const juce::Colour trackColour {juce::Colour(41, 41, 41).withAlpha(0.48f)};
     juce::Image image;
     juce::SliderParameterAttachment attachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ArcImageKnob)
