@@ -15,7 +15,7 @@ void LA2ACompressor::reset()
     gainReduction = 0.f;
 }
 
-void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode)
+void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
 {
     peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 40.f);
     
@@ -23,6 +23,7 @@ void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool
     
     isLimit = limitMode;
     ratio = isLimit ? 10.f : 3.f;
+    mix = newMix;
     
 }
 
@@ -65,10 +66,11 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         // --- Apply Gain & Tube Character ---
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            float x = buffer.getSample(ch, n);
-            float y = x * gain;
+            const float dry = buffer.getSample(ch, n);
+            float y = dry * gain;
             y = tubeSaturation(y, 0.4f);
-            buffer.setSample(ch, n, y * outputGain);
+            y *= outputGain;
+            buffer.setSample(ch, n, dry * (1.f - mix) + y * mix);
         }
         
         gainReduction = -gainDB;

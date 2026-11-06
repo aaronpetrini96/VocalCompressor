@@ -9,7 +9,7 @@ public:
     
     void prepare(double sampleRate);
     void reset();
-    void setParameters(float normGain, float normPeakReduction, bool limitMode);
+    void setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix);
     void process(juce::AudioBuffer<float>& buffer);
     
     float getGainReduction() const {return gainReduction;}
@@ -31,6 +31,7 @@ public:
     float outputGain = 1.f;
     float ratio = 3.f;
     bool isLimit = false;
+    float mix = 1.f;
     
 //    Envelope/Detector
     float env = 0.f;
