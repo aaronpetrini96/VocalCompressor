@@ -115,14 +115,6 @@ public:
         mix1176Label.setBounds(mixKnobBounds.withY(attack1176Dial.getBounds().toFloat().getY()).toNearestInt());
     }
 
-    void paintOverChildren(juce::Graphics& g) override
-    {
-        if (shouldDim)
-            g.fillAll(VCColors::almostBlack.withAlpha(JUCE_LIVE_CONSTANT(0.45f)));
-    }
-
-    bool shouldDim {false};
-
 private:
     VocalCompressorAudioProcessor& audioProcessor;
 

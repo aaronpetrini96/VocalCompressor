@@ -97,14 +97,6 @@ public:
         la2aLimitModeLabel.setBounds(labelBounds.withCentre({modeCX, boundsFHeight * 0.6911f}).toNearestInt());
     }
 
-    void paintOverChildren(juce::Graphics& g) override
-    {
-        if (shouldDim)
-            g.fillAll(VCColors::almostBlack.withAlpha(0.3f));
-    }
-
-    bool shouldDim {false};
-
 private:
     void updateModeLabels()
     {
