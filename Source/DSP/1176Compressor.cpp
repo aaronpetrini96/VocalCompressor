@@ -128,7 +128,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
 float FET1176Compressor::revASaturation(float x, float drive)
 {
     float k = juce::jlimit(1.0f, 6.0f, drive);
-    float y = std::tanh(k * x) / std::tanh(k);
+    float y = std::tanh(k * x) / k;
     return y;
 }
 

@@ -78,5 +78,5 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
 float LA2ACompressor::tubeSaturation(float x, float drive)
 {
     float k = juce::jmap(drive, 0.0f, 1.0f, 1.0f, 2.5f);
-    return std::tanh(k * x);
+    return std::tanh(k * x) / k;
 }
