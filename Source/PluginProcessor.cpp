@@ -69,6 +69,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
     name = ParamNames::getLA2ALimitCompressModeName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
+    name = ParamNames::getLA2AMixName();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 1.0f));
     name = ParamNames::getLA2ABypassName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
     
@@ -152,14 +154,14 @@ void VocalCompressorAudioProcessor::linkParameters()
     auto floatParams = std::array
     {
         &input1176Param, &output1176Param, &attack1176Param, &release1176Param, &mix1176Param,
-        &gainLA2AParam, &peakReductionLA2AParam
+        &gainLA2AParam, &peakReductionLA2AParam, &mixLA2AParam
     };
 
     auto floatNameFuncs = std::array
     {
         &ParamNames::get1176InputName, &ParamNames::get1176OutputName, &ParamNames::get1176AttackName,
         &ParamNames::get1176ReleaseName, &ParamNames::get1176MixName,
-        &ParamNames::getLA2AGainName, &ParamNames::getLA2APeakReductionName
+        &ParamNames::getLA2AGainName, &ParamNames::getLA2APeakReductionName, &ParamNames::getLA2AMixName
     };
 
     initCachedParams<juce::AudioParameterFloat*>(floatParams, floatNameFuncs);
@@ -190,7 +192,8 @@ void VocalCompressorAudioProcessor::linkParameters()
         {release1176Param, &release1176ParamSmoother},
         {mix1176Param, &mix1176ParamSmoother},
         {gainLA2AParam, &gainLA2AParamSmoother},
-        {peakReductionLA2AParam, &peakReductionLA2AParamSmoother}
+        {peakReductionLA2AParam, &peakReductionLA2AParamSmoother},
+        {mixLA2AParam, &mixLA2AParamSmoother}
     };
 }
 
@@ -309,7 +312,8 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
     float normGain = gainLA2AParamSmoother.getCurrentValue();
     float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
     bool limitMode = modeLA2AParam->get();
-    la2aComp.setParameters(normGain, normPeakReduction, limitMode);
+    float mix = mixLA2AParamSmoother.getCurrentValue();
+    la2aComp.setParameters(normGain, normPeakReduction, limitMode, mix);
     bypassLA2A.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
                        [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
                        {

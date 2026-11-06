@@ -88,6 +88,7 @@ private:
     juce::AudioParameterFloat* gainLA2AParam {nullptr};
     juce::AudioParameterFloat* peakReductionLA2AParam {nullptr};
     juce::AudioParameterBool* modeLA2AParam {nullptr};
+    juce::AudioParameterFloat* mixLA2AParam {nullptr};
     juce::AudioParameterBool* bypassLA2AParam {nullptr};
     juce::AudioParameterBool* pluginBypassParam {nullptr};
     juce::AudioParameterBool* reverseSignalOrderParam {nullptr};
@@ -99,7 +100,8 @@ private:
     release1176ParamSmoother,
     mix1176ParamSmoother,
     gainLA2AParamSmoother,
-    peakReductionLA2AParamSmoother;
+    peakReductionLA2AParamSmoother,
+    mixLA2AParamSmoother;
 
     std::vector<std::pair<juce::AudioParameterFloat*, juce::SmoothedValue<float>*>> smootherBindings;
     
