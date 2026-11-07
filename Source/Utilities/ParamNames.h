@@ -18,10 +18,6 @@ inline juce::String getLA2ALimitCompressModeName() { return "LA2AMode"; }
 inline juce::String getLA2AMixName() { return "LA2AMix"; }
 inline juce::String getLA2ABypassName() { return "LA2ABypass"; }
 
-// === In & Out Gain ===
-inline juce::String getInGainName() { return "InGain"; }
-inline juce::String getOutGainName() { return "OutGain"; }
-
 // === General ===
 inline juce::String getGeneralBypassName() { return "PluginBypass"; }
 inline juce::String getReverseSignalOrderName() { return "ReverseSignalOrder"; }

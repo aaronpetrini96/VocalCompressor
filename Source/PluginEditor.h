@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "GUI/Panels/HeaderPanel.h"
 #include "GUI/Panels/Panel1176.h"

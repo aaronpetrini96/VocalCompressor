@@ -22,6 +22,7 @@ namespace AAUITools
             iconActive->replaceColour (iconColour, activeColour);
             iconActiveOver->replaceColour (iconColour, activeOverColour);
             button.setImages (iconNormal.get(), iconOver.get(), iconActive.get(), nullptr, iconActive.get(), iconActiveOver.get());
+            button.setEdgeIndent (0);
             button.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
             button.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
         }

@@ -1,5 +1,4 @@
 #pragma once
-#include <JuceHeader.h>
 #include "../../PluginProcessor.h"
 #include "../VCLook.h"
 #include "../Components/RotaryImageKnob.h"
@@ -19,7 +18,7 @@ public:
         }
 
         la2aMixKnob.setColour(juce::Slider::rotarySliderFillColourId, VCColors::almostBlack);
-        la2aMixKnob.setColour(juce::Slider::thumbColourId, VCColors::almostBlack);
+        la2aMixKnob.setColour(juce::Slider::thumbColourId, VCColors::almostWhiteText);
         la2aMixKnob.setAlwaysOnTop(true);
         addAndMakeVisible(la2aMixKnob);
 
@@ -43,6 +42,10 @@ public:
         addAndMakeVisible(la2aMixLabel);
 
         addAndMakeVisible(grMeterLA2A);
+        VCLook::setupLabel(grLabel, juce::Colours::black, juce::Justification::centredLeft);
+        VCLook::setupLabel(dBLabel, juce::Colours::black, juce::Justification::centredRight);
+        addAndMakeVisible(grLabel);
+        addAndMakeVisible(dBLabel);
     }
 
     void paint(juce::Graphics& g) override
@@ -63,7 +66,15 @@ public:
         const auto grMeterWidth = bounds.getWidth() * 0.6f;
         const auto grMeterHeight = bounds.getHeight() * 0.14f;
         const auto grMeterCentre = juce::Point<float> (bounds.getCentreX(), grMeterHeight * 0.5f);
-        grMeterLA2A.setBounds(bounds.withSize(grMeterWidth, grMeterHeight).withCentre(grMeterCentre).toNearestInt());
+        const auto grMeterBounds = bounds.withSize(grMeterWidth, grMeterHeight).withCentre(grMeterCentre);
+        grMeterLA2A.setBounds(grMeterBounds.toNearestInt());
+
+        const auto grLabelWidth = grMeterHeight;
+        const auto grLabelGap = grMeterHeight * 0.2f;
+        for (auto* label : {&grLabel, &dBLabel})
+            label->setFont(VCFonts::barlowCondensedRegular(grMeterHeight * 0.5f));
+        grLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getRight() + grLabelGap, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
+        dBLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getX() - grLabelGap - grLabelWidth, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
 
         const auto boundsF = bounds.withTrimmedTop(bounds.getHeight() * 0.1f);
         const auto boundsFHeight = boundsF.getHeight();
@@ -81,14 +92,14 @@ public:
             label->setFont(VCFonts::barlowCondensedMedium(boundsFHeight * 0.1f));
         for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
             label->setFont(VCFonts::barlowCondensedRegular(boundsFHeight * 0.08f));
-        la2aGainLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.245f, labelsCY}).toNearestInt());
-        la2aPeakReductionLabel.setBounds(labelBounds.withCentre({boundsFWidth * 0.745f, labelsCY}).toNearestInt());
+        la2aGainLabel.setBounds(labelBounds.withCentre({la2aGainDial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
+        la2aPeakReductionLabel.setBounds(labelBounds.withCentre({la2aPeakReductionDial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
 
         const auto mixKnobSize = knobSize * 0.4f;
         const auto mixKnobCX = (la2aGainDial.getBounds().toFloat().getCentreX() + la2aPeakReductionDial.getBounds().toFloat().getCentreX()) * 0.5f;
         const auto mixKnobBounds = knobBounds.withSize(mixKnobSize, mixKnobSize).withCentre({mixKnobCX, boundsF.getCentreY()});
         la2aMixKnob.setBounds(mixKnobBounds.toNearestInt());
-        la2aMixLabel.setFont(VCFonts::barlowCondensedLight(labelBounds.getHeight() * 0.3f));
+        la2aMixLabel.setFont(VCFonts::barlowCondensedLight(boundsFHeight * 0.09f));
         la2aMixLabel.setBounds(mixKnobBounds.withY(mixKnobBounds.getBottom()).toNearestInt());
 
         const auto modeCX = boundsFWidth * 0.0417f;
@@ -111,13 +122,13 @@ private:
     const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::clearSilverBackground2_png, BinaryData::clearSilverBackground2_pngSize)};
     const juce::Image la2aKnobImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aBase_png, BinaryData::knobLa2aBase_pngSize)};
     const juce::Image la2aKnobRotorImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aRotor_png, BinaryData::knobLa2aRotor_pngSize)};
-    const juce::Image la2aMixKnobImage {juce::ImageCache::getFromMemory(BinaryData::mixKnobLa2aBase_png, BinaryData::mixKnobLa2aBase_pngSize)};
+    const juce::Image la2aMixKnobImage {juce::ImageCache::getFromMemory(BinaryData::mixKnob1176Base_png, BinaryData::mixKnob1176Base_pngSize)};
     const juce::Image la2aModeImageUP {juce::ImageCache::getFromMemory(BinaryData::switchUP_png, BinaryData::switchUP_pngSize)};
     const juce::Image la2aModeImageDOWN {juce::ImageCache::getFromMemory(BinaryData::switchDOWN_png, BinaryData::switchDOWN_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage};
-    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage};
+    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage, 300};
+    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage, 300};
     ArcImageKnob la2aMixKnob {*audioProcessor.apvts.getParameter(ParamNames::getLA2AMixName()), la2aMixKnobImage};
 
 //   COMP / LIMIT SWITCH
@@ -130,6 +141,7 @@ private:
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeterLA2A {audioProcessor.grLA2A, juce::Colours::black};
+    juce::Label grLabel {"GR"}, dBLabel {"dB"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
 };

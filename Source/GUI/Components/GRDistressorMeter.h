@@ -1,5 +1,5 @@
 #pragma once
-#include <JuceHeader.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 #include "../VCLook.h"
 
 class GRDistressorMeter : public juce::Component, private juce::Timer

@@ -10,12 +10,6 @@ namespace VCColors
     inline const juce::Colour fadedWhiteText {200, 200, 200};
     inline const juce::Colour almostWhiteText {225, 225, 225};
 
-    inline const juce::Colour buttonBackground {50, 50, 55};
-    inline const juce::Colour ratioButtonOff {66, 66, 73};
-    inline const juce::Colour presetBoxBackground {56, 56, 56};
-    inline const juce::Colour presetBoxOutline {40, 50, 70};
-
-    inline const juce::Colour ledOff {50, 50, 55};
     inline const juce::Colour iconOver {180, 180, 180};
     inline const juce::Colour iconActive = darkRed;
     inline const juce::Colour iconActiveOver {140, 0, 0};

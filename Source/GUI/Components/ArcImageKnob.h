@@ -12,7 +12,7 @@ public:
     : image(imageToUse), attachment(parameter, *this)
     {
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
-        setMouseDragSensitivity(250);
+        setMouseDragSensitivity(200);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));
@@ -32,12 +32,12 @@ public:
         g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
         g.drawImage(image, knobBounds, juce::RectanglePlacement::centred);
 
-        const auto arcRadius = knobSize * 0.4535f;
-        const juce::PathStrokeType arcStroke(knobSize * 0.0427f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded);
+        const auto arcRadius = knobSize * 0.425f;
+        const juce::PathStrokeType arcStroke(knobSize * 0.0427f, juce::PathStrokeType::mitered, juce::PathStrokeType::butt);
 
         juce::Path trackArc;
         trackArc.addCentredArc(centre.x, centre.y, arcRadius, arcRadius, 0.f, rotaryParameters.startAngleRadians, rotaryParameters.endAngleRadians, true);
-        g.setColour(trackColour);
+        g.setColour(findColour(juce::Slider::rotarySliderFillColourId).withAlpha(0.275f));
         g.strokePath(trackArc, arcStroke);
 
         if (angle > rotaryParameters.startAngleRadians)
@@ -48,8 +48,8 @@ public:
             g.strokePath(fillArc, arcStroke);
         }
 
-        const auto tickWidth = knobSize * 0.036f;
-        const auto tickLength = knobSize * 0.072f;
+        const auto tickWidth = knobSize * 0.05f;
+        const auto tickLength = knobSize * 0.1f;
         const auto tickTopY = centre.y - knobSize * 0.353f;
         juce::Path tick;
         tick.addRoundedRectangle(centre.x - tickWidth * 0.5f, tickTopY, tickWidth, tickLength, tickWidth * 0.5f);
@@ -59,7 +59,6 @@ public:
 
 private:
     const float pi = juce::MathConstants<float>::pi;
-    const juce::Colour trackColour {juce::Colour(41, 41, 41).withAlpha(0.48f)};
     juce::Image image;
     juce::SliderParameterAttachment attachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ArcImageKnob)

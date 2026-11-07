@@ -92,7 +92,3 @@ target_link_libraries(VocalCompressor
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
-
-# The code includes <JuceHeader.h>, so generate it for CMake builds
-# (call after target_link_libraries so it picks up the linked modules and assets)
-juce_generate_juce_header(VocalCompressor)

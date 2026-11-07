@@ -7,86 +7,58 @@ class Ratio1176Buttons : public juce::Component
 public:
     Ratio1176Buttons()
     {
-        for (int index {0}; index < capLabels.size(); ++index)
-        {
-            auto* cap = caps.add(new Cap(capLabels[index], capOnImage, capOffImage));
-            cap->onClick = [this, index]
-            {
-                const auto isShiftClick = juce::ModifierKeys::currentModifiers.isShiftDown();
-                const auto newIndex = isShiftClick && selectedIndex != allIndex ? allIndex : index;
-                setSelectedIndex(newIndex);
-
-                if (onIndexChosen != nullptr)
-                    onIndexChosen(newIndex);
-            };
-            addAndMakeVisible(cap);
-        }
-        const auto capImageRatio = static_cast<float>(capOffImage.getHeight()) / static_cast<float>(capOffImage.getWidth());
-        heightToWidthRatio = capImageRatio * getCapHeightsInColumn();
+        const auto buttonImageRatio = static_cast<float>(unpushedButtonImage.getHeight()) / static_cast<float>(unpushedButtonImage.getWidth());
+        heightToWidthRatio = buttonImageRatio * static_cast<float>(buttonLabels.size());
     }
 
-    void resized() override
+    void paint(juce::Graphics& g) override
     {
-        const auto boundsF = getLocalBounds().toFloat();
-        const auto capHeight = boundsF.getHeight() / getCapHeightsInColumn();
-        const auto capStep = capHeight * (1.f + capGapRatio);
+        for (int index {0}; index < buttonLabels.size(); ++index)
+        {
+            const auto isPushed = index == selectedIndex;
+            const auto buttonBounds = getButtonBounds(index);
+            g.drawImage(isPushed ? pushedButtonImage : unpushedButtonImage, buttonBounds, juce::RectanglePlacement::centred);
 
-        for (int index {0}; index < caps.size(); ++index)
-            caps[index]->setBounds(boundsF.withHeight(capHeight).withY(boundsF.getY() + capStep * static_cast<float>(index)).toNearestInt());
+            const auto labelCentreY = buttonBounds.getY() + buttonBounds.getHeight() * (isPushed ? 0.5f : 0.42f);
+            const auto labelBounds = buttonBounds.withSizeKeepingCentre(buttonBounds.getWidth(), buttonBounds.getHeight() * 0.5f)
+                                                 .withCentre({buttonBounds.getCentreX(), labelCentreY});
+            g.setColour(isPushed ? VCColors::almostBlack : VCColors::almostWhiteText);
+            g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight() * 1.1f));
+            g.drawText(buttonLabels[index], labelBounds, juce::Justification::centred, false);
+        }
+    }
+
+    void mouseDown(const juce::MouseEvent& event) override
+    {
+        const auto buttonHeight = static_cast<float>(getHeight()) / static_cast<float>(buttonLabels.size());
+        const auto clickedIndex = juce::jlimit(0, buttonLabels.size() - 1, static_cast<int>(event.position.y / buttonHeight));
+        setSelectedIndex(clickedIndex);
+
+        if (onIndexChosen != nullptr)
+            onIndexChosen(clickedIndex);
     }
 
     void setSelectedIndex(const int newIndex)
     {
         selectedIndex = newIndex;
-        for (int index {0}; index < caps.size(); ++index)
-            caps[index]->setToggleState(newIndex == allIndex || index == newIndex, juce::dontSendNotification);
+        repaint();
     }
 
     std::function<void(int)> onIndexChosen;
     float heightToWidthRatio {1.f};
 
 private:
-    float getCapHeightsInColumn() const
+    juce::Rectangle<float> getButtonBounds(const int index) const
     {
-        const auto numberOfCaps = static_cast<float>(caps.size());
-        return numberOfCaps + (numberOfCaps - 1.f) * capGapRatio;
+        const auto boundsF = getLocalBounds().toFloat();
+        const auto buttonHeight = boundsF.getHeight() / static_cast<float>(buttonLabels.size());
+        return boundsF.withHeight(buttonHeight).withY(boundsF.getY() + buttonHeight * static_cast<float>(index));
     }
 
-    class Cap : public juce::Button
-    {
-    public:
-        Cap(const juce::String& labelText, const juce::Image& onImage, const juce::Image& offImage)
-        : juce::Button(labelText), imageOn(onImage), imageOff(offImage)
-        {
-        }
-
-        void paintButton(juce::Graphics& g, bool, bool) override
-        {
-            const auto isPressed = getToggleState();
-            const auto imageBounds = juce::RectanglePlacement(juce::RectanglePlacement::centred).appliedTo(imageOff.getBounds().toFloat(), getLocalBounds().toFloat());
-            g.drawImage(isPressed ? imageOn : imageOff, imageBounds, juce::RectanglePlacement::centred);
-
-            const auto labelCentreY = imageBounds.getY() + imageBounds.getHeight() * (isPressed ? 0.5f : 0.42f);
-            const auto labelBounds = imageBounds.withSizeKeepingCentre(imageBounds.getWidth(), imageBounds.getHeight() * 0.5f)
-                                                .withCentre({imageBounds.getCentreX(), labelCentreY});
-            g.setColour(VCColors::almostBlack);
-            g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight() * (isPressed ? 1.f : 1.1f)));
-            g.drawText(getButtonText(), labelBounds, juce::Justification::centred, false);
-        }
-
-    private:
-        juce::Image imageOn, imageOff;
-
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Cap)
-    };
-
-    const juce::StringArray capLabels {"4", "8", "12", "20"};
-    static constexpr int allIndex {4};
-    const float capGapRatio {0.15f};
+    const juce::StringArray buttonLabels {"4", "8", "12", "20", "ALL"};
     int selectedIndex {0};
-    const juce::Image capOnImage {juce::ImageCache::getFromMemory(BinaryData::ratioButtonOn_png, BinaryData::ratioButtonOn_pngSize)};
-    const juce::Image capOffImage {juce::ImageCache::getFromMemory(BinaryData::ratioButtonOff_png, BinaryData::ratioButtonOff_pngSize)};
-    juce::OwnedArray<Cap> caps;
+    const juce::Image pushedButtonImage {juce::ImageCache::getFromMemory(BinaryData::pushedButton_png, BinaryData::pushedButton_pngSize)};
+    const juce::Image unpushedButtonImage {juce::ImageCache::getFromMemory(BinaryData::unpushedButton_png, BinaryData::unpushedButton_pngSize)};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Ratio1176Buttons)
 };

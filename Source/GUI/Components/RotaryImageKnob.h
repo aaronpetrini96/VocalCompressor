@@ -32,7 +32,6 @@ public:
         const auto sliderPos = static_cast<float>(valueToProportionOfLength(getValue()));
         const auto angle = rotaryParameters.startAngleRadians + sliderPos * (rotaryParameters.endAngleRadians - rotaryParameters.startAngleRadians);
 
-        g.setOpacity(0.9f);
         g.setImageResamplingQuality(juce::Graphics::highResamplingQuality);
         const auto hasRotor = rotorImage.isValid();
 
