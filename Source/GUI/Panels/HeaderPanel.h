@@ -11,27 +11,16 @@ public:
     : presetManager(processor.presetManager),
       undoManager(processor.undoManager),
       presetBox(processor.presetManager),
-      bypassPluginButtonAttachment(processor.apvts, ParamNames::getGeneralBypassName(), bypassPluginButton),
-      unitTitle1176ButtonAttachment(processor.apvts, ParamNames::get1176BypassName(), unitTitle1176Button),
-      unitTitleLA2AButtonAttachment(processor.apvts, ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
+      bypassPluginButtonAttachment(processor.apvts,       ParamNames::getGeneralBypassName(), bypassPluginButton),
+      unitTitle1176ButtonAttachment(processor.apvts,      ParamNames::get1176BypassName(), unitTitle1176Button),
+      unitTitleLA2AButtonAttachment(processor.apvts,      ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
       reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), signalOrderButton)
     {
-        const auto iconNormal = juce::Drawable::createFromImageData (BinaryData::arrowsIcon_svg,  BinaryData::arrowsIcon_svgSize);
-        const auto iconOver = iconNormal->createCopy();
-        const auto iconDown = iconNormal->createCopy();
-        iconOver->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
-        iconDown->replaceColour (VCColors::almostWhiteText,VCColors::iconActive);
-        signalOrderButton.setImages (iconNormal.get(), iconOver.get(), iconDown.get(), nullptr, iconNormal.get(), iconOver.get(), iconDown.get());
-        signalOrderButton.setEdgeIndent (0);
-        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
-        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
-        signalOrderButton.setClickingTogglesState(true);
-        signalOrderButton.onStateChange = [this] { resized(); };
+        setupArrowIconButtons();
 
         for (auto* unitTitleButton : {&unitTitle1176Button, &unitTitleLA2AButton})
         {
             unitTitleButton->setLookAndFeel(&unitTitleLAF);
-            unitTitleButton->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
             unitTitleButton->setClickingTogglesState(true);
             unitTitleButton->onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
             addAndMakeVisible(*unitTitleButton);
@@ -45,7 +34,7 @@ public:
         AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
 
         bypassPluginButton.setClickingTogglesState(true);
-        bypassPluginButton.onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
+        bypassPluginButton.onStateChange = [this] {if (onBypassChanged != nullptr) onBypassChanged();};
 
         AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare2_svg, BinaryData::resizeSquare2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         resizeButton.setToggleable(true);
@@ -91,25 +80,18 @@ public:
         presetBox.setBounds(presetBoxBounds.toNearestInt());
 
         const auto iconSize = boundsFHeight * 0.5f;
-        const auto iconButtonBounds = boundsF.withSizeKeepingCentre(iconSize, iconSize);
-        saveButton.setBounds(iconButtonBounds.withX(presetBoxBounds.getRight() + iconSize * 0.5f).toNearestInt());
-        bypassPluginButton.setBounds(iconButtonBounds.withRightX(boundsFWidth - iconSize * 0.5f).toNearestInt());
-        resizeButton.setBounds(iconButtonBounds.withRightX(boundsFWidth - iconSize * 2.f).toNearestInt());
-
         const auto iconGap = iconSize * 0.5f;
-        const auto isOrderReversed = signalOrderButton.getToggleState();
-        auto& firstTitleButton = isOrderReversed ? unitTitleLA2AButton : unitTitle1176Button;
-        auto& secondTitleButton = isOrderReversed ? unitTitle1176Button : unitTitleLA2AButton;
-        const auto title1176Text = unitTitle1176Button.getButtonText();
-        const auto titleLA2AText = unitTitleLA2AButton.getButtonText();
-        const auto title1176Width = juce::GlyphArrangement::getStringWidth(UnitTitleButtonLAF::getFontForTextHeight(title1176Text, iconSize), title1176Text);
-        const auto titleLA2AWidth = juce::GlyphArrangement::getStringWidth(UnitTitleButtonLAF::getFontForTextHeight(titleLA2AText, iconSize), titleLA2AText);
-        const auto titleWidth = juce::jmax(title1176Width, titleLA2AWidth) + iconGap;
-        const auto titlesGroupX = (presetBoxBounds.getX() - (titleWidth * 2.f + iconSize)) * 0.5f;
-        firstTitleButton.setBounds(juce::Rectangle<float>(titlesGroupX, iconButtonBounds.getY(), titleWidth, iconSize).toNearestInt());
-        signalOrderButton.setBounds(iconButtonBounds.withX(titlesGroupX + titleWidth).toNearestInt());
-        secondTitleButton.setBounds(juce::Rectangle<float>(titlesGroupX + titleWidth + iconSize, iconButtonBounds.getY(), titleWidth, iconSize).toNearestInt());
+        const auto iconButtonBounds = boundsF.withSizeKeepingCentre(iconSize, iconSize);
+        saveButton.setBounds(iconButtonBounds.withX(presetBoxBounds.getRight() + iconGap).toNearestInt());
+        bypassPluginButton.setBounds(iconButtonBounds.withRightX(boundsFWidth  - iconGap).toNearestInt());
+        resizeButton.setBounds(iconButtonBounds.withRightX(bypassPluginButton.getBounds().toFloat().getX() - iconGap).toNearestInt());
 
+        const auto signalOrderButtonBounds = iconButtonBounds.withCentre({presetBoxBounds.getX() * 0.5f, iconButtonBounds.getCentreY()});
+        signalOrderButton.setBounds(signalOrderButtonBounds.toNearestInt());
+
+        const auto titleButtonBounds = iconButtonBounds.withSizeKeepingCentre(iconSize * 3.5f, iconSize);
+        unitTitle1176Button.setBounds(titleButtonBounds.withRightX(signalOrderButtonBounds.getX()).toNearestInt());
+        unitTitleLA2AButton.setBounds(titleButtonBounds.withX(signalOrderButtonBounds.getRight()).toNearestInt());
         const auto saveButtonRight = presetBoxBounds.getRight() + iconGap + iconSize;
         const auto resizeButtonX = boundsFWidth - iconSize * 3.f;
         const auto undoRedoCentreX = (saveButtonRight + resizeButtonX) * 0.5f;
@@ -130,6 +112,26 @@ public:
 
 
 private:
+    void setupArrowIconButtons()
+    {
+        const auto forwardIcon = juce::Drawable::createFromImageData (BinaryData::arrowRightIcon_svg, BinaryData::arrowRightIcon_svgSize);
+        const auto forwardIconOver = forwardIcon->createCopy();
+        const auto forwardIconDown = forwardIcon->createCopy();
+        forwardIconOver->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
+        forwardIconDown->replaceColour (VCColors::almostWhiteText, VCColors::iconActive);
+        const auto reverseIcon = juce::Drawable::createFromImageData (BinaryData::arrowLeftIcon_svg, BinaryData::arrowLeftIcon_svgSize);
+        const auto reverseIconOver = reverseIcon->createCopy();
+        const auto reverseIconDown = reverseIcon->createCopy();
+        reverseIconOver->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
+        reverseIconDown->replaceColour (VCColors::almostWhiteText, VCColors::iconActive);
+        signalOrderButton.setImages (forwardIcon.get(), forwardIconOver.get(), forwardIconDown.get(), nullptr,
+                                     reverseIcon.get(), reverseIconOver.get(), reverseIconDown.get());
+        signalOrderButton.setEdgeIndent (0);
+        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
+        signalOrderButton.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
+        signalOrderButton.setClickingTogglesState(true);
+    }
+
     void changeListenerCallback(juce::ChangeBroadcaster*) override
     {
         updatePresetName();
