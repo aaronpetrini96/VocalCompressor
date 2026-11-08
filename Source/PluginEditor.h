@@ -41,8 +41,8 @@ private:
     void updateEditorSize();
 
     //  EDITOR CONSTANTS
-    const int guiWidth = 780;
-    const int guiHeight = 520;
+    const int guiWidth = 900;
+    const int guiHeight = 600;
 
 //    PANELS
     HeaderPanel headerPanel {audioProcessor};

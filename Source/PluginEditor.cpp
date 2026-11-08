@@ -81,7 +81,7 @@ VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
 //==============================================================================
 void VocalCompressorAudioProcessorEditor::paint(juce::Graphics& g)
 {
-    g.fillAll(VCColors::background);
+    g.fillAll(juce::Colours::black);
 }
 
 void VocalCompressorAudioProcessorEditor::resized()
@@ -118,6 +118,14 @@ void VocalCompressorAudioProcessorEditor::resized()
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
+    const auto boundsF = getLocalBounds().toFloat();
+    const auto boundsFHeight = boundsF.getHeight();
+    const auto boundsFWidth = boundsF.getWidth();
+    g.setColour(juce::Colours::black);
+    const auto line = getLocalBounds().toFloat().getHeight() * 0.004f;
+    g.fillRect(juce::Rectangle<float>(0.f, 0.f, line, boundsFHeight));
+    g.fillRect(juce::Rectangle<float>(boundsFWidth - line, 0.f, line, boundsFHeight));
+
     const auto isPopupOpen = isAnyPopupVisible();
 
     for (const auto* popup : popups)

@@ -4,7 +4,6 @@
 
 namespace VCColors
 {
-    inline const juce::Colour background {20, 21, 24};
     inline const juce::Colour almostBlack {5, 5, 5};
     inline const juce::Colour darkRed {200, 30, 30};
     inline const juce::Colour fadedWhiteText {200, 200, 200};
