@@ -37,7 +37,6 @@ private:
     VocalCompressorAudioProcessor& audioProcessor;
     void togglePopup (juce::Component& popup, const std::function<void()>& prepareContent);
     bool isAnyPopupVisible() const;
-    void updatePanelsDimming();
     void updateEditorSize();
 
     //  EDITOR CONSTANTS

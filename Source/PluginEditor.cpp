@@ -47,7 +47,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
             presetPopup.prepare(audioProcessor.presetManager.getCurrentPresetName());
         });
     };
-    headerPanel.onBypassChanged = [this] { updatePanelsDimming(); };
+    headerPanel.onBypassChanged = [this] { repaint(); };
 
     presetBrowser.onRowsChanged = [this] { resized(); };
 
@@ -71,7 +71,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
 
     setResizable(false, false);
     updateEditorSize();
-    updatePanelsDimming();
 }
 
 VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
@@ -90,7 +89,7 @@ void VocalCompressorAudioProcessorEditor::resized()
     const auto boundsFHeight = boundsF.getHeight();
     const auto boundsFWidth = boundsF.getWidth();
 
-    const auto headerHeight = boundsFHeight * 0.0725f;
+    const auto headerHeight = boundsFHeight * 0.065f;
     const auto unitPanelHeight = (boundsFHeight - headerHeight) * 0.5f;
 
     const auto headerBounds = boundsF.withHeight(headerHeight);
@@ -118,13 +117,13 @@ void VocalCompressorAudioProcessorEditor::resized()
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
-    const auto boundsF = getLocalBounds().toFloat();
-    const auto boundsFHeight = boundsF.getHeight();
-    const auto boundsFWidth = boundsF.getWidth();
-    g.setColour(juce::Colours::black);
-    const auto line = getLocalBounds().toFloat().getHeight() * 0.004f;
-    g.fillRect(juce::Rectangle<float>(0.f, 0.f, line, boundsFHeight));
-    g.fillRect(juce::Rectangle<float>(boundsFWidth - line, 0.f, line, boundsFHeight));
+    // const auto boundsF = getLocalBounds().toFloat();
+    // const auto boundsFHeight = boundsF.getHeight();
+    // const auto boundsFWidth = boundsF.getWidth();
+    // g.setColour(juce::Colours::black);
+    // const auto line = getLocalBounds().toFloat().getHeight() * 0.004f;
+    // g.fillRect(juce::Rectangle<float>(0.f, 0.f, line, boundsFHeight));
+    // g.fillRect(juce::Rectangle<float>(boundsFWidth - line, 0.f, line, boundsFHeight));
 
     const auto isPopupOpen = isAnyPopupVisible();
 
@@ -137,7 +136,7 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
     const auto fillDim = [&] (const juce::Component& panel, bool isUnitBypassed)
     {
         const auto isBypassed = headerPanel.isBypassed() || isUnitBypassed;
-        const auto dimAmount = isBypassed ? 0.55f : (isPopupOpen ? 0.4f : 0.f);
+        const auto dimAmount = isBypassed ? 0.5f : (isPopupOpen ? 0.3f : 0.f);
 
         g.setColour(VCColors::almostBlack.withAlpha(dimAmount));
         g.fillRect(panel.getBounds());
@@ -169,11 +168,6 @@ void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Compo
         headerPanel.getResizeButton().setToggleState(resizeOptionsPopup.isVisible(), juce::dontSendNotification);
 
     modalBlocker.setVisible(isAnyPopupVisible());
-    updatePanelsDimming();
-}
-
-void VocalCompressorAudioProcessorEditor::updatePanelsDimming()
-{
     repaint();
 }
 

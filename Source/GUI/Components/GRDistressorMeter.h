@@ -16,7 +16,7 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto columnWidth = boundsF.getWidth() / static_cast<float> (numberOfLights);
         const auto halfHeight = boundsF.getHeight() * 0.5f;
-        const auto labelFont = VCFonts::barlowCondensedMedium (halfHeight * 0.9f);
+        const auto labelFont = VCFonts::barlowCondensedSemiBold (halfHeight * 0.925f);
 
         for (const auto isGlowPass : { true, false })
         {
