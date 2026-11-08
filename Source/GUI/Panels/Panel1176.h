@@ -10,15 +10,11 @@
 class Panel1176 : public juce::Component
 {
 public:
-    explicit Panel1176(VocalCompressorAudioProcessor& processor)     : audioProcessor(processor)
+    explicit Panel1176(VocalCompressorAudioProcessor& processor) : audioProcessor(processor)
     {
 
         addAndMakeVisible(grMeter1176);
-        VCLook::setupLabel(grLabel, VCColors::almostWhiteText, juce::Justification::centredLeft);
-        VCLook::setupLabel(dBLabel, VCColors::almostWhiteText, juce::Justification::centredRight);
-        addAndMakeVisible(grLabel);
-        addAndMakeVisible(dBLabel);
-        for (auto* label : {&input1176Label, &output1176Label, &attack1176Label, &release1176Label, &mix1176Label, &ratioLabel})
+        for (auto* label : {&gainReductionLabel, &input1176Label, &output1176Label, &attack1176Label, &release1176Label, &mix1176Label, &ratioLabel})
         {
             VCLook::setupLabel(*label, juce::Colours::white, juce::Justification::centredTop);
             addAndMakeVisible(*label);
@@ -36,13 +32,12 @@ public:
         ratioButtons1176.onIndexChosen = [this](int newIndex) { ratioAttachment.setValueAsCompleteGesture(static_cast<float>(newIndex)); };
         ratioAttachment.sendInitialUpdate();
         addAndMakeVisible(ratioButtons1176);
-
     }
 
     void paint(juce::Graphics& g) override
     {
         const auto boundsF = getLocalBounds().toFloat();
-        g.drawImage(darkBackground, boundsF, juce::RectanglePlacement::stretchToFit);
+        g.drawImage(background1176, boundsF, juce::RectanglePlacement::fillDestination);
 
         for (const auto* dial : {&input1176Dial, &output1176Dial})
             AAUITools::drawKnobScale(g, *dial, bigScaleInset, 11, bigScaleDotSize, bigScaleLabelGap, bigScaleLabels, bigScaleFont);
@@ -59,12 +54,8 @@ public:
         const auto grMeterBounds = bounds.withSize(grMeterWidth, grMeterHeight).withCentre({bounds.getCentreX(), grMeterHeight * 0.5f});
         grMeter1176.setBounds(grMeterBounds.toNearestInt());
 
-        const auto grLabelWidth = grMeterHeight;
-        const auto grLabelGap = grMeterHeight * 0.2f;
-        for (auto* label : {&grLabel, &dBLabel})
-            label->setFont(VCFonts::barlowCondensedRegular(grMeterHeight * 0.5f));
-        grLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getRight() + grLabelGap, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
-        dBLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getX() - grLabelGap - grLabelWidth, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
+        gainReductionLabel.setFont(VCFonts::barlowCondensedSemiBold(grMeterHeight * 0.5f));
+        gainReductionLabel.setBounds(grMeterBounds.withY(grMeterBounds.getBottom()).toNearestInt());
         const auto boundsF = bounds.withTrimmedTop(bounds.getHeight() * 0.1f);
         const auto boundsFHeight = boundsF.getHeight();
         const auto boundsFWidth = boundsF.getWidth();
@@ -72,8 +63,9 @@ public:
         const auto knobSize = boundsFHeight * 0.675f;
         const auto knobBounds = boundsF.withSizeKeepingCentre(knobSize, knobSize);
         const auto knobsGap = knobSize;
-        input1176Dial.setBounds(knobBounds.translated(- knobsGap, 0.f).toNearestInt());
-        output1176Dial.setBounds(knobBounds.translated(knobsGap, 0.f).toNearestInt());
+        const auto bigKnobBounds = knobBounds.withSizeKeepingCentre(knobSize * 0.807f, knobSize * 0.807f);
+        input1176Dial.setBounds(bigKnobBounds.translated(- knobsGap, 0.f).toNearestInt());
+        output1176Dial.setBounds(bigKnobBounds.translated(knobsGap, 0.f).toNearestInt());
 
         bigScaleFont = VCFonts::barlowCondensedMedium(bounds.getHeight() * 0.07f);
         bigScaleInset = knobSize * 0.025f;
@@ -136,7 +128,7 @@ public:
         const auto mixKnobCX = (input1176Dial.getBounds().toFloat().getCentreX() + output1176Dial.getBounds().toFloat().getCentreX()) * 0.5f;
         const auto mixKnobBounds = knobBounds.withSize(mix1176KnobSize, mix1176KnobSize).withCentre({mixKnobCX, boundsF.getCentreY()});
         mix1176Knob.setBounds(mixKnobBounds.toNearestInt());
-        mix1176Label.setFont(VCFonts::barlowCondensedLight(labelBounds.getHeight() * 0.45f));
+        mix1176Label.setFont(VCFonts::barlowCondensedMedium(labelBounds.getHeight() * 0.45f));
         mix1176Label.setBounds(mixKnobBounds.withY(mixKnobBounds.getBottom()).toNearestInt());
     }
 
@@ -144,17 +136,18 @@ private:
     VocalCompressorAudioProcessor& audioProcessor;
 
 //   IMAGE LOADING
-    const juce::Image darkBackground {juce::ImageCache::getFromMemory(BinaryData::darkSilverBackground2_png, BinaryData::darkSilverBackground2_pngSize)};
-    const juce::Image knobImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Base_png, BinaryData::knob1176Base_pngSize)};
+    const juce::Image background1176 {juce::ImageCache::getFromMemory(BinaryData::rack1176Background_png, BinaryData::rack1176Background_pngSize)};
+    const juce::Image knobBaseImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Base_png, BinaryData::knob1176Base_pngSize)};
     const juce::Image knobRotorImage1176 {juce::ImageCache::getFromMemory(BinaryData::knob1176Rotor_png, BinaryData::knob1176Rotor_pngSize)};
-    const juce::Image smallKnobImage1176 {juce::ImageCache::getFromMemory(BinaryData::small1176_png, BinaryData::small1176_pngSize)};
+    const juce::Image smallKnobImage1176 {juce::ImageCache::getFromMemory(BinaryData::small1176Base_png, BinaryData::small1176Base_pngSize)};
+    const juce::Image smallKnobRotorImage1176 {juce::ImageCache::getFromMemory(BinaryData::small1176Rotor_png, BinaryData::small1176Rotor_pngSize)};
     const juce::Image mixKnobImage1176 {juce::ImageCache::getFromMemory(BinaryData::mixKnobLa2aBase_png, BinaryData::mixKnobLa2aBase_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176InputName()), knobImage1176, knobRotorImage1176, 300};
-    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176OutputName()), knobImage1176, knobRotorImage1176, 300};
-    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176AttackName()), smallKnobImage1176, {}, 200};
-    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176ReleaseName()), smallKnobImage1176, {}, 200};
+    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176InputName()), knobBaseImage1176, knobRotorImage1176, 300};
+    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176OutputName()), knobBaseImage1176, knobRotorImage1176, 300};
+    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176AttackName()), smallKnobImage1176, smallKnobRotorImage1176, 250};
+    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176ReleaseName()), smallKnobImage1176, smallKnobRotorImage1176, 250};
     ArcImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::get1176MixName()), mixKnobImage1176};
 
 //    KNOB SCALES
@@ -177,7 +170,7 @@ private:
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeter1176 {audioProcessor.gR1176, VCColors::almostWhiteText};
-    juce::Label grLabel {"GR"}, dBLabel {"dB"};
+    juce::Label gainReductionLabel {"GAIN REDUCTION"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Panel1176)
 };

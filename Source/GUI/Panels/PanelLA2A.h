@@ -8,8 +8,7 @@
 class PanelLA2A : public juce::Component
 {
 public:
-    explicit PanelLA2A(VocalCompressorAudioProcessor& processor)
-    : audioProcessor(processor)
+    explicit PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(processor)
     {
         for (auto* imageKnob : {&la2aGainDial, &la2aPeakReductionDial})
         {
@@ -24,8 +23,8 @@ public:
 
         la2aModeButton.setImages(false, true, true,
                                  la2aModeImageUP, 0.90f, juce::Colours::transparentBlack,
-                                 la2aModeImageUP, 0.90f, juce::Colours::transparentBlack,
-                                 la2aModeImageDOWN, 0.90f, juce::Colours::transparentBlack);
+                                   la2aModeImageUP, 0.90f, juce::Colours::transparentBlack,
+                                  la2aModeImageDOWN, 0.90f, juce::Colours::transparentBlack);
         la2aModeButton.setClickingTogglesState(true);
         la2aModeButton.setAlwaysOnTop(true);
         la2aModeButton.onStateChange = [this] { updateModeLabels(); };
@@ -42,20 +41,17 @@ public:
         addAndMakeVisible(la2aMixLabel);
 
         addAndMakeVisible(grMeterLA2A);
-        VCLook::setupLabel(grLabel, juce::Colours::black, juce::Justification::centredLeft);
-        VCLook::setupLabel(dBLabel, juce::Colours::black, juce::Justification::centredRight);
-        addAndMakeVisible(grLabel);
-        addAndMakeVisible(dBLabel);
+        VCLook::setupLabel(gainReductionLabel, juce::Colours::black, juce::Justification::centredTop);
+        addAndMakeVisible(gainReductionLabel);
     }
 
     void paint(juce::Graphics& g) override
     {
         const auto boundsF = getLocalBounds().toFloat();
-        g.drawImage(clearBackground, boundsF, juce::RectanglePlacement::stretchToFit);
-
+        g.drawImage(clearBackground, boundsF, juce::RectanglePlacement::fillDestination);
         const auto scaleFont = VCFonts::barlowCondensedMedium(boundsF.getHeight() * 0.07f);
         const auto scaleInset = boundsF.getHeight() * 0.07f;
-        for (auto* dial : {&la2aGainDial, &la2aPeakReductionDial})
+        for (const auto* dial : {&la2aGainDial, &la2aPeakReductionDial})
             AAUITools::drawKnobArcScale(g, dial->getBounds().toFloat().reduced(scaleInset), dial->getRotaryParameters().startAngleRadians, dial->getRotaryParameters().endAngleRadians,
                                         11, boundsF.getHeight() * 0.03f, boundsF.getHeight() * 0.006f, {"0", "20", "40", "60", "80", "100"}, scaleFont, juce::Colours::black);
     }
@@ -64,17 +60,13 @@ public:
     {
         const auto bounds = getLocalBounds().toFloat();
         const auto grMeterWidth = bounds.getWidth() * 0.6f;
-        const auto grMeterHeight = bounds.getHeight() * 0.14f;
+        const auto grMeterHeight = bounds.getHeight() * 0.135f;
         const auto grMeterCentre = juce::Point<float> (bounds.getCentreX(), grMeterHeight * 0.5f);
         const auto grMeterBounds = bounds.withSize(grMeterWidth, grMeterHeight).withCentre(grMeterCentre);
         grMeterLA2A.setBounds(grMeterBounds.toNearestInt());
 
-        const auto grLabelWidth = grMeterHeight;
-        const auto grLabelGap = grMeterHeight * 0.2f;
-        for (auto* label : {&grLabel, &dBLabel})
-            label->setFont(VCFonts::barlowCondensedRegular(grMeterHeight * 0.5f));
-        grLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getRight() + grLabelGap, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
-        dBLabel.setBounds(juce::Rectangle<float>(grMeterBounds.getX() - grLabelGap - grLabelWidth, grMeterBounds.getY(), grLabelWidth, grMeterHeight).toNearestInt());
+        gainReductionLabel.setFont(VCFonts::barlowCondensedSemiBold(grMeterHeight * 0.5f));
+        gainReductionLabel.setBounds(grMeterBounds.withY(grMeterBounds.getBottom()).toNearestInt());
 
         const auto boundsF = bounds.withTrimmedTop(bounds.getHeight() * 0.1f);
         const auto boundsFHeight = boundsF.getHeight();
@@ -95,7 +87,7 @@ public:
         la2aGainLabel.setBounds(labelBounds.withCentre({la2aGainDial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
         la2aPeakReductionLabel.setBounds(labelBounds.withCentre({la2aPeakReductionDial.getBounds().toFloat().getCentreX(), labelsCY}).toNearestInt());
 
-        const auto mixKnobSize = knobSize * 0.4f;
+        const auto mixKnobSize = knobSize * 0.45f;
         const auto mixKnobCX = (la2aGainDial.getBounds().toFloat().getCentreX() + la2aPeakReductionDial.getBounds().toFloat().getCentreX()) * 0.5f;
         const auto mixKnobBounds = knobBounds.withSize(mixKnobSize, mixKnobSize).withCentre({mixKnobCX, boundsF.getCentreY()});
         la2aMixKnob.setBounds(mixKnobBounds.toNearestInt());
@@ -119,7 +111,7 @@ private:
     VocalCompressorAudioProcessor& audioProcessor;
 
 //   IMAGE LOADING
-    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::clearSilverBackground2_png, BinaryData::clearSilverBackground2_pngSize)};
+    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::rackLA2ABackground_png, BinaryData::rackLA2ABackground_pngSize)};
     const juce::Image la2aKnobImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aBase_png, BinaryData::knobLa2aBase_pngSize)};
     const juce::Image la2aKnobRotorImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aRotor_png, BinaryData::knobLa2aRotor_pngSize)};
     const juce::Image la2aMixKnobImage {juce::ImageCache::getFromMemory(BinaryData::mixKnob1176Base_png, BinaryData::mixKnob1176Base_pngSize)};
@@ -141,7 +133,7 @@ private:
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeterLA2A {audioProcessor.grLA2A, juce::Colours::black};
-    juce::Label grLabel {"GR"}, dBLabel {"dB"};
+    juce::Label gainReductionLabel {"GAIN REDUCTION"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
 };
