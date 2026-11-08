@@ -16,7 +16,7 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto columnWidth = boundsF.getWidth() / static_cast<float> (numberOfLights);
         const auto halfHeight = boundsF.getHeight() * 0.5f;
-        const auto labelFont = VCFonts::barlowCondensedMedium (halfHeight * 0.85f);
+        const auto labelFont = VCFonts::barlowCondensedSemiBold (halfHeight);
 
         for (const auto isGlowPass : { true, false })
         {
@@ -91,10 +91,10 @@ private:
     static constexpr size_t numberOfLights {16};
     const std::array<float, numberOfLights> lightThresholdsDb {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 12.f, 14.f, 17.f, 20.f, 23.f, 26.f};
 
-    const juce::Colour meterGreen {60, 200, 80};
-    const juce::Colour meterYellow {235, 200, 40};
-    const juce::Colour meterOrange {250, 95, 25};
-    const juce::Colour meterRed {235, 50, 40};
+    const juce::Colour meterGreen   {60, 200, 80};
+    const juce::Colour meterYellow  {235, 200, 40};
+    const juce::Colour meterOrange  {250, 95, 25};
+    const juce::Colour meterRed     {235, 50, 40};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GRDistressorMeter)
 };
