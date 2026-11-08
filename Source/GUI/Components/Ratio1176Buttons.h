@@ -20,10 +20,11 @@ public:
             g.drawImage(isPushed ? pushedButtonImage : unpushedButtonImage, buttonBounds, juce::RectanglePlacement::centred);
 
             const auto labelCentreY = buttonBounds.getY() + buttonBounds.getHeight() * (isPushed ? 0.5f : 0.42f);
-            const auto labelBounds = buttonBounds.withSizeKeepingCentre(buttonBounds.getWidth(), buttonBounds.getHeight() * 0.5f)
+            const auto labelBounds = buttonBounds.withSize(buttonBounds.getWidth(), buttonBounds.getHeight() * 0.5f)
                                                  .withCentre({buttonBounds.getCentreX(), labelCentreY});
-            g.setColour(isPushed ? VCColors::almostBlack : VCColors::almostWhiteText);
-            g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight() * 1.1f));
+            // g.setColour(isPushed ? VCColors::almostBlack : VCColors::almostWhiteText);
+            g.setColour(VCColors::almostWhiteText.withAlpha(isPushed ? 1.f : 0.8f));
+            g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight()));
             g.drawText(buttonLabels[index], labelBounds, juce::Justification::centred, false);
         }
     }
