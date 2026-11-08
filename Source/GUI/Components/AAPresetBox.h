@@ -65,7 +65,7 @@ public:
         const auto nameButtonBounds = boundsF.reduced (boundsFHeight, 0.0f);
         nameButton.setBounds (nameButtonBounds.toNearestInt());
 
-        const auto arrowSize = boundsFHeight * 0.6f;
+        const auto arrowSize = boundsFHeight * 0.35f;
         leftArrowButton.setBounds (boundsF.withRight (nameButtonBounds.getX()).withSizeKeepingCentre (arrowSize, arrowSize).toNearestInt());
         rightArrowButton.setBounds (boundsF.withLeft (nameButtonBounds.getRight()).withSizeKeepingCentre (arrowSize, arrowSize).toNearestInt());
     }

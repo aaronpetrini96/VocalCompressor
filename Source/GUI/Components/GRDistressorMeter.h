@@ -16,7 +16,7 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto columnWidth = boundsF.getWidth() / static_cast<float> (numberOfLights);
         const auto halfHeight = boundsF.getHeight() * 0.5f;
-        const auto labelFont = VCFonts::barlowCondensedSemiBold (halfHeight);
+        const auto labelFont = VCFonts::barlowCondensedMedium (halfHeight * 0.9f);
 
         for (const auto isGlowPass : { true, false })
         {
@@ -48,7 +48,7 @@ private:
 
     void paintLight (juce::Graphics& g, juce::Rectangle<float> columnBounds, size_t index, bool isGlowPass)
     {
-        const auto lightDiameter = columnBounds.getHeight() * 0.8f;
+        const auto lightDiameter = columnBounds.getHeight() * 0.75f;
         const auto ledCentre = columnBounds.getCentre();
         const auto ledDiameter = lightDiameter * 0.8f;
         const auto previousThresholdDb = index == 0 ? 0.f : lightThresholdsDb[index - 1];

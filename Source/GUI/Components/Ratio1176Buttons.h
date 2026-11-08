@@ -23,7 +23,7 @@ public:
             const auto labelBounds = buttonBounds.withSize(buttonBounds.getWidth(), buttonBounds.getHeight() * 0.5f)
                                                  .withCentre({buttonBounds.getCentreX(), labelCentreY});
             // g.setColour(isPushed ? VCColors::almostBlack : VCColors::almostWhiteText);
-            g.setColour(VCColors::almostWhiteText.withAlpha(isPushed ? 1.f : 0.8f));
+            g.setColour(VCColors::almostWhiteText);
             g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight()));
             g.drawText(buttonLabels[index], labelBounds, juce::Justification::centred, false);
         }
