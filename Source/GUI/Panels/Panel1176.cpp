@@ -8,7 +8,6 @@ Panel1176::Panel1176(VocalCompressorAudioProcessor& processor) : audioProcessor(
         VCLook::setupLabel(*label, VCColors::almostWhiteText, juce::Justification::centredTop);
         addAndMakeVisible(*label);
     }
-    attack1176Label.setJustificationType(juce::Justification::centredBottom);
 
     for (auto* imageKnob : {&input1176Dial, &output1176Dial, &attack1176Dial, &release1176Dial})
         addAndMakeVisible(*imageKnob);
@@ -31,18 +30,16 @@ void Panel1176::paint(juce::Graphics& g)
     const auto boundsF = getLocalBounds().toFloat();
     g.drawImage(background1176, boundsF, juce::RectanglePlacement::fillDestination);
 
-    bigScaleFont = VCFonts::barlowCondensedRegular(knobSize * 0.11f);
-    bigScaleInset = knobSize * 0.025f;
-    bigScaleLabelGap = knobSize * 0.0333f;
-    bigScaleDotSize = knobSize * 0.03f;
+    const auto bigScaleDotSize = knobSize * 0.03f;
     for (const auto* dial : {&input1176Dial, &output1176Dial})
-        AAUITools::drawKnobScale(g, *dial, bigScaleInset, 11, bigScaleDotSize, bigScaleLabelGap, bigScaleLabels, bigScaleFont);
+        AAUITools::drawKnobScale(g, *dial, knobSize * 0.025f, 11, bigScaleDotSize, knobSize * 0.0333f,
+                            bigKnobsScale, VCFonts::barlowCondensedRegular(knobSize * 0.11f));
 
-    smallScaleFont = VCFonts::barlowCondensedRegular(smallKnobsSize * 0.25f);
-    smallScaleLabelGap = smallKnobsSize * 0.05f;
-    smallScaleDotSize = smallKnobsSize * 0.06f;
+    const auto smallScaleDotSize = smallKnobsSize * 0.07f;
     for (const auto* dial : {&attack1176Dial, &release1176Dial})
-        AAUITools::drawKnobScale(g, *dial, 0.f, 4, smallScaleDotSize, smallScaleLabelGap, smallScaleLabels, smallScaleFont);
+        AAUITools::drawKnobScale(g, *dial, 0.f, 4, smallScaleDotSize, smallKnobsSize * 0.03f,
+                             smallKnobsScale, VCFonts::barlowCondensedRegular(smallKnobsSize * 0.27f));
+
 }
 
 void Panel1176::resized()
@@ -74,22 +71,22 @@ void Panel1176::resized()
     input1176Label.setBounds(labelBounds.withCentre({inputDialBounds.getCentreX(), labelsCY}).toNearestInt());
     output1176Label.setBounds(labelBounds.withCentre({outputDialBounds.getCentreX(), labelsCY}).toNearestInt());
 
-    smallKnobsSize = boundsFHeight * 0.2f;
+    smallKnobsSize = knobSize * 0.33f;
     const auto controlsXGap = boundsFWidth * 0.2f - (knobSize + smallKnobsSize) * 0.5f;
+    const auto smallKnobBounds = knobBounds.withSizeKeepingCentre(smallKnobsSize, smallKnobsSize);
     const auto smallKnobsCX = outputDialBounds.getRight() + controlsXGap + smallKnobsSize * 0.5f;
-    const auto smallKnobBounds = knobBounds.withSize(smallKnobsSize, smallKnobsSize).withCentre({smallKnobsCX, knobBounds.getCentreY()});
-    const auto attackKnobOffset = boundsFHeight * 0.16f;
-    const auto releaseKnobOffset = boundsFHeight * 0.17f;
-    const auto smallKnobsLabelGap = smallKnobsSize * 0.72f;
-    for (auto* label : {&attack1176Label, &release1176Label})
-        label->setFont(VCFonts::barlowCondensedMedium(labelBounds.getHeight() * 0.35f));
+    const auto smallKnobsYGap= boundsFHeight * 0.2f;
+    const auto attackCY = smallKnobBounds.getCentreY()  - smallKnobsYGap;
+    const auto releaseCY = smallKnobBounds.getCentreY() + smallKnobsYGap;
+    attack1176Dial.setBounds(smallKnobBounds.withCentre({smallKnobsCX, attackCY}).toNearestInt());
+    release1176Dial.setBounds(smallKnobBounds.withCentre({smallKnobsCX, releaseCY}).toNearestInt());
 
-    const auto attackCY = smallKnobBounds.getCentreY() - attackKnobOffset;
-    const auto releaseCY = smallKnobBounds.getCentreY() + releaseKnobOffset;
-    attack1176Dial.setBounds(smallKnobBounds.translated(0.f, -attackKnobOffset).toNearestInt());
-    release1176Dial.setBounds(smallKnobBounds.translated(0.f, releaseKnobOffset).toNearestInt());
-    attack1176Label.setBounds(labelBounds.withCentre({smallKnobsCX, attackCY - smallKnobsLabelGap - labelBounds.getHeight() * 0.5f}).toNearestInt());
-    release1176Label.setBounds(labelBounds.withCentre({smallKnobsCX, releaseCY + smallKnobsLabelGap + labelBounds.getHeight() * 0.5f}).toNearestInt());
+    for (auto* label : {&attack1176Label, &release1176Label})
+        label->setFont(VCFonts::barlowCondensedRegular(labelBounds.getHeight() * 0.3f));
+
+    const auto smallKnobsLabelGap = smallKnobsSize;
+    attack1176Label.setBounds(labelBounds.withCentre({smallKnobsCX, attackCY + smallKnobsLabelGap}).toNearestInt());
+    release1176Label.setBounds(labelBounds.withCentre({smallKnobsCX, releaseCY + smallKnobsLabelGap}).toNearestInt());
 
     const auto ratioButtonsWidth = boundsFWidth * 0.0575f;
     const auto ratioButtonsBounds = knobBounds.withSizeKeepingCentre(ratioButtonsWidth, ratioButtonsWidth * ratioButtons1176.heightToWidthRatio)

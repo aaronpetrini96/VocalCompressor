@@ -14,27 +14,24 @@ public:
     void resized() override;
 
 private:
-    void updateModeLabels();
-
+    float knobSize {0.f};
     VocalCompressorAudioProcessor& audioProcessor;
 
 //   IMAGE LOADING
-    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::rackLA2ABackgroundEarsLight_png, BinaryData::rackLA2ABackgroundEarsLight_pngSize)};
+    const juce::Image clearBackground {juce::ImageCache::getFromMemory(BinaryData::panelLA2ANoEars_png, BinaryData::panelLA2ANoEars_pngSize)};
     const juce::Image la2aKnobImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aBase_png, BinaryData::knobLa2aBase_pngSize)};
-    const juce::Image la2aKnobRotorImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aRotor_png, BinaryData::knobLa2aRotor_pngSize)};
-    const juce::Image la2aMixKnobImage {juce::ImageCache::getFromMemory(BinaryData::mixKnob1176Base_png, BinaryData::mixKnob1176Base_pngSize)};
+    const juce::Image la2aKnobRotorImage {juce::ImageCache::getFromMemory(BinaryData::knobLa2aRotorCentred_png, BinaryData::knobLa2aRotorCentred_pngSize)};
+    const juce::Image la2aMixKnobImage {juce::ImageCache::getFromMemory(BinaryData::whiteKnob2_png, BinaryData::whiteKnob2_pngSize)};
     const juce::Image la2aModeImageUP {juce::ImageCache::getFromMemory(BinaryData::switchUP_png, BinaryData::switchUP_pngSize)};
     const juce::Image la2aModeImageDOWN {juce::ImageCache::getFromMemory(BinaryData::switchDOWN_png, BinaryData::switchDOWN_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage, 300};
-    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage, 300};
+    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage};
+    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage};
     ArcImageKnob la2aMixKnob {*audioProcessor.apvts.getParameter(ParamNames::getLA2AMixName()), la2aMixKnobImage};
 
 //    KNOB SCALES
     const juce::StringArray scaleLabels {"0", "20", "40", "60", "80", "100"};
-    juce::Font scaleFont {juce::FontOptions{}};
-    float scaleInset {0.f}, scaleTickLength {0.f}, scaleLineThickness {0.f};
 
 //   COMP / LIMIT SWITCH
     juce::ImageButton la2aModeButton;

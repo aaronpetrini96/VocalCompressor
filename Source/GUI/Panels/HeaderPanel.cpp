@@ -15,7 +15,7 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
     {
         unitTitleButton->setLookAndFeel(&unitTitleLAF);
         unitTitleButton->setClickingTogglesState(true);
-        unitTitleButton->onStateChange = [this] { if (onBypassChanged != nullptr) onBypassChanged(); };
+        unitTitleButton->onClick =[this] { if (onBypassChanged != nullptr) onBypassChanged(); };
         addAndMakeVisible(*unitTitleButton);
     }
 
@@ -27,7 +27,7 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
     AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
 
     bypassPluginButton.setClickingTogglesState(true);
-    bypassPluginButton.onStateChange = [this] {if (onBypassChanged != nullptr) onBypassChanged();};
+    bypassPluginButton.onClick =[this] {if (onBypassChanged != nullptr) onBypassChanged();};
 
     AAUITools::setIconButtonImages(resizeButton, BinaryData::resizeSquare2_svg, BinaryData::resizeSquare2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
     resizeButton.setToggleable(true);
@@ -37,6 +37,8 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
     AAUITools::setIconButtonImages(redoButton, BinaryData::redoIcon_svg, BinaryData::redoIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
     undoButton.onClick = [this] { undoManager.undo(); };
     redoButton.onClick = [this] { undoManager.redo(); };
+
+    signalOrderButton.onClick = [this] {if (onSignalOrderChanged != nullptr) onSignalOrderChanged();};
 
     presetManager.addChangeListener(this);
     undoManager.addChangeListener(this);

@@ -97,7 +97,7 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
-        const auto lineHeight = boundsFHeight * 0.18f;
+        const auto lineHeight = boundsFHeight / numRows;
         const auto fontHeight = lineHeight * VCLook::fontHeightPOH;
         titleBounds = boundsF.withHeight (boundsFHeight / numRows * VCLook::popupTitleRowRatio);
 

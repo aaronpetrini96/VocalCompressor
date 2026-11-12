@@ -47,6 +47,8 @@ private:
     HeaderPanel headerPanel {audioProcessor};
     Panel1176 panel1176 {audioProcessor};
     PanelLA2A panelLA2A {audioProcessor};
+    juce::Rectangle<float> topPanelBounds, bottomPanelBounds;
+    const juce::Image rackEarsImage {juce::ImageCache::getFromMemory(BinaryData::rackEarsImage_png, BinaryData::rackEarsImage_pngSize)};
 
     float uiScale {0.0f};
     AAResizeUI uiResize {uiScale, guiWidth, guiHeight};

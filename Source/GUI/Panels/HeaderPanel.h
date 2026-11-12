@@ -18,10 +18,12 @@ public:
     std::function<void()> onPresetNameClicked;
     std::function<void()> onSaveClicked;
     std::function<void()> onBypassChanged;
+    std::function<void()> onSignalOrderChanged;
 
     bool isBypassed() const { return bypassPluginButton.getToggleState(); }
     bool is1176Bypassed() const { return unitTitle1176Button.getToggleState(); }
     bool isLA2ABypassed() const { return unitTitleLA2AButton.getToggleState(); }
+    bool isSignalOrderReversed() const {return signalOrderButton.getToggleState(); }
 
 private:
     void changeListenerCallback(juce::ChangeBroadcaster*) override;

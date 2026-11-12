@@ -48,7 +48,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
         });
     };
     headerPanel.onBypassChanged = [this] { repaint(); };
-
+    headerPanel.onSignalOrderChanged = [this] { resized(); };
     presetBrowser.onRowsChanged = [this] { resized(); };
 
     presetPopup.presetExists = [this] (const juce::String& presetName)
@@ -68,7 +68,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     };
 
     addMouseListener(this, true);
-
     setResizable(false, false);
     updateEditorSize();
 }
@@ -81,6 +80,8 @@ VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
 void VocalCompressorAudioProcessorEditor::paint(juce::Graphics& g)
 {
     g.fillAll(juce::Colours::black);
+    g.drawImage(rackEarsImage, topPanelBounds, juce::RectanglePlacement::fillDestination);
+    g.drawImage(rackEarsImage, bottomPanelBounds, juce::RectanglePlacement::fillDestination);
 }
 
 void VocalCompressorAudioProcessorEditor::resized()
@@ -88,44 +89,38 @@ void VocalCompressorAudioProcessorEditor::resized()
     const auto boundsF = getLocalBounds().toFloat();
     const auto boundsFHeight = boundsF.getHeight();
     const auto boundsFWidth = boundsF.getWidth();
-
     const auto headerHeight = boundsFHeight * 0.065f;
     const auto unitPanelHeight = (boundsFHeight - headerHeight) * 0.5f;
 
     const auto headerBounds = boundsF.withHeight(headerHeight);
-    const auto panel1176Bounds = boundsF.withHeight(unitPanelHeight).withY(headerBounds.getBottom());
-    const auto panelLA2ABounds = panel1176Bounds.withY(panel1176Bounds.getBottom());
+    topPanelBounds = boundsF.withHeight(unitPanelHeight).withY(headerBounds.getBottom());
+    bottomPanelBounds = topPanelBounds.withY(topPanelBounds.getBottom());
 
     headerPanel.setBounds(headerBounds.toNearestInt());
-    panel1176.setBounds(panel1176Bounds.toNearestInt());
-    panelLA2A.setBounds(panelLA2ABounds.toNearestInt());
+    panel1176.setBounds((headerPanel.isSignalOrderReversed() ? bottomPanelBounds : topPanelBounds).toNearestInt());
+    panelLA2A.setBounds((headerPanel.isSignalOrderReversed() ? topPanelBounds : bottomPanelBounds).toNearestInt());
+
     modalBlocker.setBounds(boundsF.withTop(headerBounds.getBottom()).toNearestInt());
     const auto resizeBtnBounds = headerPanel.getResizeButton().getBounds().toFloat();
 
     const auto rowH = boundsFHeight * VCLook::rowPOH;
+
     const auto sizeOptionsWidth = boundsFWidth * 0.2f;
     const auto sizeOptionsHeight = rowH * resizeOptionsPopup.getNumRows();
-    resizeOptionsPopup.setBounds(juce::Rectangle<float>(sizeOptionsWidth, sizeOptionsHeight)
-                                     .withRightX(resizeBtnBounds.getRight())
-                                     .withY(resizeBtnBounds.getBottom())
-                                     .toNearestInt());
+    resizeOptionsPopup.setBounds(juce::Rectangle<float>(sizeOptionsWidth, sizeOptionsHeight).withRightX(resizeBtnBounds.getRight()).withY(headerBounds.getBottom()).toNearestInt());
 
     const auto presetBrowserBounds = boundsF.withSizeKeepingCentre(boundsFWidth * 0.3f, presetBrowser.getNumRows() * rowH).withY(headerBounds.getBottom());
     presetBrowser.setBounds(presetBrowserBounds.toNearestInt());
-    presetPopup.setBounds(presetBrowserBounds.withHeight(boundsFHeight * 0.3f).toNearestInt());
+    presetPopup.setBounds(presetBrowserBounds.withHeight(rowH * presetPopup.numRows).toNearestInt());
 }
 
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
-    // const auto boundsF = getLocalBounds().toFloat();
-    // const auto boundsFHeight = boundsF.getHeight();
-    // const auto boundsFWidth = boundsF.getWidth();
-    // g.setColour(juce::Colours::black);
-    // const auto line = getLocalBounds().toFloat().getHeight() * 0.004f;
-    // g.fillRect(juce::Rectangle<float>(0.f, 0.f, line, boundsFHeight));
-    // g.fillRect(juce::Rectangle<float>(boundsFWidth - line, 0.f, line, boundsFHeight));
-
     const auto isPopupOpen = isAnyPopupVisible();
+    const auto isAnyBypassed = headerPanel.isBypassed() || headerPanel.is1176Bypassed() || headerPanel.isLA2ABypassed();
+
+    if (! isPopupOpen && ! isAnyBypassed)
+        return;
 
     for (const auto* popup : popups)
     {
@@ -137,6 +132,9 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
     {
         const auto isBypassed = headerPanel.isBypassed() || isUnitBypassed;
         const auto dimAmount = isBypassed ? 0.5f : (isPopupOpen ? 0.3f : 0.f);
+
+        if (dimAmount == 0.0f)
+            return;
 
         g.setColour(VCColors::almostBlack.withAlpha(dimAmount));
         g.fillRect(panel.getBounds());
