@@ -39,6 +39,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     const int versionHint = 1;
     juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
+    juce::NormalisableRange<float> timeKnobRange {1.f, 7.f, 0.01f};
     
 //    1176
     auto name = ParamNames::get1176InputName();
@@ -46,12 +47,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     name = ParamNames::get1176OutputName();
     params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.7f));
     
-    // Attack: 0.02 ms – 0.8 ms  (20 µs – 800 µs)
     name = ParamNames::get1176AttackName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(0.02f, 0.8f, 0.0001f, 0.3f), 0.574f));
-    // Release: 50 ms – 1100 ms
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, timeKnobRange, 4.f));
     name = ParamNames::get1176ReleaseName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, juce::NormalisableRange<float>(50.f, 1100.0f, 0.1f, 0.45f), 369.f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, timeKnobRange, 5.f));
     
     name = ParamNames::get1176RatioName();
     const juce::StringArray ratioArray_1176 {"4", "8", "12", "20", "ALL"};
@@ -284,8 +283,8 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
 
     const float inDB = compressor.getInputGainDB(input1176ParamSmoother.getCurrentValue());
     const float outDB = compressor.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
-    const float attack = attack1176ParamSmoother.getCurrentValue();
-    const float release = release1176ParamSmoother.getCurrentValue();
+    const float attack = compressor.getAttackMs(attack1176ParamSmoother.getCurrentValue());
+    const float release = compressor.getReleaseMs(release1176ParamSmoother.getCurrentValue());
     const float mix = mix1176ParamSmoother.getCurrentValue();
     static constexpr std::array ratios1176 {4.f, 8.f, 12.f, 20.f, 100.f};
     const float ratio = ratios1176[static_cast<size_t>(ratio1176Param->getIndex())];

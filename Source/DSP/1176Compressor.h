@@ -9,6 +9,8 @@ public:
 
     float getInputGainDB(float) const;
     float getOutputGainDB(float) const;
+    float getAttackMs(float) const;
+    float getReleaseMs(float) const;
     void setParameters(float inputGain, float outputGain, float attack, float release, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
 
@@ -40,4 +42,5 @@ public:
     float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
     float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
     static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
+    static float knobToTimeMs (float knobValue, float slowestMs, float fastestMs);
 };

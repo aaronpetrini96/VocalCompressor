@@ -30,6 +30,21 @@ float FET1176Compressor::getOutputGainDB(float normValue) const
     return taperedKnobToDB (normValue, -84.f, 16.f, 2.4f);
 }
 
+float FET1176Compressor::knobToTimeMs (float knobValue, float slowestMs, float fastestMs)
+{
+    const auto knobPosition = (knobValue - 1.f) / 6.f;
+    return slowestMs * std::pow (fastestMs / slowestMs, knobPosition);
+}
+
+float FET1176Compressor::getAttackMs(float knobValue) const
+{
+    return knobToTimeMs (knobValue, 0.8f, 0.02f);
+}
+float FET1176Compressor::getReleaseMs(float knobValue) const
+{
+    return knobToTimeMs (knobValue, 1100.f, 50.f);
+}
+
 void FET1176Compressor::setParameters(float inDB, float outDB, float attackTime, float releaseTime, float newRatio, float newMix)
 {
     inputGain = dBToGain(inDB);
