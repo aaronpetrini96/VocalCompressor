@@ -76,7 +76,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         float levelDb = gainToDB(env);
         
         //Threshold
-        float effectiveThreshold = -24.f;
+        float effectiveThreshold = -12.f;
         if (allButtonsIn)
             effectiveThreshold -= controlEnvDb * 0.25f;
         
