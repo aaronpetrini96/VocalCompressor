@@ -29,6 +29,7 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
 #endif
     
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    juce::AudioProcessorParameter* getBypassParameter() const override;
     
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;

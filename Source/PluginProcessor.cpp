@@ -431,6 +431,11 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     }
 }
 
+juce::AudioProcessorParameter* VocalCompressorAudioProcessor::getBypassParameter() const
+{
+    return pluginBypassParam;
+}
+
 
 //==============================================================================
 bool VocalCompressorAudioProcessor::hasEditor() const
