@@ -23,13 +23,12 @@ public:
     float tubeSaturation(float x, float drive);
     
 //    params
-    float sampleRate = 44100.f;
     float attackCoeff  = 0.f;
     float relFastCoeff = 0.f;
     float relSlowCoeff = 0.f;
     float peakReduction = 0.f;
     float outputGain = 1.f;
-    float ratio = 3.f;
+    float ratio = 5.f;
     bool isLimit = false;
     float mix = 1.f;
     

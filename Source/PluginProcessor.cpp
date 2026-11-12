@@ -74,7 +74,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     name = ParamNames::getLA2ABypassName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
     
-//    GENERAL PUGIN PARAMETERS
+//    GENERAL PLUGIN PARAMETERS
     name = ParamNames::getGeneralBypassName();
     params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
     
@@ -287,11 +287,8 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
     const float attack = attack1176ParamSmoother.getCurrentValue();
     const float release = release1176ParamSmoother.getCurrentValue();
     const float mix = mix1176ParamSmoother.getCurrentValue();
-    const int ratioIndex = ratio1176Param->getIndex();
-    const float ratio = (ratioIndex == 0) ? 4.f :
-                  (ratioIndex == 1) ? 8.f :
-                  (ratioIndex == 2) ? 12.f :
-                  (ratioIndex == 3) ? 20.f : 100.f;
+    static constexpr std::array ratios1176 {4.f, 8.f, 12.f, 20.f, 100.f};
+    const float ratio = ratios1176[static_cast<size_t>(ratio1176Param->getIndex())];
 
     compressor.setParameters(inDB, outDB, attack, release, ratio, mix);
     bypass1176.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),

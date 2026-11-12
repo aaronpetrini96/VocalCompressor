@@ -2,7 +2,7 @@
 
 void LA2ACompressor::prepare(double newSampleRate)
 {
-    sampleRate = static_cast<float>(newSampleRate);
+    const auto sampleRate = static_cast<float>(newSampleRate);
     attackCoeff  = std::exp(-1.0f / (0.01f * sampleRate));
     relFastCoeff = std::exp(-1.0f / (0.06f * sampleRate));
     relSlowCoeff = std::exp(-1.0f / (2.0f  * sampleRate));
@@ -56,12 +56,12 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         
         if (over > 0.0f)
         {
-            float knee = isLimit ? 2.0f : 6.0f;
-            float compAmount = over / (over + knee);
+            const float knee = isLimit ? 2.0f : 6.0f;
+            const float compAmount = over / (over + knee);
             gainDB = -compAmount * (1.0f - 1.0f / ratio) * over;
         }
         
-        float gain = dBToGain(gainDB);
+        const float gain = dBToGain(gainDB);
         
         // --- Apply Gain & Tube Character ---
         for (int ch = 0; ch < numChannels; ++ch)

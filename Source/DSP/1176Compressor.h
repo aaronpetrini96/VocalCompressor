@@ -32,12 +32,12 @@ public:
     float ratio = 4.f;
     float mix = 1.f;
     
-//    Enveloper Follower
+//    Envelope Follower
     float env = 0.f;
     
 //    Helper Funcs
     float revASaturation(float x, float drive);
-    inline float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
-    inline float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
+    float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
+    float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
     static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
 };
