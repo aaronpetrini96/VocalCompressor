@@ -462,9 +462,10 @@ void VocalCompressorAudioProcessor::setStateInformation (const void* data, int s
     
     if (xml && xml->hasTagName(apvts.state.getType()))
     {
-        const juce::ValueTree state = juce::ValueTree::fromXml(*xml);
+        juce::ValueTree state = juce::ValueTree::fromXml(*xml);
         const auto restoredPresetName = state.getProperty("CurrentPresetName").toString();
         const auto restoredPresetModified = static_cast<bool>(state.getProperty("PresetModified", false));
+        state.removeAllProperties(nullptr);
         apvts.replaceState(state);
         presetManager.setCurrentPresetName(restoredPresetName);
         presetManager.setPresetModified(restoredPresetModified);
