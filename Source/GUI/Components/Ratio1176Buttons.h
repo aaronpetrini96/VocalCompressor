@@ -1,12 +1,17 @@
 #pragma once
-#include <juce_gui_basics/juce_gui_basics.h>
+#include <juce_audio_processors/juce_audio_processors.h>
 #include "../VCLook.h"
 
 class Ratio1176Buttons : public juce::Component
 {
 public:
-    Ratio1176Buttons()
+    explicit Ratio1176Buttons(juce::RangedAudioParameter& parameter)
+    : attachment(parameter, [this](const float newValue) { setSelectedIndex(juce::roundToInt(newValue)); }, nullptr)
     {
+        attachment.sendInitialUpdate();
+
+        if (!unpushedButtonImage.isValid() || !pushedButtonImage.isValid())
+            return;
         const auto buttonImageRatio = static_cast<float>(unpushedButtonImage.getHeight()) / static_cast<float>(unpushedButtonImage.getWidth());
         heightToWidthRatio = buttonImageRatio * static_cast<float>(buttonLabels.size());
     }
@@ -22,7 +27,6 @@ public:
             const auto labelCentreY = buttonBounds.getY() + buttonBounds.getHeight() * (isPushed ? 0.5f : 0.42f);
             const auto labelBounds = buttonBounds.withSize(buttonBounds.getWidth(), buttonBounds.getHeight() * 0.5f)
                                                  .withCentre({buttonBounds.getCentreX(), labelCentreY});
-            // g.setColour(isPushed ? VCColors::almostBlack : VCColors::almostWhiteText);
             g.setColour(VCColors::almostWhiteText);
             g.setFont(VCFonts::barlowCondensedSemiBold(labelBounds.getHeight()));
             g.drawText(buttonLabels[index], labelBounds, juce::Justification::centred, false);
@@ -33,22 +37,18 @@ public:
     {
         const auto buttonHeight = static_cast<float>(getHeight()) / static_cast<float>(buttonLabels.size());
         const auto clickedIndex = juce::jlimit(0, buttonLabels.size() - 1, static_cast<int>(event.position.y / buttonHeight));
-        setSelectedIndex(clickedIndex);
-
-        if (onIndexChosen != nullptr)
-            onIndexChosen(clickedIndex);
+        attachment.setValueAsCompleteGesture(static_cast<float>(clickedIndex));
     }
 
+    float heightToWidthRatio {1.f};
+
+private:
     void setSelectedIndex(const int newIndex)
     {
         selectedIndex = newIndex;
         repaint();
     }
 
-    std::function<void(int)> onIndexChosen;
-    float heightToWidthRatio {1.f};
-
-private:
     juce::Rectangle<float> getButtonBounds(const int index) const
     {
         const auto boundsF = getLocalBounds().toFloat();
@@ -60,6 +60,7 @@ private:
     int selectedIndex {0};
     const juce::Image pushedButtonImage {juce::ImageCache::getFromMemory(BinaryData::pushedButton_png, BinaryData::pushedButton_pngSize)};
     const juce::Image unpushedButtonImage {juce::ImageCache::getFromMemory(BinaryData::unpushedButton_png, BinaryData::unpushedButton_pngSize)};
+    juce::ParameterAttachment attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Ratio1176Buttons)
 };

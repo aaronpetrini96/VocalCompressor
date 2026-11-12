@@ -49,9 +49,7 @@ private:
                 mix1176Label {"MIX"}, ratioLabel {"RATIO"};
 
 //    RATIO BUTTONS
-    Ratio1176Buttons ratioButtons1176;
-    juce::ParameterAttachment ratioAttachment {*audioProcessor.apvts.getParameter(ParamNames::get1176RatioName()),
-                                               [this](float newValue) { ratioButtons1176.setSelectedIndex(juce::roundToInt(newValue)); }, nullptr};
+    Ratio1176Buttons ratioButtons1176 {*audioProcessor.apvts.getParameter(ParamNames::get1176RatioName())};
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeter1176 {audioProcessor.gR1176, VCColors::almostWhiteText};
