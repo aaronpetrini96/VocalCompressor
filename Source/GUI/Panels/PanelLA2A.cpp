@@ -27,9 +27,9 @@ PanelLA2A::PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(
     addAndMakeVisible(la2aMixKnob);
 
     la2aModeButton.setImages(false, true, true,
-                             la2aModeImageUP, 1.f, juce::Colours::transparentBlack,
-                               la2aModeImageUP, 1.f, juce::Colours::transparentBlack,
-                              la2aModeImageDOWN, 1.f, juce::Colours::transparentBlack);
+                             la2aModeImageDOWN, 1.f, juce::Colours::transparentBlack,
+                             la2aModeImageDOWN, 1.f, juce::Colours::transparentBlack,
+                             la2aModeImageUP, 1.f, juce::Colours::transparentBlack);
     la2aModeButton.setClickingTogglesState(true);
     addAndMakeVisible(la2aModeButton);
 
