@@ -29,8 +29,6 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
 #endif
     
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-    void processBlock1176(juce::AudioBuffer<float>&);
-    void processBlockLA2A(juce::AudioBuffer<float>&);
     
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -63,9 +61,6 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     AAUndoManager undoManager;
     PresetManager presetManager {apvts, undoManager};
 
-
-    
-    
     std::atomic<float> gR1176 {0.f}, grLA2A {0.f};
     
 private:
@@ -75,8 +70,11 @@ private:
     AADspTools::SmoothedBypass bypass1176, bypassLA2A, pluginBypass;
 
     bool isOrderReversed {false};
-    int orderSwitchSamplesLeft {0};
-
+    FET1176Compressor fet1176Next;
+    LA2ACompressor la2aNext;
+    juce::AudioBuffer<float> orderFadeBuffer;
+    int orderFadeLength {1};
+    int orderFadeSamplesLeft {0};
 
     juce::AudioParameterFloat* input1176Param {nullptr};
     juce::AudioParameterFloat* output1176Param {nullptr};
@@ -85,11 +83,13 @@ private:
     juce::AudioParameterFloat* mix1176Param {nullptr};
     juce::AudioParameterChoice* ratio1176Param {nullptr};
     juce::AudioParameterBool* bypass1176Param {nullptr};
+
     juce::AudioParameterFloat* gainLA2AParam {nullptr};
     juce::AudioParameterFloat* peakReductionLA2AParam {nullptr};
     juce::AudioParameterBool* modeLA2AParam {nullptr};
     juce::AudioParameterFloat* mixLA2AParam {nullptr};
     juce::AudioParameterBool* bypassLA2AParam {nullptr};
+
     juce::AudioParameterBool* pluginBypassParam {nullptr};
     juce::AudioParameterBool* reverseSignalOrderParam {nullptr};
 
@@ -131,6 +131,9 @@ private:
     }
 
     void linkParameters();
+    void processBlock1176(juce::AudioBuffer<float>&, FET1176Compressor&);
+    void processBlockLA2A(juce::AudioBuffer<float>&, LA2ACompressor&);
+    void processChain(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor1176, LA2ACompressor& compressorLA2A, bool isReversed);
 
     enum class SmootherUpdateMode
     {

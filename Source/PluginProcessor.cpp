@@ -221,7 +221,9 @@ void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int sample
     bypassLA2A.prepare (sampleRate, samplesPerBlock, numChannels, bypassLA2AParam->get());
     pluginBypass.prepare (sampleRate, samplesPerBlock, numChannels, pluginBypassParam->get());
     isOrderReversed = reverseSignalOrderParam->get();
-    orderSwitchSamplesLeft = 0;
+    orderFadeLength = std::max(1, static_cast<int>(sampleRate * 0.02));
+    orderFadeSamplesLeft = 0;
+    orderFadeBuffer.setSize(numChannels, samplesPerBlock);
 
     //Reset all smoothers
     for (const auto& [param, smoother] : smootherBindings)
@@ -263,20 +265,20 @@ bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 }
 #endif
 
-void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer)
+void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor)
 {
     const auto isBypassed = bypass1176Param->get();
 
     bypass1176.setBypassed(isBypassed);
     if (bypass1176.isFullyBypassed())
     {
-        fet1176.reset();
+        compressor.reset();
         gR1176.store (0.f);
         return;
     }
 
-    const float inDB = fet1176.getInputGainDB(input1176ParamSmoother.getCurrentValue());
-    const float outDB = fet1176.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
+    const float inDB = compressor.getInputGainDB(input1176ParamSmoother.getCurrentValue());
+    const float outDB = compressor.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
     const float attack = attack1176ParamSmoother.getCurrentValue();
     const float release = release1176ParamSmoother.getCurrentValue();
     const float mix = mix1176ParamSmoother.getCurrentValue();
@@ -286,25 +288,25 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
                   (ratioIndex == 2) ? 12.f :
                   (ratioIndex == 3) ? 20.f : 100.f;
 
-    fet1176.setParameters(inDB, outDB, attack, release, ratio, mix);
+    compressor.setParameters(inDB, outDB, attack, release, ratio, mix);
     bypass1176.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
-                       [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                       [&compressor] (float* const* chunkData, int chunkChannels, int chunkSamples)
                        {
                            juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
-                           fet1176.process(chunkBuffer);
+                           compressor.process(chunkBuffer);
                        });
 
-    gR1176.store (isBypassed ? 0.f : fet1176.getGainReductionDB());
+    gR1176.store (isBypassed ? 0.f : compressor.getGainReductionDB());
 }
 
-void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer)
+void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer, LA2ACompressor& compressor)
 {
     const auto isBypassed = bypassLA2AParam->get();
 
     bypassLA2A.setBypassed(isBypassed);
     if (bypassLA2A.isFullyBypassed())
     {
-        la2aComp.reset();
+        compressor.reset();
         grLA2A.store (0.f);
         return;
     }
@@ -313,15 +315,28 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
     float normPeakReduction = peakReductionLA2AParamSmoother.getCurrentValue();
     bool limitMode = modeLA2AParam->get();
     float mix = mixLA2AParamSmoother.getCurrentValue();
-    la2aComp.setParameters(normGain, normPeakReduction, limitMode, mix);
+    compressor.setParameters(normGain, normPeakReduction, limitMode, mix);
     bypassLA2A.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
-                       [this] (float* const* chunkData, int chunkChannels, int chunkSamples)
+                       [&compressor] (float* const* chunkData, int chunkChannels, int chunkSamples)
                        {
                            juce::AudioBuffer<float> chunkBuffer (chunkData, chunkChannels, chunkSamples);
-                           la2aComp.process(chunkBuffer);
+                           compressor.process(chunkBuffer);
                        });
 
-    grLA2A.store (isBypassed ? 0.f : la2aComp.getGainReduction());
+    grLA2A.store (isBypassed ? 0.f : compressor.getGainReduction());
+}
+
+void VocalCompressorAudioProcessor::processChain(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor1176, LA2ACompressor& compressorLA2A, const bool isReversed)
+{
+    if (isReversed)
+    {
+        processBlockLA2A(buffer, compressorLA2A);
+        processBlock1176(buffer, compressor1176);
+        return;
+    }
+
+    processBlock1176(buffer, compressor1176);
+    processBlockLA2A(buffer, compressorLA2A);
 }
 
 
@@ -337,11 +352,14 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         updateSmootherFromParams (blockSize, SmootherUpdateMode::liveInRealTime);
 
         const auto shouldReverseOrder = reverseSignalOrderParam->get();
-        if (shouldReverseOrder != isOrderReversed && orderSwitchSamplesLeft == 0)
-            orderSwitchSamplesLeft = static_cast<int>(getSampleRate() * 0.05);
+        if (shouldReverseOrder != isOrderReversed && orderFadeSamplesLeft == 0)
+        {
+            fet1176Next = fet1176;
+            la2aNext = la2aComp;
+            orderFadeSamplesLeft = orderFadeLength;
+        }
 
-        const auto isSwitchingOrder = orderSwitchSamplesLeft > 0;
-        pluginBypass.setBypassed(pluginBypassParam->get() || isSwitchingOrder);
+        pluginBypass.setBypassed(pluginBypassParam->get());
 
         if (pluginBypass.isFullyBypassed())
         {
@@ -349,6 +367,8 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
             la2aComp.reset();
             gR1176.store(0.f);
             grLA2A.store(0.f);
+            isOrderReversed = shouldReverseOrder;
+            orderFadeSamplesLeft = 0;
         }
         else
         {
@@ -359,27 +379,39 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
                                  {
                                      juce::AudioBuffer<float> chunkBuffer(chunkData, chunkChannels, chunkSamples);
 
-                                     if (isOrderReversed)
+                                     if (orderFadeSamplesLeft == 0)
                                      {
-                                         processBlockLA2A(chunkBuffer);
-                                         processBlock1176(chunkBuffer);
+                                         processChain(chunkBuffer, fet1176, la2aComp, isOrderReversed);
+                                         return;
                                      }
-                                     else
+
+                                     juce::AudioBuffer<float> newOrderBuffer(orderFadeBuffer.getArrayOfWritePointers(), chunkChannels, chunkSamples);
+                                     for (int ch {0}; ch < chunkChannels; ++ch)
+                                         newOrderBuffer.copyFrom(ch, 0, chunkBuffer, ch, 0, chunkSamples);
+
+                                     processChain(chunkBuffer, fet1176, la2aComp, isOrderReversed);
+                                     processChain(newOrderBuffer, fet1176Next, la2aNext, ! isOrderReversed);
+
+                                     const auto fadedSamples = orderFadeLength - orderFadeSamplesLeft;
+                                     for (int n {0}; n < chunkSamples; ++n)
                                      {
-                                         processBlock1176(chunkBuffer);
-                                         processBlockLA2A(chunkBuffer);
+                                         const auto newOrderGain = std::min(1.f, static_cast<float>(fadedSamples + n + 1) / static_cast<float>(orderFadeLength));
+                                         for (int ch {0}; ch < chunkChannels; ++ch)
+                                         {
+                                             const auto oldOrderSample = chunkBuffer.getSample(ch, n);
+                                             chunkBuffer.setSample(ch, n, oldOrderSample + (newOrderBuffer.getSample(ch, n) - oldOrderSample) * newOrderGain);
+                                         }
+                                     }
+
+                                     orderFadeSamplesLeft -= chunkSamples;
+                                     if (orderFadeSamplesLeft <= 0)
+                                     {
+                                         orderFadeSamplesLeft = 0;
+                                         fet1176 = fet1176Next;
+                                         la2aComp = la2aNext;
+                                         isOrderReversed = ! isOrderReversed;
                                      }
                                  });
-        }
-
-        if (isSwitchingOrder)
-        {
-            orderSwitchSamplesLeft -= blockSize;
-            if (orderSwitchSamplesLeft <= 0)
-            {
-                orderSwitchSamplesLeft = 0;
-                isOrderReversed = shouldReverseOrder;
-            }
         }
     }
 }
