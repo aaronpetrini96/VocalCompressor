@@ -56,7 +56,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         
         if (over > 0.0f)
         {
-            const float knee = isLimit ? 2.0f : 6.0f;
+            const float knee = isLimit ? 4.0f : 6.0f;
             const float compAmount = over / (over + knee);
             gainDB = -compAmount * (1.0f - 1.0f / ratio) * over;
         }
