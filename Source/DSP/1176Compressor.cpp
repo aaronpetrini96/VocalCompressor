@@ -63,8 +63,9 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         
         if (allButtonsIn)
         {
-            float speedUp = juce::jmap(controlEnvDb, 0.f, 20.f, 1.f, 0.35f);
-            attack = std::pow(attackCoeff, speedUp);
+            const auto speedUpAmountDb = juce::jlimit(0.f, 20.f, controlEnvDb);
+            const auto attackSpeedUp = juce::jmap(speedUpAmountDb, 0.f, 20.f, 1.f, 2.86f);
+            attack = std::pow(attackCoeff, attackSpeedUp);
         }
         
         if (detector > env)
