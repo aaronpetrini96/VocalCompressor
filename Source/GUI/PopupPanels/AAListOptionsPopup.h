@@ -16,9 +16,9 @@ public:
         std::function<void()> onSelected;
         bool isEnabled {true};
         bool isSelected {false};
-        bool isCheckbox {false};
-        juce::String tooltip;
-        std::shared_ptr<juce::Drawable> icon;
+//        bool isCheckbox {false};
+//        juce::String tooltip;
+//        std::shared_ptr<juce::Drawable> icon;
     };
 
     explicit AAListOptionsPopup (const juce::String& titleToUse) : title (titleToUse)
@@ -68,18 +68,18 @@ public:
 
     void paintOverChildren (juce::Graphics& g) override
     {
-        for (int rowIndex = 0; rowIndex < rows.size(); ++rowIndex)
-        {
-            const auto& icon = rows[rowIndex]->isOver() ? rowOverIcons[(size_t) rowIndex] : rowIcons[(size_t) rowIndex];
-            if (icon != nullptr)
-            {
-                const auto rowBounds = rows[rowIndex]->getBounds().toFloat();
-                const auto iconSize = rowBounds.getHeight() * 0.6f;
-                const auto iconWidth = iconSize * juce::jmax (1.0f, icon->getDrawableBounds().getWidth() / icon->getDrawableBounds().getHeight());
-                const auto iconBounds = rowBounds.withSizeKeepingCentre (iconWidth, iconSize).withRightX (rowBounds.getRight() - rowBounds.getHeight() * 0.45f);
-                icon->drawWithin (g, iconBounds, juce::RectanglePlacement::centred, rows[rowIndex]->isEnabled() ? 1.f : 0.3f);
-            }
-        }
+//        for (int rowIndex = 0; rowIndex < rows.size(); ++rowIndex)
+//        {
+//            const auto& icon = rows[rowIndex]->isOver() ? rowOverIcons[(size_t) rowIndex] : rowIcons[(size_t) rowIndex];
+//            if (icon != nullptr)
+//            {
+//                const auto rowBounds = rows[rowIndex]->getBounds().toFloat();
+//                const auto iconSize = rowBounds.getHeight() * 0.6f;
+//                const auto iconWidth = iconSize * juce::jmax (1.0f, icon->getDrawableBounds().getWidth() / icon->getDrawableBounds().getHeight());
+//                const auto iconBounds = rowBounds.withSizeKeepingCentre (iconWidth, iconSize).withRightX (rowBounds.getRight() - rowBounds.getHeight() * 0.45f);
+//                icon->drawWithin (g, iconBounds, juce::RectanglePlacement::centred, rows[rowIndex]->isEnabled() ? 1.f : 0.3f);
+//            }
+//        }
 
         const auto boundsF = getLocalBounds().toFloat();
         const auto boundsFHeight = boundsF.getHeight();
@@ -96,29 +96,31 @@ protected:
     void setItems (const juce::Array<Item>& newItems)
     {
         rows.clear();
-        rowIcons.clear();
-        rowOverIcons.clear();
+//        rowIcons.clear();
+//        rowOverIcons.clear();
 
         for (const auto& item : newItems)
         {
-            auto* row = rows.add (item.isCheckbox ? static_cast<juce::Button*> (new juce::ToggleButton (item.text)) : new juce::TextButton (item.text));
+//            auto* row = rows.add (item.isCheckbox ? static_cast<juce::Button*> (new juce::ToggleButton (item.text)) : new juce::TextButton (item.text));
+            auto* row = rows.add (new juce::TextButton (item.text));
             row->setEnabled (item.isEnabled);
             row->setToggleState (item.isSelected, juce::dontSendNotification);
-            row->setTooltip (item.tooltip);
-            row->onClick = [this, onSelected = item.onSelected, closesPopup = ! item.isCheckbox]
+//            row->setTooltip (item.tooltip);
+//            row->onClick = [this, onSelected = item.onSelected, closesPopup = ! item.isCheckbox]
+            row->onClick = [this, onSelected = item.onSelected]
             {
-                if (closesPopup)
-                    setVisible (false);
+//                if (closesPopup)
+                setVisible (false);
 
                 if (onSelected != nullptr)
                     onSelected();
             };
             addAndMakeVisible (row);
 
-            rowIcons.push_back (item.icon);
-            rowOverIcons.push_back (item.icon != nullptr ? item.icon->createCopy() : nullptr);
-            if (rowOverIcons.back() != nullptr)
-                rowOverIcons.back()->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
+//            rowIcons.push_back (item.icon);
+//            rowOverIcons.push_back (item.icon != nullptr ? item.icon->createCopy() : nullptr);
+//            if (rowOverIcons.back() != nullptr)
+//                rowOverIcons.back()->replaceColour (VCColors::almostWhiteText, VCColors::iconOver);
         }
 
         resized();
@@ -128,7 +130,7 @@ private:
     juce::String title;
     juce::Rectangle<float> titleBounds;
     juce::OwnedArray<juce::Button> rows;
-    std::vector<std::shared_ptr<juce::Drawable>> rowIcons, rowOverIcons;
+//    std::vector<std::shared_ptr<juce::Drawable>> rowIcons, rowOverIcons;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AAListOptionsPopup)
 };

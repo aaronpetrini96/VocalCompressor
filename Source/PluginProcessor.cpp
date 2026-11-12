@@ -133,16 +133,16 @@ int VocalCompressorAudioProcessor::getCurrentProgram()
     return 0;
 }
 
-void VocalCompressorAudioProcessor::setCurrentProgram (int index)
+void VocalCompressorAudioProcessor::setCurrentProgram (int)
 {
 }
 
-const juce::String VocalCompressorAudioProcessor::getProgramName (int index)
+const juce::String VocalCompressorAudioProcessor::getProgramName (int)
 {
     return {};
 }
 
-void VocalCompressorAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void VocalCompressorAudioProcessor::changeProgramName (int, const juce::String&)
 {
 }
 
