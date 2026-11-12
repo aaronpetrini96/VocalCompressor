@@ -95,11 +95,13 @@ namespace AADspTools
     class Oversampler2x
     {
     public:
+        static constexpr int factor {2};
+
         void prepare (int maxBlockSize, int numChannels)
         {
             assert (maxBlockSize > 0 && numChannels > 0);
             maxSamples = maxBlockSize;
-            upChannels.assign (static_cast<size_t> (numChannels), std::vector<float> (static_cast<size_t> (maxBlockSize * 2), 0.f));
+            upChannels.assign (static_cast<size_t> (numChannels), std::vector<float> (static_cast<size_t> (maxBlockSize * factor), 0.f));
             upPointers.clear();
             for (auto& channel : upChannels)
                 upPointers.push_back (channel.data());
@@ -130,6 +132,7 @@ namespace AADspTools
 
         void downsample (float* const* channelsData, int numChannels, int numSamples)
         {
+            assert (numChannels <= static_cast<int> (upChannels.size()) && numSamples <= maxSamples);
             for (int ch {0}; ch < numChannels; ++ch)
             {
                 auto& filter = downFilters[static_cast<size_t> (ch)];

@@ -213,17 +213,22 @@ void VocalCompressorAudioProcessor::updateSmootherFromParams(int numSamplesToSki
 //==============================================================================
 void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    fet1176.prepare(sampleRate);
-    la2aComp.prepare(sampleRate);
+    const auto processingRate = sampleRate * AADspTools::Oversampler2x::factor;
+    const auto processingBlockSize = samplesPerBlock * AADspTools::Oversampler2x::factor;
+
+    fet1176.prepare(processingRate);
+    la2aComp.prepare(processingRate);
 
     const auto numChannels = std::max (getTotalNumInputChannels(), getTotalNumOutputChannels());
-    bypass1176.prepare (sampleRate, samplesPerBlock, numChannels, bypass1176Param->get());
-    bypassLA2A.prepare (sampleRate, samplesPerBlock, numChannels, bypassLA2AParam->get());
-    pluginBypass.prepare (sampleRate, samplesPerBlock, numChannels, pluginBypassParam->get());
+    bypass1176.prepare (processingRate, processingBlockSize, numChannels, bypass1176Param->get());
+    bypassLA2A.prepare (processingRate, processingBlockSize, numChannels, bypassLA2AParam->get());
+    pluginBypass.prepare (processingRate, processingBlockSize, numChannels, pluginBypassParam->get());
     isOrderReversed = reverseSignalOrderParam->get();
-    orderFadeLength = std::max(1, static_cast<int>(sampleRate * 0.02));
+    orderFadeLength = std::max(1, static_cast<int>(processingRate * 0.02));
     orderFadeSamplesLeft = 0;
-    orderFadeBuffer.setSize(numChannels, samplesPerBlock);
+    orderFadeBuffer.setSize(numChannels, processingBlockSize);
+    oversampler.prepare(samplesPerBlock, numChannels);
+    setLatencySamples(oversampler.getLatencySamples());
 
     //Reset all smoothers
     for (const auto& [param, smoother] : smootherBindings)
@@ -339,6 +344,39 @@ void VocalCompressorAudioProcessor::processChain(juce::AudioBuffer<float>& buffe
     processBlockLA2A(buffer, compressorLA2A);
 }
 
+void VocalCompressorAudioProcessor::processOrderCrossfade(juce::AudioBuffer<float>& buffer)
+{
+    const auto numChannels = buffer.getNumChannels();
+    const auto numSamples = buffer.getNumSamples();
+
+    juce::AudioBuffer<float> newOrderBuffer(orderFadeBuffer.getArrayOfWritePointers(), numChannels, numSamples);
+    for (int ch {0}; ch < numChannels; ++ch)
+        newOrderBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
+
+    processChain(buffer, fet1176, la2aComp, isOrderReversed);
+    processChain(newOrderBuffer, fet1176Next, la2aNext, ! isOrderReversed);
+
+    const auto fadedSamples = orderFadeLength - orderFadeSamplesLeft;
+    for (int n {0}; n < numSamples; ++n)
+    {
+        const auto newOrderGain = std::min(1.f, static_cast<float>(fadedSamples + n + 1) / static_cast<float>(orderFadeLength));
+        for (int ch {0}; ch < numChannels; ++ch)
+        {
+            const auto oldOrderSample = buffer.getSample(ch, n);
+            buffer.setSample(ch, n, oldOrderSample + (newOrderBuffer.getSample(ch, n) - oldOrderSample) * newOrderGain);
+        }
+    }
+
+    orderFadeSamplesLeft -= numSamples;
+    if (orderFadeSamplesLeft <= 0)
+    {
+        orderFadeSamplesLeft = 0;
+        fet1176 = fet1176Next;
+        la2aComp = la2aNext;
+        isOrderReversed = ! isOrderReversed;
+    }
+}
+
 
 void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
@@ -361,6 +399,9 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 
         pluginBypass.setBypassed(pluginBypassParam->get());
 
+        const auto upsampledData = oversampler.upsample(subBlock.getArrayOfReadPointers(), subBlock.getNumChannels(), blockSize);
+        juce::AudioBuffer<float> upsampledBlock(upsampledData, subBlock.getNumChannels(), blockSize * AADspTools::Oversampler2x::factor);
+
         if (pluginBypass.isFullyBypassed())
         {
             fet1176.reset();
@@ -372,47 +413,21 @@ void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
         }
         else
         {
-            pluginBypass.process(subBlock.getArrayOfWritePointers(),
-                                 subBlock.getNumChannels(),
-                                 blockSize,
+            pluginBypass.process(upsampledBlock.getArrayOfWritePointers(),
+                                 upsampledBlock.getNumChannels(),
+                                 upsampledBlock.getNumSamples(),
                                  [this](float* const* chunkData, int chunkChannels, int chunkSamples)
                                  {
                                      juce::AudioBuffer<float> chunkBuffer(chunkData, chunkChannels, chunkSamples);
 
                                      if (orderFadeSamplesLeft == 0)
-                                     {
                                          processChain(chunkBuffer, fet1176, la2aComp, isOrderReversed);
-                                         return;
-                                     }
-
-                                     juce::AudioBuffer<float> newOrderBuffer(orderFadeBuffer.getArrayOfWritePointers(), chunkChannels, chunkSamples);
-                                     for (int ch {0}; ch < chunkChannels; ++ch)
-                                         newOrderBuffer.copyFrom(ch, 0, chunkBuffer, ch, 0, chunkSamples);
-
-                                     processChain(chunkBuffer, fet1176, la2aComp, isOrderReversed);
-                                     processChain(newOrderBuffer, fet1176Next, la2aNext, ! isOrderReversed);
-
-                                     const auto fadedSamples = orderFadeLength - orderFadeSamplesLeft;
-                                     for (int n {0}; n < chunkSamples; ++n)
-                                     {
-                                         const auto newOrderGain = std::min(1.f, static_cast<float>(fadedSamples + n + 1) / static_cast<float>(orderFadeLength));
-                                         for (int ch {0}; ch < chunkChannels; ++ch)
-                                         {
-                                             const auto oldOrderSample = chunkBuffer.getSample(ch, n);
-                                             chunkBuffer.setSample(ch, n, oldOrderSample + (newOrderBuffer.getSample(ch, n) - oldOrderSample) * newOrderGain);
-                                         }
-                                     }
-
-                                     orderFadeSamplesLeft -= chunkSamples;
-                                     if (orderFadeSamplesLeft <= 0)
-                                     {
-                                         orderFadeSamplesLeft = 0;
-                                         fet1176 = fet1176Next;
-                                         la2aComp = la2aNext;
-                                         isOrderReversed = ! isOrderReversed;
-                                     }
+                                     else
+                                         processOrderCrossfade(chunkBuffer);
                                  });
         }
+
+        oversampler.downsample(subBlock.getArrayOfWritePointers(), subBlock.getNumChannels(), blockSize);
     }
 }
 

@@ -75,6 +75,7 @@ private:
     juce::AudioBuffer<float> orderFadeBuffer;
     int orderFadeLength {1};
     int orderFadeSamplesLeft {0};
+    AADspTools::Oversampler2x oversampler;
 
     juce::AudioParameterFloat* input1176Param {nullptr};
     juce::AudioParameterFloat* output1176Param {nullptr};
@@ -104,11 +105,7 @@ private:
     mixLA2AParamSmoother;
 
     std::vector<std::pair<juce::AudioParameterFloat*, juce::SmoothedValue<float>*>> smootherBindings;
-    
-    
-    
-    
-    
+
 //  ======== PARAMETERS FUNCTIONS ========
     template<typename ParamType, typename Params, typename Funcs>
     void initCachedParams(Params paramsArray, Funcs funcsArray)
@@ -134,6 +131,7 @@ private:
     void processBlock1176(juce::AudioBuffer<float>&, FET1176Compressor&);
     void processBlockLA2A(juce::AudioBuffer<float>&, LA2ACompressor&);
     void processChain(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor1176, LA2ACompressor& compressorLA2A, bool isReversed);
+    void processOrderCrossfade(juce::AudioBuffer<float>& buffer);
 
     enum class SmootherUpdateMode
     {
