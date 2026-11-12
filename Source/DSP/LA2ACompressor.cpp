@@ -43,7 +43,8 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         // --- T4 Optical Cell Envelope ---
 
         // Program-dependent blend
-        float releaseCoeff = juce::jmap(env, 0.0f, 1.0f, relFastCoeff, relSlowCoeff);
+        const auto releaseBlend = std::min(env, 1.0f);
+        float releaseCoeff = juce::jmap(releaseBlend, relFastCoeff, relSlowCoeff);
         if (detector > env)
             env = attackCoeff * env + (1.0f - attackCoeff) * detector;
         else
