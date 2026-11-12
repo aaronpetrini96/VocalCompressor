@@ -4,6 +4,7 @@ PanelLA2A::PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(
 {
     for (auto* imageKnob : {&la2aGainDial, &la2aPeakReductionDial})
     {
+        imageKnob->setMouseDragSensitivity(300);
         addAndMakeVisible(*imageKnob);
         imageKnob->setAlwaysOnTop(true);
     }
@@ -11,6 +12,8 @@ PanelLA2A::PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(
     la2aMixKnob.setColour(juce::Slider::rotarySliderFillColourId, VCColors::almostBlack);
     la2aMixKnob.setColour(juce::Slider::thumbColourId, VCColors::almostWhiteText);
     la2aMixKnob.setAlwaysOnTop(true);
+    la2aMixKnob.setColour(juce::Slider::thumbColourId, VCColors::almostBlack);
+    la2aMixKnob.setMouseDragSensitivity(200);
     addAndMakeVisible(la2aMixKnob);
 
     la2aModeButton.setImages(false, true, true,

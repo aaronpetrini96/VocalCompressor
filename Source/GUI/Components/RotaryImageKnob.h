@@ -8,14 +8,13 @@
 class RotaryImageKnob : public juce::Slider
 {
 public:
-    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {}, const int mouseSensitivity = 250)
+    RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {})
     : knobImage(knobImageToUse), rotorImage(rotorImageToUse), attachment(parameter, *this)
     {
         if (!knobImage.isValid())
             return;
 
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
-        setMouseDragSensitivity(mouseSensitivity);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));

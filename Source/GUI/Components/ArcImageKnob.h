@@ -12,7 +12,6 @@ public:
     : image(imageToUse), attachment(parameter, *this)
     {
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
-        setMouseDragSensitivity(200);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));
