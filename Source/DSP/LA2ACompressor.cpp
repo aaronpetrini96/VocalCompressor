@@ -17,14 +17,12 @@ void LA2ACompressor::reset()
 
 void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
 {
-    peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 40.f);
-    
+    peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 48.f);
     outputGain = dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
     
     isLimit = limitMode;
-    ratio = isLimit ? 10.f : 3.f;
+    ratio = isLimit ? 10.f : 5.f;
     mix = newMix;
-    
 }
 
 void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
@@ -51,8 +49,9 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         // --- Gain Reduction ---
-        float envDB = gainToDB(env);
-        float over = envDB + peakReduction - (-24.0f);
+        const auto envDB = gainToDB(env);
+        const auto thresholdDb = -4.f - peakReduction;
+        const auto over = envDB - thresholdDb;
         float gainDB = 0.0f;
         
         if (over > 0.0f)
