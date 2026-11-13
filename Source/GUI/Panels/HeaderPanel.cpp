@@ -21,8 +21,8 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
 
     presetBox.onNameClicked = [this] { if (onPresetNameClicked != nullptr) onPresetNameClicked(); };
 
-    AAUITools::setIconButtonImages(saveButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
-    saveButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
+    AAUITools::setIconButtonImages(savePresetButton, BinaryData::saveIcon2_svg, BinaryData::saveIcon2_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+    savePresetButton.onClick = [this] { if (onSaveClicked != nullptr) onSaveClicked(); };
 
     AAUITools::setIconButtonImages(bypassPluginButton, BinaryData::bypassIcon_svg, BinaryData::bypassIcon_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
 
@@ -46,7 +46,7 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
     updateUndoRedoButtons();
 
     addAndMakeVisible(presetBox);
-    addAndMakeVisible(saveButton);
+    addAndMakeVisible(savePresetButton);
     addAndMakeVisible(bypassPluginButton);
     addAndMakeVisible(signalOrderButton);
     addAndMakeVisible(resizeButton);
@@ -77,19 +77,21 @@ void HeaderPanel::resized()
     const auto iconSize = boundsFHeight * 0.5f;
     const auto iconGap = iconSize;
     const auto iconButtonBounds = boundsF.withSizeKeepingCentre(iconSize, iconSize);
-    saveButton.setBounds(iconButtonBounds.withX(presetBoxBounds.getRight() + iconGap).toNearestInt());
-    bypassPluginButton.setBounds(iconButtonBounds.withRightX(boundsFWidth  - iconGap * 0.5f).toNearestInt());
-    resizeButton.setBounds(iconButtonBounds.withRightX(bypassPluginButton.getBounds().toFloat().getX() - iconGap).toNearestInt());
+    const auto savePresetButtonBounds = iconButtonBounds.withX(presetBoxBounds.getRight() + iconGap);
+    savePresetButton.setBounds(savePresetButtonBounds.toNearestInt());
+    const auto bypassButtonBounds = iconButtonBounds.withRightX(boundsFWidth  - iconGap * 0.5f);
+    bypassPluginButton.setBounds(bypassButtonBounds.toNearestInt());
+    const auto resizeButtonBounds = iconButtonBounds.withRightX(bypassButtonBounds.getX() - iconGap);
+    resizeButton.setBounds(resizeButtonBounds.toNearestInt());
 
     const auto signalOrderButtonBounds = iconButtonBounds.withCentre({presetBoxBounds.getX() * 0.5f, iconButtonBounds.getCentreY()});
     signalOrderButton.setBounds(signalOrderButtonBounds.toNearestInt());
 
     const auto titleButtonBounds = iconButtonBounds.withSizeKeepingCentre(iconSize * 3.5f, iconSize);
-    unitTitle1176Button.setBounds(titleButtonBounds.withRightX(signalOrderButtonBounds.getX() - iconGap * 0.5f).toNearestInt());
-    unitTitleLA2AButton.setBounds(titleButtonBounds.withX(signalOrderButtonBounds.getRight() + iconGap * 0.5f).toNearestInt());
-    const auto saveButtonRight = presetBoxBounds.getRight() + iconGap + iconSize;
-    const auto resizeButtonX = boundsFWidth - iconSize * 3.f;
-    const auto undoRedoCentreX = (saveButtonRight + resizeButtonX) * 0.5f;
+    unitTitle1176Button.setBounds(titleButtonBounds.withRightX(signalOrderButtonBounds.getX() - iconGap * 0.25f).toNearestInt());
+    unitTitleLA2AButton.setBounds(titleButtonBounds.withX(signalOrderButtonBounds.getRight() + iconGap * 0.25f).toNearestInt());
+
+    const auto undoRedoCentreX = (savePresetButtonBounds.getRight() + resizeButtonBounds.getX()) * 0.5f;
     undoButton.setBounds(iconButtonBounds.withCentre({undoRedoCentreX - iconGap, boundsF.getCentreY()}).toNearestInt());
     redoButton.setBounds(iconButtonBounds.withCentre({undoRedoCentreX + iconGap, boundsF.getCentreY()}).toNearestInt());
 }

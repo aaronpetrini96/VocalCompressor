@@ -35,7 +35,7 @@ private:
     PresetManager& presetManager;
     juce::UndoManager& undoManager;
     AAPresetBox presetBox;
-    juce::DrawableButton saveButton {"Save preset", juce::DrawableButton::ImageFitted};
+    juce::DrawableButton savePresetButton {"Save preset", juce::DrawableButton::ImageFitted};
     juce::DrawableButton bypassPluginButton {"Bypass", juce::DrawableButton::ImageFitted};
     juce::DrawableButton resizeButton {"resizeUIButton", juce::DrawableButton::ImageFitted};
     juce::DrawableButton undoButton {"Undo", juce::DrawableButton::ImageFitted};
