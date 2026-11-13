@@ -13,17 +13,13 @@ public:
     void paint(juce::Graphics& g) override;
     void resized() override;
 
+    AAPresetBox& getPresetBox() { return presetBox; }
+    juce::DrawableButton& getSavePresetButton() { return savePresetButton; }
+    juce::DrawableButton& getBypassButton() { return bypassPluginButton; }
     juce::DrawableButton& getResizeButton() { return resizeButton; }
-
-    std::function<void()> onPresetNameClicked;
-    std::function<void()> onSaveClicked;
-    std::function<void()> onBypassChanged;
-    std::function<void()> onSignalOrderChanged;
-
-    bool isBypassed() const { return bypassPluginButton.getToggleState(); }
-    bool is1176Bypassed() const { return unitTitle1176Button.getToggleState(); }
-    bool isLA2ABypassed() const { return unitTitleLA2AButton.getToggleState(); }
-    bool isSignalOrderReversed() const {return signalOrderButton.getToggleState(); }
+    juce::DrawableButton& getSignalOrderButton() { return signalOrderButton; }
+    juce::TextButton& get1176BypassButton() { return unitTitle1176Button; }
+    juce::TextButton& getLA2ABypassButton() { return unitTitleLA2AButton; }
 
 private:
     void changeListenerCallback(juce::ChangeBroadcaster*) override;

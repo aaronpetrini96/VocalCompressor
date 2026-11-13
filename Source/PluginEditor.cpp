@@ -36,19 +36,22 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     addChildComponent(presetPopup);
     presetPopup.addComponentListener(this);
 
-    headerPanel.onPresetNameClicked = [this]
+    headerPanel.getPresetBox().onNameClicked = [this]
     {
         togglePopup(presetBrowser, [this] { presetBrowser.refresh(); });
     };
-    headerPanel.onSaveClicked = [this]
+    headerPanel.getSavePresetButton().onClick = [this]
     {
         togglePopup(presetPopup, [this]
         {
             presetPopup.prepare(audioProcessor.presetManager.getCurrentPresetName());
         });
     };
-    headerPanel.onBypassChanged = [this] { repaint(); };
-    headerPanel.onSignalOrderChanged = [this] { resized(); };
+
+    for (auto* bypassButton : std::initializer_list<juce::Button*> {&headerPanel.getBypassButton(), &headerPanel.get1176BypassButton(), &headerPanel.getLA2ABypassButton()})
+        bypassButton->onClick = [this] { repaint(); };
+
+    headerPanel.getSignalOrderButton().onClick = [this] { resized(); };
     presetBrowser.onRowsChanged = [this] { resized(); };
 
     presetPopup.presetExists = [this] (const juce::String& presetName)
@@ -97,8 +100,9 @@ void VocalCompressorAudioProcessorEditor::resized()
     bottomPanelBounds = topPanelBounds.withY(topPanelBounds.getBottom());
 
     headerPanel.setBounds(headerBounds.toNearestInt());
-    panel1176.setBounds((headerPanel.isSignalOrderReversed() ? bottomPanelBounds : topPanelBounds).toNearestInt());
-    panelLA2A.setBounds((headerPanel.isSignalOrderReversed() ? topPanelBounds : bottomPanelBounds).toNearestInt());
+    const auto isSignalOrderReversed = headerPanel.getSignalOrderButton().getToggleState();
+    panel1176.setBounds((isSignalOrderReversed ? bottomPanelBounds : topPanelBounds).toNearestInt());
+    panelLA2A.setBounds((isSignalOrderReversed ? topPanelBounds : bottomPanelBounds).toNearestInt());
 
     modalBlocker.setBounds(boundsF.withTop(headerBounds.getBottom()).toNearestInt());
     const auto resizeBtnBounds = headerPanel.getResizeButton().getBounds().toFloat();
@@ -117,7 +121,10 @@ void VocalCompressorAudioProcessorEditor::resized()
 void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 {
     const auto isPopupOpen = isAnyPopupVisible();
-    const auto isAnyBypassed = headerPanel.isBypassed() || headerPanel.is1176Bypassed() || headerPanel.isLA2ABypassed();
+    const auto isPluginBypassed = headerPanel.getBypassButton().getToggleState();
+    const auto is1176Bypassed = headerPanel.get1176BypassButton().getToggleState();
+    const auto isLA2ABypassed = headerPanel.getLA2ABypassButton().getToggleState();
+    const auto isAnyBypassed = isPluginBypassed || is1176Bypassed || isLA2ABypassed;
 
     if (! isPopupOpen && ! isAnyBypassed)
         return;
@@ -130,7 +137,7 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
 
     const auto fillDim = [&] (const juce::Component& panel, bool isUnitBypassed)
     {
-        const auto isBypassed = headerPanel.isBypassed() || isUnitBypassed;
+        const auto isBypassed = isPluginBypassed || isUnitBypassed;
         const auto dimAmount = isBypassed ? 0.5f : (isPopupOpen ? 0.3f : 0.f);
 
         if (dimAmount == 0.0f)
@@ -140,8 +147,8 @@ void VocalCompressorAudioProcessorEditor::paintOverChildren(juce::Graphics& g)
         g.fillRect(panel.getBounds());
     };
 
-    fillDim(panel1176, headerPanel.is1176Bypassed());
-    fillDim(panelLA2A, headerPanel.isLA2ABypassed());
+    fillDim(panel1176, is1176Bypassed);
+    fillDim(panelLA2A, isLA2ABypassed);
 }
 
 void VocalCompressorAudioProcessorEditor::mouseDown(const juce::MouseEvent& event)
