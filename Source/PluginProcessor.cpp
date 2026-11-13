@@ -226,7 +226,7 @@ void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int sample
     orderFadeLength = std::max(1, static_cast<int>(processingRate * 0.02));
     orderFadeSamplesLeft = 0;
     orderFadeBuffer.setSize(numChannels, processingBlockSize);
-    oversampler.prepare(samplesPerBlock, numChannels);
+    oversampler.prepare(sampleRate, samplesPerBlock, numChannels);
     setLatencySamples(oversampler.getLatencySamples());
 
     //Reset all smoothers

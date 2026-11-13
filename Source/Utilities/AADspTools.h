@@ -5,9 +5,12 @@
 #pragma once
 
 #include <algorithm>
-#include <array>
 #include <vector>
 #include <cassert>
+#include <cmath>
+#include <numbers>
+#include <numeric>
+
 
 namespace AADspTools
 {
@@ -97,35 +100,51 @@ namespace AADspTools
     public:
         static constexpr int factor {2};
 
-        void prepare (int maxBlockSize, int numChannels)
+        void prepare (double sampleRate, int maxBlockSize, int numChannels)
         {
-            assert (maxBlockSize > 0 && numChannels > 0);
+            assert (sampleRate > 0.0 && maxBlockSize > 0 && numChannels > 0 && cutoffHz < sampleRate * factor * 0.5);
+
             maxSamples = maxBlockSize;
             upChannels.assign (static_cast<size_t> (numChannels), std::vector<float> (static_cast<size_t> (maxBlockSize * factor), 0.f));
+
             upPointers.clear();
             for (auto& channel : upChannels)
                 upPointers.push_back (channel.data());
-            upFilters.assign (static_cast<size_t> (numChannels), HalfBandFilter {});
-            downFilters.assign (static_cast<size_t> (numChannels), HalfBandFilter {});
+
+            designTaps(sampleRate * factor);
+            channelStates.assign (static_cast<size_t> (numChannels), ChannelState {});
+            for (auto& state : channelStates)
+            {
+                state.upHistory.prepare (evenTaps.size());
+                state.downEvenHistory.prepare (evenTaps.size());
+                state.downOddHistory.prepare (oddTaps.size());
+            }
         }
 
         void reset()
         {
-            for (auto& filter : upFilters)   filter.reset();
-            for (auto& filter : downFilters) filter.reset();
+            for (auto& state : channelStates)
+                for (auto* history : {&state.upHistory, &state.downEvenHistory, &state.downOddHistory})
+                    history->reset();
         }
 
-        int getLatencySamples() const { return 3; }
+        int getLatencySamples() const { return latencySamples; }
 
         float* const* upsample (const float* const* channelsData, int numChannels, int numSamples)
         {
             assert (numChannels <= static_cast<int> (upChannels.size()) && numSamples <= maxSamples);
             for (int ch {0}; ch < numChannels; ++ch)
             {
-                auto& filter = upFilters[static_cast<size_t> (ch)];
+                auto& history = channelStates[static_cast<size_t> (ch)].upHistory;
                 auto* upData = upPointers[static_cast<size_t> (ch)];
                 for (int n {0}; n < numSamples; ++n)
-                    filter.upsample (channelsData[ch][n], upData[2 * n], upData[2 * n + 1]);
+                {
+                    history.push(channelsData[ch][n]);
+                    const auto* window = history.oldestFirst();
+                    const auto upGain = static_cast<float> (factor);
+                    upData[factor * n] = upGain * std::inner_product(evenTaps.begin(), evenTaps.end(), window, 0.f);
+                    upData[factor * n + 1] = upGain * std::inner_product(oddTaps.begin(), oddTaps.end(), window + 1, 0.f);
+                }
             }
             return upPointers.data();
         }
@@ -135,74 +154,93 @@ namespace AADspTools
             assert (numChannels <= static_cast<int> (upChannels.size()) && numSamples <= maxSamples);
             for (int ch {0}; ch < numChannels; ++ch)
             {
-                auto& filter = downFilters[static_cast<size_t> (ch)];
+                auto& state = channelStates[static_cast<size_t> (ch)];
                 const auto* upData = upPointers[static_cast<size_t> (ch)];
                 for (int n {0}; n < numSamples; ++n)
-                    channelsData[ch][n] = filter.downsample (upData[2 * n], upData[2 * n + 1]);
+                {
+                    state.downEvenHistory.push(upData[factor * n]);
+                    const auto evenSum = std::inner_product(evenTaps.begin(), evenTaps.end(), state.downEvenHistory.oldestFirst(), 0.f);
+                    const auto oddSum = std::inner_product(oddTaps.begin(), oddTaps.end(), state.downOddHistory.oldestFirst(), 0.f);
+                    state.downOddHistory.push(upData[factor * n + 1]);
+                    channelsData[ch][n] = evenSum + oddSum;
+                }
             }
         }
 
     private:
-        struct AllpassSection
+        static constexpr double cutoffHz {21000.0};
+        static constexpr double transitionWidthHz {1000.0};
+
+        struct SampleHistory
         {
-            float coefficient {0.f};
-            float previousInput {0.f};
-            float previousOutput {0.f};
-
-            float process (const float input)
+            void prepare(size_t newLength)
             {
-                const auto output = coefficient * (input - previousOutput) + previousInput;
-                previousInput = input;
-                previousOutput = output;
-                return output;
-            }
-        };
-
-        struct HalfBandFilter
-        {
-            HalfBandFilter()
-            {
-                for (size_t index {0}; index < pathA.size(); ++index)
-                {
-                    pathA[index].coefficient = coefficients[index * 2];
-                    pathB[index].coefficient = coefficients[index * 2 + 1];
-                }
-            }
-
-            void upsample (const float input, float& evenOutput, float& oddOutput)
-            {
-                evenOutput = processPath (pathA, input);
-                oddOutput = processPath (pathB, input);
-            }
-
-            float downsample (const float evenInput, const float oddInput)
-            {
-                return 0.5f * (processPath (pathA, oddInput) + processPath (pathB, evenInput));
+                length = newLength;
+                samples.assign(length * 2, 0.f);
+                writeIndex = 0;
             }
 
             void reset()
             {
-                for (auto* path : {&pathA, &pathB})
-                    for (auto& section : *path)
-                        section.previousInput = section.previousOutput = 0.f;
+                std::fill(samples.begin(), samples.end(), 0.f);
+                writeIndex = 0;
             }
 
-            static float processPath (std::array<AllpassSection, 4>& path, float sample)
+            void push(float sample)
             {
-                for (auto& section : path)
-                    sample = section.process (sample);
-                return sample;
+                samples[writeIndex] = samples[writeIndex + length] = sample;
+                writeIndex = (writeIndex + 1) % length;
             }
 
-            std::array<AllpassSection, 4> pathA, pathB;
+            const float* oldestFirst() const {return samples.data() + writeIndex;}
+
+            std::vector<float> samples;
+            size_t length {0};
+            size_t writeIndex {0};
         };
 
-        static constexpr std::array<float, 8> coefficients {0.0406334609f, 0.1505051290f, 0.3007570560f, 0.4607745050f,
-                                                            0.6095243149f, 0.7385038411f, 0.8492238104f, 0.9497427837f};
+        struct ChannelState
+        {
+            SampleHistory upHistory, downEvenHistory, downOddHistory;
+        };
+
+        void designTaps (double processingRate)
+        {
+            const auto minimumTaps = 4.0 * processingRate/transitionWidthHz;
+            const auto halfLength = factor * static_cast<int>(std::ceil(minimumTaps / (2.0 * factor)));
+            const auto numTaps = 2 * halfLength + 1;
+            const auto normalisedCutoff = 2.0 * cutoffHz / processingRate;
+
+            std::vector<double> taps (static_cast<size_t> (numTaps));
+            for (int index {0}; index < numTaps; ++index)
+            {
+                const auto sincPhase = std::numbers::pi * normalisedCutoff * (index - halfLength);
+                const auto sinc = index == halfLength ? 1.0 : std::sin (sincPhase) / sincPhase;
+                // 4-term Blackman-Harris window
+                const auto windowPhase = 2.0 * std::numbers::pi * index / (numTaps - 1);
+                const auto window = 0.35875 - 0.48829 * std::cos (windowPhase) + 0.14128 * std::cos (2.0 * windowPhase) - 0.01168 * std::cos (3.0 * windowPhase);
+                taps[static_cast<size_t> (index)] = normalisedCutoff * sinc * window;
+            }
+
+            const auto tapsSum = std::accumulate(taps.begin(), taps.end(), 0.0);
+            evenTaps.clear();
+            oddTaps.clear();
+            for (size_t index {0}; index < taps.size(); ++index)
+            {
+                if (index % static_cast<size_t>(factor) == 0)
+                    evenTaps.push_back(static_cast<float>(taps[index]/ tapsSum));
+                else
+                    oddTaps.push_back(static_cast<float>(taps[index]/ tapsSum));
+            }
+
+            latencySamples = 2 * halfLength / factor;
+        }
 
         std::vector<std::vector<float>> upChannels;
         std::vector<float*> upPointers;
-        std::vector<HalfBandFilter> upFilters, downFilters;
+        std::vector<float> evenTaps, oddTaps;
+        std::vector<ChannelState> channelStates;
         int maxSamples {0};
+        int latencySamples {0};
     };
 }
