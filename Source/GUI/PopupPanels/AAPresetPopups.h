@@ -20,7 +20,7 @@ public:
 
         nameEditor.setJustification (juce::Justification::centred);
         nameEditor.setIndents(0, 0);
-        nameEditor.setInputRestrictions (VCLook::presetNameMaxLength);
+        nameEditor.setInputRestrictions (maxNameLength);
         nameEditor.setEscapeAndReturnKeysConsumed (false);
         setWantsKeyboardFocus (true);
         nameEditor.onTextChange = [this]
@@ -158,6 +158,7 @@ public:
 private:
     PresetPopupLAF presetPopupLAF;
     const juce::String title {"SAVE PRESET"};
+    static constexpr int maxNameLength {35};
     juce::Rectangle<float> titleBounds;
     juce::Label messageLabel {"messageLabel", ""};
     juce::Label nameLabel {"nameLabel", "New preset name"};

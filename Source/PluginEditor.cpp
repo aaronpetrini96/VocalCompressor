@@ -36,7 +36,7 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     addChildComponent(presetPopup);
     presetPopup.addComponentListener(this);
 
-    headerPanel.getPresetBox().onNameClicked = [this]
+    headerPanel.getPresetBox().getNameButton().onClick = [this]
     {
         togglePopup(presetBrowser, [this] { presetBrowser.refresh(); });
     };

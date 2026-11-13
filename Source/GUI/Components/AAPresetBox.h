@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <functional>
-
 #include "../VCLook.h"
 #include "../../Utilities/PresetManager.h"
 
@@ -34,7 +32,6 @@ public:
     explicit AAPresetBox (PresetManager& presetManagerToUse) : presetManager (presetManagerToUse)
     {
         nameButton.setLookAndFeel (&presetBoxLAF);
-        nameButton.onClick = [this] { if (onNameClicked != nullptr) onNameClicked(); };
         addAndMakeVisible (nameButton);
 
         AAUITools::setIconButtonImages (leftArrowButton, BinaryData::leftChevronArrow_svg, BinaryData::leftChevronArrow_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
@@ -75,7 +72,7 @@ public:
         nameButton.setButtonText (presetName);
     }
 
-    std::function<void()> onNameClicked;
+    juce::TextButton& getNameButton() { return nameButton; }
 
 private:
     PresetManager& presetManager;

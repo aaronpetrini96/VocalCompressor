@@ -65,7 +65,6 @@ namespace VCLook
     inline constexpr float fontHeightPOH {0.8f};
     inline constexpr float popupTitleRowRatio {1.07f};
     inline constexpr float rowPOH {0.045f};
-    inline constexpr int presetNameMaxLength {40};
 
     inline void setupLabel(juce::Label& label, const juce::Colour& labelColour = juce::Colours::white, const juce::Justification justification = juce::Justification::centred)
     {
