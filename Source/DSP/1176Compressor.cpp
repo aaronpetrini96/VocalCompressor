@@ -21,40 +21,26 @@ float FET1176Compressor::taperedKnobToDB (float normValue, float minDB, float ma
     return juce::jmap (curvedPosition, minDB, maxDB);
 }
 
-float FET1176Compressor::getInputGainDB(float normValue) const
+float FET1176Compressor::knobToTimeMs (float normValue, float slowestMs, float fastestMs)
 {
-    return taperedKnobToDB (normValue, -22.f, 32.f, 1.6f);
-}
-float FET1176Compressor::getOutputGainDB(float normValue) const
-{
-    return taperedKnobToDB (normValue, -84.f, 16.f, 2.4f);
+    return slowestMs * std::pow (fastestMs / slowestMs, normValue);
 }
 
-float FET1176Compressor::knobToTimeMs (float knobValue, float slowestMs, float fastestMs)
+void FET1176Compressor::setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float newRatio, float newMix)
 {
-    const auto knobPosition = (knobValue - 1.f) / 6.f;
-    return slowestMs * std::pow (fastestMs / slowestMs, knobPosition);
-}
+    for ([[maybe_unused]] const auto normValue : {inputNormValue, outputNormValue, attackNormValue, releaseNormValue})
+        jassert (juce::isPositiveAndNotGreaterThan (normValue, 1.f));
 
-float FET1176Compressor::getAttackMs(float knobValue) const
-{
-    return knobToTimeMs (knobValue, 0.8f, 0.02f);
-}
-float FET1176Compressor::getReleaseMs(float knobValue) const
-{
-    return knobToTimeMs (knobValue, 1100.f, 50.f);
-}
-
-void FET1176Compressor::setParameters(float inDB, float outDB, float attackTime, float releaseTime, float newRatio, float newMix)
-{
-    inputGain = dBToGain(inDB);
-    outputGain = dBToGain(outDB);
+    inputGain = dBToGain(taperedKnobToDB (inputNormValue, -22.f, 32.f, 1.6f));
+    outputGain = dBToGain(taperedKnobToDB (outputNormValue, -84.f, 16.f, 2.4f));
     ratio = newRatio;
     mix = newMix;
-    
+
+    const auto attackMs = knobToTimeMs (attackNormValue, 0.8f, 0.02f);
+    const auto releaseMs = knobToTimeMs (releaseNormValue, 1100.f, 50.f);
 //  coeff a =e^(−1/(T⋅fs​))
-    attackCoeff = std::exp(-1.f / (attackTime * 0.001f * sampleRate));
-    releaseCoeff = std::exp(-1.f / (releaseTime * 0.001f  * sampleRate));
+    attackCoeff = std::exp(-1.f / (attackMs * 0.001f * sampleRate));
+    releaseCoeff = std::exp(-1.f / (releaseMs * 0.001f  * sampleRate));
 }
 
 void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)

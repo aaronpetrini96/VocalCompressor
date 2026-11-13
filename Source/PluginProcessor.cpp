@@ -281,15 +281,15 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
         return;
     }
 
-    const float inDB = compressor.getInputGainDB(input1176ParamSmoother.getCurrentValue());
-    const float outDB = compressor.getOutputGainDB(output1176ParamSmoother.getCurrentValue());
-    const float attack = compressor.getAttackMs(attack1176ParamSmoother.getCurrentValue());
-    const float release = compressor.getReleaseMs(release1176ParamSmoother.getCurrentValue());
+    const float inputNormValue = input1176ParamSmoother.getCurrentValue();
+    const float outputNormValue = output1176ParamSmoother.getCurrentValue();
+    const float attackNormValue = attack1176Param->convertTo0to1(attack1176ParamSmoother.getCurrentValue());
+    const float releaseNormValue = release1176Param->convertTo0to1(release1176ParamSmoother.getCurrentValue());
     const float mix = mix1176ParamSmoother.getCurrentValue();
     static constexpr std::array ratios1176 {4.f, 8.f, 12.f, 20.f, 100.f};
     const float ratio = ratios1176[static_cast<size_t>(ratio1176Param->getIndex())];
 
-    compressor.setParameters(inDB, outDB, attack, release, ratio, mix);
+    compressor.setParameters(inputNormValue, outputNormValue, attackNormValue, releaseNormValue, ratio, mix);
     bypass1176.process(buffer.getArrayOfWritePointers(), buffer.getNumChannels(), buffer.getNumSamples(),
                        [&compressor] (float* const* chunkData, int chunkChannels, int chunkSamples)
                        {
