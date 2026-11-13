@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Parameters>
   <PARAM id="1176Input" value="0.3"/>
-  <PARAM id="1176Output" value="0.7"/>
-  <PARAM id="1176Attack" value="0.574"/>
-  <PARAM id="1176Release" value="369"/>
+  <PARAM id="1176Output" value="0.5"/>
+  <PARAM id="1176Attack" value="4"/>
+  <PARAM id="1176Release" value="5"/>
   <PARAM id="1176Ratio" value="0"/>
   <PARAM id="1176Mix" value="1"/>
   <PARAM id="1176Bypass" value="0"/>
