@@ -37,7 +37,7 @@ VocalCompressorAudioProcessor::~VocalCompressorAudioProcessor()
 juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
-    const int versionHint = 1;
+    constexpr int versionHint = 1;
     juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
     juce::NormalisableRange<float> timeKnobRange {1.f, 7.f, 0.01f};
     
@@ -45,7 +45,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     auto name = ParamNames::get1176InputName();
     params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
     name = ParamNames::get1176OutputName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.7f));
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.5f));
     
     name = ParamNames::get1176AttackName();
     params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, timeKnobRange, 4.f));
