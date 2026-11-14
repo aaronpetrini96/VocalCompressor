@@ -18,7 +18,7 @@
 *.log
 
 ############################################
-# JUCE – archivos generados
+# JUCE – generated files
 ############################################
 
 **/BinaryData.*
@@ -36,13 +36,7 @@ out/
 Debug/
 Release/
 x64/
-
-############################################
-# Projucer
-############################################
-
-# COMENTAR esta línea si usás Projucer
-# *.jucer
+build-*/
 
 ############################################
 # macOS / Xcode
@@ -84,4 +78,3 @@ DerivedData/
 *.swp
 *~
 .idea
-build-ninja-mac
