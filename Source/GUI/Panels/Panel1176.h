@@ -46,7 +46,7 @@ private:
     Ratio1176Buttons ratioButtons1176 {*audioProcessor.apvts.getParameter(ParamNames::get1176RatioName())};
 
 //    GAIN REDUCTION
-    GRDistressorMeter grMeter1176 {audioProcessor.gR1176, VCColors::almostWhiteText};
+    GRDistressorMeter grMeter1176 {audioProcessor.gr1176, VCColors::almostWhiteText};
     juce::Label gainReductionLabel {"GAIN REDUCTION"};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Panel1176)

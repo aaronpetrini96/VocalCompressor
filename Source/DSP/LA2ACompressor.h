@@ -13,7 +13,7 @@ public:
     void reset();
     void setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix);
     void process(juce::AudioBuffer<float>& buffer);
-    float getGainReduction() const {return gainReduction;}
+    float getGainReductionDb() const {return gainReduction;}
     
 private:
 //    SAT

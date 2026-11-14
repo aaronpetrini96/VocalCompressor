@@ -56,7 +56,7 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     AAUndoManager undoManager;
     PresetManager presetManager {apvts, undoManager};
 
-    std::atomic<float> gR1176 {0.f}, grLA2A {0.f};
+    std::atomic<float> gr1176 {0.f}, grLA2A {0.f};
     
 private:
     FET1176Compressor fet1176;

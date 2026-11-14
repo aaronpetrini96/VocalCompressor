@@ -12,7 +12,7 @@ public:
     // Input, output, attack and release are expected normalised 0-1
     void setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
-    float getGainReductionDB() const {return gainReductionDb;}
+    float getGainReductionDb() const {return gainReductionDb;}
 
 private:
 //    Set in prepare
