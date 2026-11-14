@@ -30,7 +30,7 @@ private:
 
 //    State (changes while processing)
     float env = 0.f;
-//    Control Envelope (drives ALL-mode threshold, attack speed-up and saturation drive)
+//    Control Envelope (drives ALL-mode threshold and attack speed-up)
     float controlEnvDb = 0.0f;
     float gainReductionDb = 0.0f;
     AADspTools::AsymmetricSoftClipper asymClipper;

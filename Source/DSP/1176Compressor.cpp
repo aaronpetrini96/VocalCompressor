@@ -57,11 +57,15 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
 
     jassert (numChannels <= static_cast<int> (dcBlockers.size()));
 
-    auto satDrive = 1.0f + controlEnvDb * 0.06f;
+    float satDrive = 0.9f;
     if (allButtonsIn)
-        satDrive *= 1.4f;
-    asymClipper.setParameters(0.5f / satDrive, 12.0f, 0.06f);
-    
+        satDrive = 1.6f;
+    else if (ratio > 8.0f)
+        satDrive = 1.25f;
+    else if (ratio > 4.0f)
+        satDrive = 1.1f;
+    asymClipper.setParameters(2.2f, 3.0f, 0.11f, satDrive);
+
     for (int n = 0; n < numSamples; ++n)
     {
         float detector = 0.f;

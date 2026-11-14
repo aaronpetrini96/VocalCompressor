@@ -20,16 +20,18 @@ namespace AADspTools
     class AsymmetricSoftClipper
     {
     public:
-        void setParameters (const float newCeiling, const float newKneeSharpness, const float newBias)
+        void setParameters (const float newCeiling, const float newKneeSharpness, const float newBias, const float newDrive = 1.0f)
         {
             if (std::abs (newCeiling - ceiling) < tolerance
                 && std::abs (newKneeSharpness - kneeSharpness) < tolerance
-                && std::abs (newBias - bias) < tolerance)
+                && std::abs (newBias - bias) < tolerance
+                && std::abs (newDrive - drive) < tolerance)
                 return;
 
             ceiling = newCeiling;
             kneeSharpness = newKneeSharpness;
             bias = newBias;
+            drive = newDrive;
             biasOffset = clip (bias);
             const auto biasRatio = std::pow (std::abs (bias / ceiling), kneeSharpness);
             smallSignalGain = std::pow (1.0f + biasRatio, -1.0f / kneeSharpness - 1.0f);
@@ -37,7 +39,7 @@ namespace AADspTools
 
         float process (const float x) const
         {
-            return (clip (x + bias) - biasOffset) / smallSignalGain;
+            return (clip (x * drive + bias) - biasOffset) / smallSignalGain / drive;
         }
 
     private:
@@ -50,6 +52,7 @@ namespace AADspTools
         float ceiling {1.0f};
         float kneeSharpness {2.0f};
         float bias {0.0f};
+        float drive {1.0f};
         float biasOffset {0.0f};
         float smallSignalGain {1.0f};
     };
