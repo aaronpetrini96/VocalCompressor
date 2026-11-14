@@ -147,41 +147,24 @@ void VocalCompressorAudioProcessor::changeProgramName (int, const juce::String&)
 
 //==============================================================================
 
-
 void VocalCompressorAudioProcessor::linkParameters()
 {
-    auto floatParams = std::array
-    {
-        &input1176Param, &output1176Param, &attack1176Param, &release1176Param, &mix1176Param,
-        &gainLA2AParam, &peakReductionLA2AParam, &mixLA2AParam
-    };
+    input1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176InputName());
+    output1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176OutputName());
+    attack1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176AttackName());
+    release1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176ReleaseName());
+    mix1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176MixName());
+    ratio1176Param = getParam<juce::AudioParameterChoice>(ParamNames::get1176RatioName());
+    bypass1176Param = getParam<juce::AudioParameterBool>(ParamNames::get1176BypassName());
 
-    auto floatNameFuncs = std::array
-    {
-        &ParamNames::get1176InputName, &ParamNames::get1176OutputName, &ParamNames::get1176AttackName,
-        &ParamNames::get1176ReleaseName, &ParamNames::get1176MixName,
-        &ParamNames::getLA2AGainName, &ParamNames::getLA2APeakReductionName, &ParamNames::getLA2AMixName
-    };
+    gainLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2AGainName());
+    peakReductionLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2APeakReductionName());
+    modeLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getLA2ALimitCompressModeName());
+    mixLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2AMixName());
+    bypassLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getLA2ABypassName());
 
-    initCachedParams<juce::AudioParameterFloat*>(floatParams, floatNameFuncs);
-
-    auto choiceParams = std::array { &ratio1176Param };
-    auto choiceNameFuncs = std::array { &ParamNames::get1176RatioName };
-
-    initCachedParams<juce::AudioParameterChoice*>(choiceParams, choiceNameFuncs);
-
-    auto boolParams = std::array
-    {
-        &bypass1176Param, &modeLA2AParam, &bypassLA2AParam, &pluginBypassParam, &reverseSignalOrderParam
-    };
-
-    auto boolNameFuncs = std::array
-    {
-        &ParamNames::get1176BypassName, &ParamNames::getLA2ALimitCompressModeName, &ParamNames::getLA2ABypassName,
-        &ParamNames::getGeneralBypassName, &ParamNames::getReverseSignalOrderName
-    };
-
-    initCachedParams<juce::AudioParameterBool*>(boolParams, boolNameFuncs);
+    pluginBypassParam = getParam<juce::AudioParameterBool>(ParamNames::getGeneralBypassName());
+    reverseSignalOrderParam = getParam<juce::AudioParameterBool>(ParamNames::getReverseSignalOrderName());
 
     smootherBindings =
     {

@@ -108,24 +108,13 @@ private:
     std::vector<std::pair<juce::AudioParameterFloat*, juce::SmoothedValue<float>*>> smootherBindings;
 
 //  ======== PARAMETERS FUNCTIONS ========
-    template<typename ParamType, typename Params, typename Funcs>
-    void initCachedParams(Params paramsArray, Funcs funcsArray)
+    // === ParamGetter ===
+    template <typename ParamType>
+    ParamType* getParam(const juce::String& paramID)
     {
-        for (size_t i = 0 ; i < paramsArray.size(); ++i)
-        {
-            auto ptrToParamPtr = paramsArray[i];
-            auto* found = dynamic_cast<ParamType>(apvts.getParameter(funcsArray[i]()));
-            if (! found)
-            {
-                DBG("initCachedParams: failed to find param ID '" << funcsArray[i]() << "'");
-                jassertfalse; // debug-only
-                *ptrToParamPtr = nullptr;
-            }
-            else
-            {
-                *ptrToParamPtr = found;
-            }
-        }
+        auto* param = dynamic_cast<ParamType*>(apvts.getParameter(paramID));
+        jassert(param != nullptr);
+        return param;
     }
 
     void linkParameters();
