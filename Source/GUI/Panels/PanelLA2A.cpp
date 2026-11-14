@@ -2,16 +2,8 @@
 
 PanelLA2A::PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(processor)
 {
-    for (auto* label : {&la2aCompModeLabel, &la2aLimitModeLabel})
-    {
-        VCLook::setupLabel(*label, juce::Colours::black);
+    for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &la2aCompModeLabel, &la2aLimitModeLabel, &la2aMixLabel, &gainReductionLabel})
         addAndMakeVisible(*label);
-    }
-    for (auto* label : {&la2aGainLabel, &la2aPeakReductionLabel, &la2aMixLabel, &gainReductionLabel})
-    {
-        VCLook::setupLabel(*label, juce::Colours::black, juce::Justification::centredTop);
-        addAndMakeVisible(*label);
-    }
 
     addAndMakeVisible(grMeterLA2A);
 

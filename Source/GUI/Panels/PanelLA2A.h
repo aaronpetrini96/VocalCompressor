@@ -38,12 +38,15 @@ private:
     juce::AudioProcessorValueTreeState::ButtonAttachment la2aModeButtonAttachment {audioProcessor.apvts, ParamNames::getLA2ALimitCompressModeName(), la2aModeButton};
 
 //    LABELS
-    juce::Label la2aGainLabel {"GAIN"}, la2aPeakReductionLabel {"PEAK REDUCTION"},
-                la2aCompModeLabel {"COMP"}, la2aLimitModeLabel {"LIMIT"}, la2aMixLabel {"MIX"};
+    AAUITools::PrintedText la2aGainLabel {"GAIN", juce::Colours::black, juce::Justification::centredTop};
+    AAUITools::PrintedText la2aPeakReductionLabel {"PEAK REDUCTION", juce::Colours::black, juce::Justification::centredTop};
+    AAUITools::PrintedText la2aCompModeLabel {"COMP", juce::Colours::black};
+    AAUITools::PrintedText la2aLimitModeLabel {"LIMIT", juce::Colours::black};
+    AAUITools::PrintedText la2aMixLabel {"MIX", juce::Colours::black, juce::Justification::centredTop};
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeterLA2A {audioProcessor.grLA2A, juce::Colours::black};
-    juce::Label gainReductionLabel {"GAIN REDUCTION"};
+    AAUITools::PrintedText gainReductionLabel {"GAIN REDUCTION", juce::Colours::black, juce::Justification::centredTop};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PanelLA2A)
 };

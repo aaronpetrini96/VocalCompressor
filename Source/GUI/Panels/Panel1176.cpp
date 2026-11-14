@@ -4,10 +4,7 @@ Panel1176::Panel1176(VocalCompressorAudioProcessor& processor) : audioProcessor(
 {
     addAndMakeVisible(grMeter1176);
     for (auto* label : {&input1176Label, &output1176Label, &attack1176Label, &release1176Label, &mix1176Label, &ratioLabel, &gainReductionLabel})
-    {
-        VCLook::setupLabel(*label, VCColors::almostWhiteText, juce::Justification::centredTop);
         addAndMakeVisible(*label);
-    }
 
     for (auto* imageKnob : {&input1176Dial, &output1176Dial, &attack1176Dial, &release1176Dial})
         addAndMakeVisible(*imageKnob);

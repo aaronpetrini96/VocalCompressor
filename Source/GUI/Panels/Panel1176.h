@@ -38,16 +38,19 @@ private:
     ArcImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::get1176MixName()), mixKnobImage1176};
 
 //    LABELS
-    juce::Label input1176Label {"INPUT"}, output1176Label {"OUTPUT"};
-    juce::Label attack1176Label {"ATTACK"}, release1176Label {"RELEASE"};
-    juce::Label mix1176Label {"MIX"}, ratioLabel {"RATIO"};
+    AAUITools::PrintedText input1176Label {"INPUT", VCColors::almostWhiteText, juce::Justification::centredTop};
+    AAUITools::PrintedText output1176Label {"OUTPUT", VCColors::almostWhiteText, juce::Justification::centredTop};
+    AAUITools::PrintedText attack1176Label {"ATTACK", VCColors::almostWhiteText, juce::Justification::centredTop};
+    AAUITools::PrintedText release1176Label {"RELEASE", VCColors::almostWhiteText, juce::Justification::centredTop};
+    AAUITools::PrintedText mix1176Label {"MIX", VCColors::almostWhiteText, juce::Justification::centredTop};
+    AAUITools::PrintedText ratioLabel {"RATIO", VCColors::almostWhiteText, juce::Justification::centredTop};
 
 //    RATIO BUTTONS
     Ratio1176Buttons ratioButtons1176 {*audioProcessor.apvts.getParameter(ParamNames::get1176RatioName())};
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeter1176 {audioProcessor.gr1176, VCColors::almostWhiteText};
-    juce::Label gainReductionLabel {"GAIN REDUCTION"};
+    AAUITools::PrintedText gainReductionLabel {"GAIN REDUCTION", VCColors::almostWhiteText, juce::Justification::centredTop};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Panel1176)
 };
