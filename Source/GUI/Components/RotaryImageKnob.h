@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <numbers>
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class RotaryImageKnob : public juce::Slider
@@ -11,9 +12,9 @@ public:
     RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {})
     : knobImage(knobImageToUse), rotorImage(rotorImageToUse), attachment(parameter, *this)
     {
-        if (!knobImage.isValid())
-            return;
+        jassert (knobImage.isValid());
 
+        constexpr auto pi = std::numbers::pi_v<float>;
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
@@ -44,7 +45,6 @@ public:
 
 
 private:
-    const float pi = juce::MathConstants<float>::pi;
     juce::Image knobImage;
     juce::Image rotorImage;
     juce::SliderParameterAttachment attachment;

@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <numbers>
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class ArcImageKnob : public juce::Slider
@@ -11,6 +12,7 @@ public:
     ArcImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& imageToUse)
     : image(imageToUse), attachment(parameter, *this)
     {
+        constexpr auto pi = std::numbers::pi_v<float>;
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
@@ -57,7 +59,6 @@ public:
     }
 
 private:
-    const float pi = juce::MathConstants<float>::pi;
     juce::Image image;
     juce::SliderParameterAttachment attachment;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ArcImageKnob)
