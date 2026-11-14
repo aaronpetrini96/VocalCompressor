@@ -37,13 +37,14 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
     const int numSamples = buffer.getNumSamples();
 
     jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+    auto* const* channels = buffer.getArrayOfWritePointers();
 
     for (int n = 0; n < numSamples; ++n)
     {
         //Level detection
         float detector = 0.f;
         for (int ch = 0; ch < numChannels; ++ch)
-            detector += std::abs(buffer.getSample(ch, n));
+            detector += std::abs(channels[ch][n]);
         detector /= static_cast<float>(numChannels);
         
         // --- T4 Optical Cell Envelope ---
@@ -74,12 +75,12 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         // --- Apply Gain & Tube Character ---
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            const float dry = buffer.getSample(ch, n);
+            const float dry = channels[ch][n];
             float y = dry * gain;
             y = asymClipper.process(y);
             y = dcBlockers[static_cast<size_t>(ch)].process(y);
             y *= outputGain;
-            buffer.setSample(ch, n, dry * (1.f - mix) + y * mix);
+            channels[ch][n] = dry * (1.f - mix) + y * mix;
         }
         
         gainReduction = -gainDB;

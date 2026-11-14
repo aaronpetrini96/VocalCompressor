@@ -284,13 +284,15 @@ void VocalCompressorAudioProcessor::processOrderCrossfade(juce::AudioBuffer<floa
     processChain(newOrderBuffer, fet1176Next, la2aNext, ! isOrderReversed);
 
     const auto fadedSamples = orderFadeLength - orderFadeSamplesLeft;
+    auto* const* oldOrder = buffer.getArrayOfWritePointers();
+    const auto* const* newOrder = newOrderBuffer.getArrayOfReadPointers();
     for (int n {0}; n < numSamples; ++n)
     {
         const auto newOrderGain = std::min(1.f, static_cast<float>(fadedSamples + n + 1) / static_cast<float>(orderFadeLength));
         for (int ch {0}; ch < numChannels; ++ch)
         {
-            const auto oldOrderSample = buffer.getSample(ch, n);
-            buffer.setSample(ch, n, oldOrderSample + (newOrderBuffer.getSample(ch, n) - oldOrderSample) * newOrderGain);
+            const auto oldOrderSample = oldOrder[ch][n];
+            oldOrder[ch][n] = oldOrderSample + (newOrder[ch][n] - oldOrderSample) * newOrderGain;
         }
     }
 

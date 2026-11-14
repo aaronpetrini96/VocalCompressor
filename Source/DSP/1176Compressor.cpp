@@ -65,13 +65,14 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
     else if (ratio > 4.0f)
         satDrive = 1.1f;
     asymClipper.setParameters(2.2f, 3.0f, 0.11f, satDrive);
+    auto* const* channels = buffer.getArrayOfWritePointers();
 
     for (int n = 0; n < numSamples; ++n)
     {
         float detector = 0.f;
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            float x = buffer.getSample(ch, n) * inputGain;
+            float x = channels[ch][n] * inputGain;
             detector += std::abs(x);
         }
         detector /= static_cast<float>(numChannels);
@@ -125,14 +126,14 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
 
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            const float dry = buffer.getSample(ch, n);
+            const float dry = channels[ch][n];
             float x = dry * inputGain;
             float y = x * gain;
             y = asymClipper.process(y);
             y = dcBlockers[static_cast<size_t>(ch)].process(y);
             y *= outputGain;
             y = dry * (1.f - mix) + y * mix;
-            buffer.setSample(ch, n, y);
+            channels[ch][n] = y;
         }
     }
 }
