@@ -25,7 +25,7 @@ public:
         setWantsKeyboardFocus (true);
         nameEditor.onTextChange = [this]
         {
-            confirmButton.setEnabled (juce::File::createLegalFileName (nameEditor.getText().trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (nameEditor.getText())));
+            updateConfirmEnabled (nameEditor.getText());
             isConfirmingOverwrite = false;
             confirmButton.setButtonText ("Save");
         };
@@ -145,7 +145,7 @@ public:
         messageLabel.setVisible (false);
 
         nameEditor.setText (presetName, juce::dontSendNotification);
-        confirmButton.setEnabled (juce::File::createLegalFileName (presetName.trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (presetName)));
+        updateConfirmEnabled (presetName);
         nameEditor.grabKeyboardFocus();
         nameEditor.selectAll();
     }
@@ -156,6 +156,13 @@ public:
     float numRows {6.f};
 
 private:
+    void updateConfirmEnabled (const juce::String& presetName)
+    {
+        const auto isLegalName = juce::File::createLegalFileName (presetName.trim()).isNotEmpty();
+        const auto isReserved = isNameReserved != nullptr && isNameReserved (presetName);
+        confirmButton.setEnabled (isLegalName && ! isReserved);
+    }
+
     PresetPopupLAF presetPopupLAF;
     const juce::String title {"SAVE PRESET"};
     static constexpr int maxNameLength {35};
