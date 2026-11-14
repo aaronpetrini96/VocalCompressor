@@ -3,23 +3,29 @@
 
 namespace ParamNames
 {
-    // === FET76 ===
-    inline juce::String get1176InputName() { return "1176Input"; }
-    inline juce::String get1176OutputName() { return "1176Output"; }
-    inline juce::String get1176AttackName() { return "1176Attack"; }
-    inline juce::String get1176ReleaseName() { return "1176Release"; }
-    inline juce::String get1176RatioName() { return "1176Ratio"; }
-    inline juce::String get1176MixName() { return "1176Mix"; }
-    inline juce::String get1176BypassName() { return "1176Bypass"; }
+    struct ParamName
+    {
+        juce::String id;
+        juce::String name;
+    };
 
-    // === OPT2A ===
-    inline juce::String getLA2AGainName() { return "LA2AGain"; }
-    inline juce::String getLA2APeakReductionName() { return "LA2APeakReduction"; }
-    inline juce::String getLA2ALimitCompressModeName() { return "LA2AMode"; }
-    inline juce::String getLA2AMixName() { return "LA2AMix"; }
-    inline juce::String getLA2ABypassName() { return "LA2ABypass"; }
+    // === FET-76 ===
+    inline ParamName getFET76InputNames() { return {"FET76Input", "FET-76 Input"}; }
+    inline ParamName getFET76OutputNames() { return {"FET76Output", "FET-76 Output"}; }
+    inline ParamName getFET76AttackNames() { return {"FET76Attack", "FET-76 Attack"}; }
+    inline ParamName getFET76ReleaseNames() { return {"FET76Release", "FET-76 Release"}; }
+    inline ParamName getFET76RatioNames() { return {"FET76Ratio", "FET-76 Ratio"}; }
+    inline ParamName getFET76MixNames() { return {"FET76Mix", "FET-76 Mix"}; }
+    inline ParamName getFET76BypassNames() { return {"FET76Bypass", "FET-76 Bypass"}; }
+
+    // === OPT-2A ===
+    inline ParamName getOPT2AGainNames() { return {"OPT2AGain", "OPT-2A Gain"}; }
+    inline ParamName getOPT2APeakReductionNames() { return {"OPT2APeakReduction", "OPT-2A Peak Reduction"}; }
+    inline ParamName getOPT2AModeNames() { return {"OPT2AMode", "OPT-2A Mode"}; }
+    inline ParamName getOPT2AMixNames() { return {"OPT2AMix", "OPT-2A Mix"}; }
+    inline ParamName getOPT2ABypassNames() { return {"OPT2ABypass", "OPT-2A Bypass"}; }
 
     // === General ===
-    inline juce::String getGeneralBypassName() { return "PluginBypass"; }
-    inline juce::String getReverseSignalOrderName() { return "ReverseSignalOrder"; }
+    inline ParamName getPluginBypassNames() { return {"PluginBypass", "Plugin Bypass"}; }
+    inline ParamName getReverseSignalOrderNames() { return {"ReverseSignalOrder", "Reverse Signal Flow Order"}; }
 }

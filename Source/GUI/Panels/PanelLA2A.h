@@ -26,16 +26,16 @@ private:
     const juce::Image la2aModeImageDOWN {juce::ImageCache::getFromMemory(BinaryData::switchDOWN_png, BinaryData::switchDOWN_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2AGainName()), la2aKnobImage, la2aKnobRotorImage};
-    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getLA2APeakReductionName()), la2aKnobImage, la2aKnobRotorImage};
-    ArcImageKnob la2aMixKnob {*audioProcessor.apvts.getParameter(ParamNames::getLA2AMixName()), la2aMixKnobImage};
+    RotaryImageKnob la2aGainDial {*audioProcessor.apvts.getParameter(ParamNames::getOPT2AGainNames().id), la2aKnobImage, la2aKnobRotorImage};
+    RotaryImageKnob la2aPeakReductionDial {*audioProcessor.apvts.getParameter(ParamNames::getOPT2APeakReductionNames().id), la2aKnobImage, la2aKnobRotorImage};
+    ArcImageKnob la2aMixKnob {*audioProcessor.apvts.getParameter(ParamNames::getOPT2AMixNames().id), la2aMixKnobImage};
 
 //    KNOB SCALES
     const juce::StringArray scaleLabels {"0", "20", "40", "60", "80", "100"};
 
 //   COMP / LIMIT SWITCH
     juce::ImageButton la2aModeButton;
-    juce::AudioProcessorValueTreeState::ButtonAttachment la2aModeButtonAttachment {audioProcessor.apvts, ParamNames::getLA2ALimitCompressModeName(), la2aModeButton};
+    juce::AudioProcessorValueTreeState::ButtonAttachment la2aModeButtonAttachment {audioProcessor.apvts, ParamNames::getOPT2AModeNames().id, la2aModeButton};
 
 //    LABELS
     AAUITools::PrintedText la2aGainLabel {"GAIN", juce::Colours::black, juce::Justification::centredTop};

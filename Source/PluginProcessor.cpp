@@ -21,44 +21,47 @@ juce::AudioProcessorValueTreeState::ParameterLayout VocalCompressorAudioProcesso
     juce::NormalisableRange<float> normalizedRange {0.f, 1.f, 0.01f, 1.f};
     juce::NormalisableRange<float> timeKnobRange {1.f, 7.f, 0.01f};
     
-//    1176
-    auto name = ParamNames::get1176InputName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
-    name = ParamNames::get1176OutputName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.5f));
-    
-    name = ParamNames::get1176AttackName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, timeKnobRange, 4.f));
-    name = ParamNames::get1176ReleaseName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, timeKnobRange, 5.f));
-    
-    name = ParamNames::get1176RatioName();
+//    FET-76
+    auto names = ParamNames::getFET76InputNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 0.3f));
+    names = ParamNames::getFET76OutputNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 0.5f));
+
+    names = ParamNames::getFET76AttackNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, timeKnobRange, 4.f));
+    names = ParamNames::getFET76ReleaseNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, timeKnobRange, 5.f));
+
+    names = ParamNames::getFET76RatioNames();
     const juce::StringArray ratioArray_1176 {"4", "8", "12", "20", "ALL"};
-    params.emplace_back(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(name, versionHint), name, ratioArray_1176, 0));
-    
-    name = ParamNames::get1176MixName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 1.0f));
-    name = ParamNames::get1176BypassName();
-    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
-    
-    //    LA2A
-    name = ParamNames::getLA2AGainName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
-    name = ParamNames::getLA2APeakReductionName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 0.3f));
-    name = ParamNames::getLA2ALimitCompressModeName();
-    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
-    name = ParamNames::getLA2AMixName();
-    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(name, versionHint), name, normalizedRange, 1.0f));
-    name = ParamNames::getLA2ABypassName();
-    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
-    
+    params.emplace_back(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(names.id, versionHint), names.name, ratioArray_1176, 0));
+
+    names = ParamNames::getFET76MixNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 1.0f));
+    names = ParamNames::getFET76BypassNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(names.id, versionHint), names.name, false));
+
+    //    OPT-2A
+    names = ParamNames::getOPT2AGainNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 0.3f));
+    names = ParamNames::getOPT2APeakReductionNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 0.3f));
+    names = ParamNames::getOPT2AModeNames();
+    const auto modeAttributes = juce::AudioParameterBoolAttributes()
+                                    .withStringFromValueFunction([] (bool isLimit, int) { return juce::String(isLimit ? "Limit" : "Comp"); })
+                                    .withValueFromStringFunction([] (const juce::String& text) { return text.equalsIgnoreCase("Limit"); });
+    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(names.id, versionHint), names.name, false, modeAttributes));
+    names = ParamNames::getOPT2AMixNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(names.id, versionHint), names.name, normalizedRange, 1.0f));
+    names = ParamNames::getOPT2ABypassNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(names.id, versionHint), names.name, false));
+
 //    GENERAL PLUGIN PARAMETERS
-    name = ParamNames::getGeneralBypassName();
-    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
-    
-    name = ParamNames::getReverseSignalOrderName();
-    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(name, versionHint), name, false));
+    names = ParamNames::getPluginBypassNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(names.id, versionHint), names.name, false));
+
+    names = ParamNames::getReverseSignalOrderNames();
+    params.emplace_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID(names.id, versionHint), names.name, false));
     
     return {params.begin(), params.end()};
 }
@@ -116,22 +119,22 @@ void VocalCompressorAudioProcessor::changeProgramName (int, const juce::String&)
 
 void VocalCompressorAudioProcessor::linkParameters()
 {
-    input1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176InputName());
-    output1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176OutputName());
-    attack1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176AttackName());
-    release1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176ReleaseName());
-    mix1176Param = getParam<juce::AudioParameterFloat>(ParamNames::get1176MixName());
-    ratio1176Param = getParam<juce::AudioParameterChoice>(ParamNames::get1176RatioName());
-    bypass1176Param = getParam<juce::AudioParameterBool>(ParamNames::get1176BypassName());
+    input1176Param = getParam<juce::AudioParameterFloat>(ParamNames::getFET76InputNames().id);
+    output1176Param = getParam<juce::AudioParameterFloat>(ParamNames::getFET76OutputNames().id);
+    attack1176Param = getParam<juce::AudioParameterFloat>(ParamNames::getFET76AttackNames().id);
+    release1176Param = getParam<juce::AudioParameterFloat>(ParamNames::getFET76ReleaseNames().id);
+    mix1176Param = getParam<juce::AudioParameterFloat>(ParamNames::getFET76MixNames().id);
+    ratio1176Param = getParam<juce::AudioParameterChoice>(ParamNames::getFET76RatioNames().id);
+    bypass1176Param = getParam<juce::AudioParameterBool>(ParamNames::getFET76BypassNames().id);
 
-    gainLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2AGainName());
-    peakReductionLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2APeakReductionName());
-    modeLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getLA2ALimitCompressModeName());
-    mixLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getLA2AMixName());
-    bypassLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getLA2ABypassName());
+    gainLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getOPT2AGainNames().id);
+    peakReductionLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getOPT2APeakReductionNames().id);
+    modeLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getOPT2AModeNames().id);
+    mixLA2AParam = getParam<juce::AudioParameterFloat>(ParamNames::getOPT2AMixNames().id);
+    bypassLA2AParam = getParam<juce::AudioParameterBool>(ParamNames::getOPT2ABypassNames().id);
 
-    pluginBypassParam = getParam<juce::AudioParameterBool>(ParamNames::getGeneralBypassName());
-    reverseSignalOrderParam = getParam<juce::AudioParameterBool>(ParamNames::getReverseSignalOrderName());
+    pluginBypassParam = getParam<juce::AudioParameterBool>(ParamNames::getPluginBypassNames().id);
+    reverseSignalOrderParam = getParam<juce::AudioParameterBool>(ParamNames::getReverseSignalOrderNames().id);
 
     smootherBindings =
     {

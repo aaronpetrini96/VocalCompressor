@@ -4,10 +4,10 @@ HeaderPanel::HeaderPanel(VocalCompressorAudioProcessor& processor)
 : presetManager(processor.presetManager),
   undoManager(processor.undoManager),
   presetBox(processor.presetManager),
-  bypassPluginButtonAttachment(processor.apvts,       ParamNames::getGeneralBypassName(), bypassPluginButton),
-  unitTitle1176ButtonAttachment(processor.apvts,      ParamNames::get1176BypassName(), unitTitle1176Button),
-  unitTitleLA2AButtonAttachment(processor.apvts,      ParamNames::getLA2ABypassName(), unitTitleLA2AButton),
-  reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderName(), signalOrderButton)
+  bypassPluginButtonAttachment(processor.apvts,       ParamNames::getPluginBypassNames().id, bypassPluginButton),
+  unitTitle1176ButtonAttachment(processor.apvts,      ParamNames::getFET76BypassNames().id, unitTitle1176Button),
+  unitTitleLA2AButtonAttachment(processor.apvts,      ParamNames::getOPT2ABypassNames().id, unitTitleLA2AButton),
+  reverseSignalOrderButtonAttachment(processor.apvts, ParamNames::getReverseSignalOrderNames().id, signalOrderButton)
 {
     setupArrowIconButtons();
 

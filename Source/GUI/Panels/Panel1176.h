@@ -31,11 +31,11 @@ private:
     const juce::Image mixKnobImage1176 {juce::ImageCache::getFromMemory(BinaryData::whiteKnob2_png, BinaryData::whiteKnob2_pngSize)};
 
 //   KNOBS
-    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176InputName()), knobBaseImage1176, knobRotorImage1176};
-    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176OutputName()), knobBaseImage1176, knobRotorImage1176};
-    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176AttackName()), smallKnobImage1176, smallKnobRotorImage1176};
-    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::get1176ReleaseName()), smallKnobImage1176, smallKnobRotorImage1176};
-    ArcImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::get1176MixName()), mixKnobImage1176};
+    RotaryImageKnob input1176Dial {*audioProcessor.apvts.getParameter(ParamNames::getFET76InputNames().id), knobBaseImage1176, knobRotorImage1176};
+    RotaryImageKnob output1176Dial {*audioProcessor.apvts.getParameter(ParamNames::getFET76OutputNames().id), knobBaseImage1176, knobRotorImage1176};
+    RotaryImageKnob attack1176Dial {*audioProcessor.apvts.getParameter(ParamNames::getFET76AttackNames().id), smallKnobImage1176, smallKnobRotorImage1176};
+    RotaryImageKnob release1176Dial {*audioProcessor.apvts.getParameter(ParamNames::getFET76ReleaseNames().id), smallKnobImage1176, smallKnobRotorImage1176};
+    ArcImageKnob mix1176Knob {*audioProcessor.apvts.getParameter(ParamNames::getFET76MixNames().id), mixKnobImage1176};
 
 //    LABELS
     AAUITools::PrintedText input1176Label {"INPUT", VCColors::almostWhiteText, juce::Justification::centredTop};
@@ -46,7 +46,7 @@ private:
     AAUITools::PrintedText ratioLabel {"RATIO", VCColors::almostWhiteText, juce::Justification::centredTop};
 
 //    RATIO BUTTONS
-    Ratio1176Buttons ratioButtons1176 {*audioProcessor.apvts.getParameter(ParamNames::get1176RatioName())};
+    Ratio1176Buttons ratioButtons1176 {*audioProcessor.apvts.getParameter(ParamNames::getFET76RatioNames().id)};
 
 //    GAIN REDUCTION
     GRDistressorMeter grMeter1176 {audioProcessor.gr1176, VCColors::almostWhiteText};

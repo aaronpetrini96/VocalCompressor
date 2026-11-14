@@ -2,7 +2,7 @@
 #include "BinaryData.h"
 #include "ParamNames.h"
 
-static const juce::StringArray nonPresetParameterIDs {ParamNames::getGeneralBypassName()};
+static const juce::StringArray nonPresetParameterIDs {ParamNames::getPluginBypassNames().id};
 
 static const juce::StringArray rootPresetFileNames {"Default.xml"};
 

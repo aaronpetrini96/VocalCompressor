@@ -23,7 +23,7 @@ public:
         for (auto* parameter : trackedParameters)
         {
             const auto parameterID = dynamic_cast<juce::AudioProcessorParameterWithID*> (parameter)->getParameterID();
-            if (parameterID != ParamNames::getGeneralBypassName())
+            if (parameterID != ParamNames::getPluginBypassNames().id)
                 parameter->addListener(this);
         }
         startTimerHz (30);
