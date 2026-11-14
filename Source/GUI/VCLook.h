@@ -8,6 +8,7 @@ namespace VCColors
     inline const juce::Colour darkRed {200, 30, 30};
     inline const juce::Colour fadedWhiteText {200, 200, 200};
     inline const juce::Colour almostWhiteText {225, 225, 225};
+    inline const juce::Colour whiteText {255, 255, 255};
 
     inline const juce::Colour iconOver {180, 180, 180};
     inline const juce::Colour iconActive = darkRed;
@@ -15,9 +16,12 @@ namespace VCColors
 
     inline const juce::Colour popupBackground {5, 7, 14};
     inline const juce::Colour popupOutline {40, 50, 70};
-    inline const juce::Colour popupText = fadedWhiteText;
     inline const juce::Colour popupRowHighlight {35, 42, 60};
-    inline const juce::Colour popupSelectedText = almostWhiteText;
+    inline const juce::Colour popupTitleText = whiteText;
+    inline const juce::Colour popupText = whiteText;
+    inline const juce::Colour popupTextHover = fadedWhiteText;
+    inline const juce::Colour popupTextSelected {235, 50, 40};
+    inline const juce::Colour popupLabelText = fadedWhiteText;
 }
 
 namespace VCFonts
@@ -62,8 +66,8 @@ namespace VCLook
 {
     inline constexpr float popupCornerPOH {0.0f};
     inline constexpr float outlineThicknessPOH {0.06f};
-    inline constexpr float fontHeightPOH {0.8f};
-    inline constexpr float popupTitleRowRatio {1.07f};
+    inline constexpr float fontHeightPOH {0.75f};
+    inline constexpr float popupTitleRowRatio {1.05f};
     inline constexpr float rowPOH {0.045f};
 
     inline void setupLabel(juce::Label& label, const juce::Colour& labelColour = juce::Colours::white, const juce::Justification justification = juce::Justification::centred)

@@ -57,8 +57,8 @@ public:
         const auto isSelected = button.getToggleState();
 
         //Colors
-        const auto tabButtonTextColour = isSelected ? VCColors::popupSelectedText : VCColors::fadedWhiteText.withMultipliedAlpha (isHighlighted ? 0.8f : 0.4f);
-        const auto presetTextColour = isHighlighted ? VCColors::fadedWhiteText : VCColors::almostWhiteText;
+        const auto tabButtonTextColour = isSelected ? VCColors::popupText : VCColors::popupTextHover.withMultipliedAlpha (isHighlighted ? 0.8f : 0.4f);
+        const auto presetTextColour = isHighlighted ? VCColors::popupTextHover : VCColors::popupText;
         const auto buttonTextColour = isTabButton ? tabButtonTextColour : presetTextColour;
 
         g.setColour (buttonTextColour);

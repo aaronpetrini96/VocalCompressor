@@ -32,12 +32,12 @@ public:
         addChildComponent (nameEditor);
 
         messageLabel.setJustificationType (juce::Justification::centred);
-        messageLabel.setColour (juce::Label::textColourId, VCColors::popupText);
+        messageLabel.setColour (juce::Label::textColourId, VCColors::popupLabelText);
         messageLabel.setInterceptsMouseClicks (false, false);
         addChildComponent (messageLabel);
 
         nameLabel.setJustificationType (juce::Justification::centred);
-        nameLabel.setColour (juce::Label::textColourId, VCColors::fadedWhiteText);
+        nameLabel.setColour (juce::Label::textColourId, VCColors::popupLabelText);
         nameLabel.setInterceptsMouseClicks (false, false);
         addChildComponent (nameLabel);
 
@@ -87,7 +87,7 @@ public:
         g.setColour (VCColors::popupOutline);
         g.fillRect (titleBounds.withTop (titleBounds.getBottom() - outlineThickness * 0.5f));
 
-        g.setColour (VCColors::popupText.withBrightness (2.f));
+        g.setColour (VCColors::popupTitleText);
         g.setFont (VCFonts::barlowCondensedSemiBold (titleBounds.getHeight() * VCLook::fontHeightPOH));
         g.drawText (title, titleBounds, juce::Justification::centred, true);
     }
@@ -104,13 +104,13 @@ public:
         const auto nameEditorWidth = boundsFWidth * 0.85f;
         const auto nameEditorHeight = boundsFHeight * 0.2f;
         const auto nameEditorBounds = boundsF.withSizeKeepingCentre (nameEditorWidth, nameEditorHeight);
-        nameEditor.applyFontToAllText (VCFonts::barlowCondensedMedium (fontHeight));
+        nameEditor.applyFontToAllText (VCFonts::barlowCondensedRegular (fontHeight));
         nameEditor.setBounds (nameEditorBounds.toNearestInt());
 
-        nameLabel.setFont (VCFonts::barlowCondensedMedium (fontHeight));
+        nameLabel.setFont (VCFonts::barlowCondensedRegular (fontHeight));
         nameLabel.setBounds (nameEditorBounds.withBottomY (nameEditorBounds.getY()).toNearestInt());
 
-        messageLabel.setFont (VCFonts::barlowCondensedMedium (fontHeight));
+        messageLabel.setFont (VCFonts::barlowCondensedRegular (fontHeight));
         messageLabel.setBounds (nameEditorBounds.toNearestInt());
 
         const auto buttonWidth = boundsFWidth * 0.35f;
