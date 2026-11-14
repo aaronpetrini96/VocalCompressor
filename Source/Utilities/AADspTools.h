@@ -169,7 +169,7 @@ namespace AADspTools
 
         void prepare (double sampleRate, int maxBlockSize, int numChannels)
         {
-            assert (sampleRate > 0.0 && maxBlockSize > 0 && numChannels > 0 && cutoffHz < sampleRate * factor * 0.5);
+            assert (sampleRate > 0.0 && maxBlockSize > 0 && numChannels > 0);
 
             maxSamples = maxBlockSize;
             upChannels.assign (static_cast<size_t> (numChannels), std::vector<float> (static_cast<size_t> (maxBlockSize * factor), 0.f));
@@ -178,13 +178,13 @@ namespace AADspTools
             for (auto& channel : upChannels)
                 upPointers.push_back (channel.data());
 
-            designTaps(sampleRate * factor);
+            designTaps(sampleRate);
             channelStates.assign (static_cast<size_t> (numChannels), ChannelState {});
             for (auto& state : channelStates)
             {
-                state.upHistory.prepare (evenTaps.size());
-                state.downEvenHistory.prepare (evenTaps.size());
-                state.downOddHistory.prepare (oddTaps.size());
+                state.upHistory.prepare (2 * downTaps.size());
+                state.downEvenHistory.prepare (2 * downTaps.size());
+                state.downOddHistory.prepare (downTaps.size());
             }
         }
 
@@ -208,9 +208,8 @@ namespace AADspTools
                 {
                     history.push(channelsData[ch][n]);
                     const auto* window = history.oldestFirst();
-                    const auto upGain = static_cast<float> (factor);
-                    upData[factor * n] = upGain * std::inner_product(evenTaps.begin(), evenTaps.end(), window, 0.f);
-                    upData[factor * n + 1] = upGain * std::inner_product(oddTaps.begin(), oddTaps.end(), window + 1, 0.f);
+                    upData[factor * n] = pairedSum (window, upTaps);
+                    upData[factor * n + 1] = window[downTaps.size()];
                 }
             }
             return upPointers.data();
@@ -226,17 +225,18 @@ namespace AADspTools
                 for (int n {0}; n < numSamples; ++n)
                 {
                     state.downEvenHistory.push(upData[factor * n]);
-                    const auto evenSum = std::inner_product(evenTaps.begin(), evenTaps.end(), state.downEvenHistory.oldestFirst(), 0.f);
-                    const auto oddSum = std::inner_product(oddTaps.begin(), oddTaps.end(), state.downOddHistory.oldestFirst(), 0.f);
+                    const auto evenSum = pairedSum (state.downEvenHistory.oldestFirst(), downTaps);
+                    const auto centreSample = 0.5f * state.downOddHistory.oldestFirst()[0];
                     state.downOddHistory.push(upData[factor * n + 1]);
-                    channelsData[ch][n] = evenSum + oddSum;
+                    channelsData[ch][n] = evenSum + centreSample;
                 }
             }
         }
 
     private:
-        static constexpr double cutoffHz {21000.0};
-        static constexpr double transitionWidthHz {1000.0};
+        static constexpr double passbandHz {20000.0};
+        static constexpr double minimumTransitionHz {2000.0};
+        static constexpr double transitionScale {7.5};
 
         struct SampleHistory
         {
@@ -271,41 +271,52 @@ namespace AADspTools
             SampleHistory upHistory, downEvenHistory, downOddHistory;
         };
 
-        void designTaps (double processingRate)
+        static float pairedSum (const float* window, const std::vector<float>& taps)
         {
-            const auto minimumTaps = 4.0 * processingRate/transitionWidthHz;
-            const auto halfLength = factor * static_cast<int>(std::ceil(minimumTaps / (2.0 * factor)));
-            const auto numTaps = 2 * halfLength + 1;
-            const auto normalisedCutoff = 2.0 * cutoffHz / processingRate;
+            const auto lastIndex = 2 * taps.size() - 1;
+            float sum {0.f};
+            for (size_t i {0}; i < taps.size(); ++i)
+                sum += taps[i] * (window[i] + window[lastIndex - i]);
+            return sum;
+        }
 
-            std::vector<double> taps (static_cast<size_t> (numTaps));
-            for (int index {0}; index < numTaps; ++index)
+        void designTaps (double hostRate)
+        {
+            const auto processingRate = hostRate * factor;
+            const auto transitionHz = std::max (hostRate - 2.0 * passbandHz, minimumTransitionHz);
+            const auto minimumTaps = transitionScale * processingRate / transitionHz;
+            const auto order = std::max (2, static_cast<int>(std::ceil ((minimumTaps - 3.0) / 4.0)));
+            const auto numTaps = 4 * order + 3;
+            const auto centre = 2 * order + 1;
+
+            std::vector<double> taps (static_cast<size_t> (order + 1));
+            double sumOfEvenTaps {0.0};
+            for (int i {0}; i <= order; ++i)
             {
-                const auto sincPhase = std::numbers::pi * normalisedCutoff * (index - halfLength);
-                const auto sinc = index == halfLength ? 1.0 : std::sin (sincPhase) / sincPhase;
+                const auto offset = 2 * i - centre;
+                const auto ideal = std::sin (std::numbers::pi * offset / 2.0) / (std::numbers::pi * offset);
                 // 4-term Blackman-Harris window
-                const auto windowPhase = 2.0 * std::numbers::pi * index / (numTaps - 1);
+                const auto windowPhase = 2.0 * std::numbers::pi * (2 * i) / (numTaps - 1);
                 const auto window = 0.35875 - 0.48829 * std::cos (windowPhase) + 0.14128 * std::cos (2.0 * windowPhase) - 0.01168 * std::cos (3.0 * windowPhase);
-                taps[static_cast<size_t> (index)] = normalisedCutoff * sinc * window;
+                taps[static_cast<size_t> (i)] = ideal * window;
+                sumOfEvenTaps += 2.0 * taps[static_cast<size_t> (i)];
             }
 
-            const auto tapsSum = std::accumulate(taps.begin(), taps.end(), 0.0);
-            evenTaps.clear();
-            oddTaps.clear();
-            for (size_t index {0}; index < taps.size(); ++index)
+            const auto gain = 0.5 / sumOfEvenTaps;
+            downTaps.clear();
+            upTaps.clear();
+            for (const auto tap : taps)
             {
-                if (index % static_cast<size_t>(factor) == 0)
-                    evenTaps.push_back(static_cast<float>(taps[index]/ tapsSum));
-                else
-                    oddTaps.push_back(static_cast<float>(taps[index]/ tapsSum));
+                downTaps.push_back(static_cast<float>(tap * gain));
+                upTaps.push_back(static_cast<float>(2.0 * tap * gain));
             }
 
-            latencySamples = 2 * halfLength / factor;
+            latencySamples = centre;
         }
 
         std::vector<std::vector<float>> upChannels;
         std::vector<float*> upPointers;
-        std::vector<float> evenTaps, oddTaps;
+        std::vector<float> downTaps, upTaps;
         std::vector<ChannelState> channelStates;
         int maxSamples {0};
         int latencySamples {0};
