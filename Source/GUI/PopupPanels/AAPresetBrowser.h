@@ -22,7 +22,6 @@ public:
         viewport.setViewedComponent (&rowsHolder, false);
         viewport.setScrollBarsShown (false, false);
         addAndMakeVisible (viewport);
-        rowsHolder.addMouseListener (this, true);
 
         defaultTabButton.setToggleState (true, juce::dontSendNotification);
         defaultTabButton.setConnectedEdges (juce::Button::ConnectedOnRight);
@@ -31,7 +30,11 @@ public:
         userTabButton.onClick = [this] { setPresetType (PresetManager::PresetType::user); };
 
         for (auto* tabButton : {&defaultTabButton, &userTabButton})
+        {
+            tabButton->setRadioGroupId (7391);
+            tabButton->setClickingTogglesState (true);
             addAndMakeVisible (tabButton);
+        }
     }
 
     ~AAPresetBrowser() override
@@ -79,16 +82,6 @@ public:
         g.drawRoundedRectangle (boundsF.reduced (outlineThickness * 0.5f), boundsFHeight * VCLook::popupCornerPOH, outlineThickness);
     }
 
-    void mouseDown (const juce::MouseEvent& e) override
-    {
-        isRowRightClicked = e.mods.isPopupMenu();
-    }
-
-    void showUserPresets()
-    {
-        setPresetType (PresetManager::PresetType::user);
-    }
-
     float getNumRows() const { return (float) rows.size() + VCLook::popupTitleRowRatio; }
 
 
@@ -104,9 +97,8 @@ public:
             return;
         }
 
-        presetFiles = presetManager.getPresetFiles (selectedPresetType);
+        const auto presetFiles = presetManager.getPresetFiles (selectedPresetType);
         const auto currentPresetName = presetManager.getCurrentPresetName();
-        const auto isUserPresets = selectedPresetType == PresetManager::PresetType::user;
 
         rows.clear();
 
@@ -114,22 +106,8 @@ public:
         {
             auto* row = rows.add (new juce::TextButton (presetFile.getFileNameWithoutExtension()));
             row->setToggleState (presetFile.getFileNameWithoutExtension() == currentPresetName, juce::dontSendNotification);
-            row->onClick = [this, presetFile, isUserPresets]
+            row->onClick = [this, presetFile]
             {
-                if (std::exchange (isRowRightClicked, false))
-                {
-                    if (isUserPresets)
-                    {
-                        juce::PopupMenu presetMenu;
-                        presetMenu.setLookAndFeel (&presetBrowserLAF);
-                        presetMenu.addItem ("Rename", [this, presetFile] { if (onRenameRequested != nullptr) onRenameRequested (presetFile); });
-                        presetMenu.addItem ("Delete", [this, presetFile] { if (onDeleteRequested != nullptr) onDeleteRequested (presetFile); });
-                        presetMenu.showMenuAsync (juce::PopupMenu::Options().withMousePosition().withDeletionCheck(*this));
-                    }
-
-                    return;
-                }
-
                 presetManager.loadPresetFile (presetFile);
                 setVisible (false);
             };
@@ -143,8 +121,6 @@ public:
     }
 
 
-    std::function<void (const juce::File& presetFile)> onDeleteRequested;
-    std::function<void (const juce::File& presetFile)> onRenameRequested;
     std::function<void()> onRowsChanged;
 
 private:
@@ -159,13 +135,11 @@ private:
     PresetBrowserLAF presetBrowserLAF;
     PresetManager& presetManager;
     PresetManager::PresetType selectedPresetType {PresetManager::PresetType::factory};
-    juce::Array<juce::File> presetFiles;
 
     juce::TextButton defaultTabButton {"Factory"}, userTabButton {"User"};
     juce::Component rowsHolder;
     juce::OwnedArray<juce::TextButton> rows;
     juce::Viewport viewport;
-    bool isRowRightClicked {false};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AAPresetBrowser)
 };

@@ -1,11 +1,15 @@
 #include "LA2ACompressor.h"
+#include "../Utilities/AADspTools.h"
 
-void LA2ACompressor::prepare(double newSampleRate, int samplesPerBlock)
+void LA2ACompressor::prepare(double newSampleRate)
 {
-    sampleRate = static_cast<float>(newSampleRate);
+    const auto sampleRate = static_cast<float>(newSampleRate);
     attackCoeff  = std::exp(-1.0f / (0.01f * sampleRate));
     relFastCoeff = std::exp(-1.0f / (0.06f * sampleRate));
     relSlowCoeff = std::exp(-1.0f / (2.0f  * sampleRate));
+    asymClipper.setParameters(0.8f, 3.0f, 0.02f);
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.prepare(newSampleRate);
     reset();
 }
 
@@ -13,71 +17,73 @@ void LA2ACompressor::reset()
 {
     env = 0.f;
     gainReduction = 0.f;
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.reset();
 }
 
-void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode)
+void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
 {
-    peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 40.f);
-    
-    outputGain = dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
+    peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 48.f);
+    outputGain = AADspTools::dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
     
     isLimit = limitMode;
-    ratio = isLimit ? 10.f : 3.f;
-    
+    ratio = isLimit ? 10.f : 5.f;
+    mix = newMix;
 }
 
 void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
 {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
-    
+
+    jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+    gainReduction = 0.f;
+    auto* const* channels = buffer.getArrayOfWritePointers();
+
     for (int n = 0; n < numSamples; ++n)
     {
         //Level detection
         float detector = 0.f;
         for (int ch = 0; ch < numChannels; ++ch)
-            detector += std::abs(buffer.getSample(ch, n));
+            detector += std::abs(channels[ch][n]);
         detector /= static_cast<float>(numChannels);
         
         // --- T4 Optical Cell Envelope ---
 
         // Program-dependent blend
-        float releaseCoeff = juce::jmap(env, 0.0f, 1.0f, relFastCoeff, relSlowCoeff);
+        const auto releaseBlend = std::min(env, 1.0f);
+        float releaseCoeff = juce::jmap(releaseBlend, relFastCoeff, relSlowCoeff);
         if (detector > env)
             env = attackCoeff * env + (1.0f - attackCoeff) * detector;
         else
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         // --- Gain Reduction ---
-        float envDB = gainToDB(env + 1.0e-9f);
-        float over = envDB + peakReduction - (-24.0f);
+        const auto envDB = AADspTools::gainToDB(env);
+        const auto thresholdDb = -4.f - peakReduction;
+        const auto over = envDB - thresholdDb;
         float gainDB = 0.0f;
         
         if (over > 0.0f)
         {
-            float knee = isLimit ? 2.0f : 6.0f;
-            float compAmount = over / (over + knee);
+            const float knee = isLimit ? 4.0f : 6.0f;
+            const float compAmount = over / (over + knee);
             gainDB = -compAmount * (1.0f - 1.0f / ratio) * over;
         }
         
-        float gain = dBToGain(gainDB);
+        const float gain = AADspTools::dBToGain(gainDB);
         
         // --- Apply Gain & Tube Character ---
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            float x = buffer.getSample(ch, n);
-            float y = x * gain;
-            y = tubeSaturation(y, 0.4f);
-            buffer.setSample(ch, n, y * outputGain);
+            const float dry = channels[ch][n];
+            float y = dry * gain;
+            y = asymClipper.process(y);
+            y = dcBlockers[static_cast<size_t>(ch)].process(y);
+            y *= outputGain;
+            channels[ch][n] = dry * (1.f - mix) + y * mix;
         }
         
-        float targetGR =-gainDB;
-        gainReduction = 0.9f * gainReduction + 0.1f * targetGR;
+        gainReduction = std::max (gainReduction, -gainDB);
     }
-}
-
-float LA2ACompressor::tubeSaturation(float x, float drive)
-{
-    float k = juce::jmap(drive, 0.0f, 1.0f, 1.0f, 2.5f);
-    return std::tanh(k * x);
 }

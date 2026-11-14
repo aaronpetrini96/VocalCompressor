@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <functional>
-
 #include "../VCLook.h"
 #include "../../Utilities/PresetManager.h"
 
@@ -19,8 +17,8 @@ public:
     void drawButtonText (juce::Graphics& g, juce::TextButton& button, bool highlighted, bool) override
     {
         const auto boundsF = button.getLocalBounds().toFloat();
-        g.setColour (highlighted ? VCColors::displayText.withMultipliedBrightness (0.6f) : VCColors::displayText);
-        g.setFont (VCFonts::barlowCondensedSemiBold (boundsF.getHeight() * VCLook::fontHeightPOH));
+        g.setColour (highlighted ? VCColors::popupTextHover : VCColors::whiteText);
+        g.setFont (VCFonts::barlowCondensedMedium (boundsF.getHeight() * VCLook::fontHeightPOH));
         g.drawFittedText (button.getButtonText(), boundsF.toNearestInt(), juce::Justification::centred, 1);
     }
 
@@ -34,11 +32,10 @@ public:
     explicit AAPresetBox (PresetManager& presetManagerToUse) : presetManager (presetManagerToUse)
     {
         nameButton.setLookAndFeel (&presetBoxLAF);
-        nameButton.onClick = [this] { if (onNameClicked != nullptr) onNameClicked(); };
         addAndMakeVisible (nameButton);
 
-        AAUITools::setIconButtonImages (leftArrowButton, BinaryData::leftChevronArrow_svg, BinaryData::leftChevronArrow_svgSize, VCColors::popupIconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
-        AAUITools::setIconButtonImages (rightArrowButton, BinaryData::rightChevronArrow_svg, BinaryData::rightChevronArrow_svgSize, VCColors::popupIconSVG, VCColors::iconNormal, VCColors::iconOver, VCColors::iconActive);
+        AAUITools::setIconButtonImages (leftArrowButton, BinaryData::leftChevronArrow_svg, BinaryData::leftChevronArrow_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
+        AAUITools::setIconButtonImages (rightArrowButton, BinaryData::rightChevronArrow_svg, BinaryData::rightChevronArrow_svgSize, VCColors::almostWhiteText, VCColors::iconOver, VCColors::iconActive, VCColors::iconActiveOver);
         leftArrowButton.onClick = [this] { presetManager.loadAdjacentPreset (-1); };
         rightArrowButton.onClick = [this] { presetManager.loadAdjacentPreset (1); };
         addAndMakeVisible (leftArrowButton);
@@ -65,7 +62,7 @@ public:
         const auto nameButtonBounds = boundsF.reduced (boundsFHeight, 0.0f);
         nameButton.setBounds (nameButtonBounds.toNearestInt());
 
-        const auto arrowSize = boundsFHeight * 0.6f;
+        const auto arrowSize = boundsFHeight * 0.35f;
         leftArrowButton.setBounds (boundsF.withRight (nameButtonBounds.getX()).withSizeKeepingCentre (arrowSize, arrowSize).toNearestInt());
         rightArrowButton.setBounds (boundsF.withLeft (nameButtonBounds.getRight()).withSizeKeepingCentre (arrowSize, arrowSize).toNearestInt());
     }
@@ -75,7 +72,7 @@ public:
         nameButton.setButtonText (presetName);
     }
 
-    std::function<void()> onNameClicked;
+    juce::TextButton& getNameButton() { return nameButton; }
 
 private:
     PresetManager& presetManager;

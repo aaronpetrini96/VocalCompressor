@@ -1,43 +1,43 @@
 #pragma once
-#include <JuceHeader.h>
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <array>
+#include "../Utilities/AADspTools.h"
 
 class FET1176Compressor
 {
 public:
-    void prepare(double newSampleRate, int samplesPerBlock);
+    void prepare(double newSampleRate);
     void reset();
-    
-    float getInputGainDB(float);
-    float getOutputGainDB(float);
-    void setParameters(float inputGain, float outputGain, float attack, float release, float ratio, float mix);
+
+    // Input, output, attack and release are expected normalised 0-1
+    void setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
-    float revASaturation(float x, float drive);
-    
-    float grEnv = 0.0f;
-    float grAttackCoeff = 0.0f;
-    float grReleaseCoeff = 0.0f;
+    float getGainReductionDb() const {return peakGainReductionDb;}
 
-    float getGainReductionDB() const {return grEnv;}
-
-    
-    private:
+private:
+//    Set in prepare
     float sampleRate = 44100.f;
-    
-//    Params
+    float controlAttackCoeff = 0.0f;
+    float controlReleaseCoeff = 0.0f;
+
+//    Set in setParameters
     float inputGain = 1.f;
-    float inGainNorm = 0.f;
     float outputGain = 1.f;
-    float outGainNorm = 0.f;
     float attackCoeff = 0.f;
     float releaseCoeff = 0.f;
     float ratio = 4.f;
     float mix = 1.f;
-//    float gainReduction = 0.f;
-    
-//    Enveloper Follower
+
+//    State (changes while processing)
     float env = 0.f;
-    
+//    Control Envelope (drives ALL-mode threshold and attack speed-up)
+    float controlEnvDb = 0.0f;
+    float gainReductionDb = 0.0f;
+    float peakGainReductionDb = 0.0f;
+    AADspTools::AsymmetricSoftClipper asymClipper;
+    std::array<AADspTools::DCBlocker, 2> dcBlockers;
+
 //    Helper Funcs
-    inline float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
-    inline float gainToDB(float g) {return 20.f * std::log10(g);}
+    static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
+    static float knobToTimeMs (float normValue, float slowestMs, float fastestMs);
 };

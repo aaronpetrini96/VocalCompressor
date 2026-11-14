@@ -1,46 +1,53 @@
 #include "1176Compressor.h"
+#include "../Utilities/AADspTools.h"
 
-void FET1176Compressor::prepare(double newSampleRate, int samplesPerBlock)
+void FET1176Compressor::prepare(double newSampleRate)
 {
     sampleRate = static_cast<float>(newSampleRate);
     reset();
-    
-    // 1176-style fast meter ballistics
-    grAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
-    grReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+    // control envelope ballistics
+    controlAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
+    controlReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.prepare(newSampleRate);
 }
 void FET1176Compressor::reset()
 {
     env = 0.f;
-    grEnv = 0.f;
+    controlEnvDb = 0.f;
+    gainReductionDb = 0.f;
+    peakGainReductionDb = 0.f;
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.reset();
 }
 
-
-float FET1176Compressor::getInputGainDB(float normValue)
+float FET1176Compressor::taperedKnobToDB (float normValue, float minDB, float maxDB, float taper)
 {
-    // reverse mapping: at 0 → -inf (or -40dB floor), at 1 → +24dB
-    inGainNorm = normValue;
-    if (normValue < 0.01f)
-        return -40.0f;
-    return juce::jmap(normValue, 0.0f, 1.0f, -20.0f, 24.0f);
-}
-float FET1176Compressor::getOutputGainDB(float normValue)
-{
-    outGainNorm = normValue;
-    // more linear, from -20 to +20 dB
-    return juce::jmap(normValue, 0.0f, 1.0f, -60.0f, 20.0f);
+    const auto curvedPosition = 1.f - std::pow (1.f - normValue, taper);
+    return juce::jmap (curvedPosition, minDB, maxDB);
 }
 
-void FET1176Compressor::setParameters(float inDB, float outDB, float attackTime, float releaseTime, float newRatio, float newMix)
+float FET1176Compressor::knobToTimeMs (float normValue, float slowestMs, float fastestMs)
 {
-    inputGain = dBToGain(inDB);
-    outputGain = dBToGain(outDB);
+    return slowestMs * std::pow (fastestMs / slowestMs, normValue);
+}
+
+void FET1176Compressor::setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float newRatio, float newMix)
+{
+    for ([[maybe_unused]] const auto normValue : {inputNormValue, outputNormValue, attackNormValue, releaseNormValue})
+        jassert (juce::isPositiveAndNotGreaterThan (normValue, 1.f));
+
+    inputGain = AADspTools::dBToGain(taperedKnobToDB (inputNormValue, -22.f, 32.f, 1.6f));
+    outputGain = AADspTools::dBToGain(taperedKnobToDB (outputNormValue, -84.f, 16.f, 2.4f));
     ratio = newRatio;
     mix = newMix;
-    
+
+    const auto attackMs = knobToTimeMs (attackNormValue, 0.8f, 0.02f);
+    const auto releaseMs = knobToTimeMs (releaseNormValue, 1100.f, 50.f);
 //  coeff a =e^(−1/(T⋅fs​))
-    attackCoeff = std::exp(-1.f / (attackTime * 0.001f * sampleRate));
-    releaseCoeff = std::exp(-1.f / (releaseTime * 0.001f  * sampleRate));
+    attackCoeff = std::exp(-1.f / (attackMs * 0.001f * sampleRate));
+    releaseCoeff = std::exp(-1.f / (releaseMs * 0.001f  * sampleRate));
 }
 
 void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
@@ -48,13 +55,26 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     const bool allButtonsIn = ratio > 20.f;
-    
+
+    jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+    peakGainReductionDb = 0.f;
+
+    float satDrive = 0.9f;
+    if (allButtonsIn)
+        satDrive = 1.6f;
+    else if (ratio > 8.0f)
+        satDrive = 1.25f;
+    else if (ratio > 4.0f)
+        satDrive = 1.1f;
+    asymClipper.setParameters(2.2f, 3.0f, 0.11f, satDrive);
+    auto* const* channels = buffer.getArrayOfWritePointers();
+
     for (int n = 0; n < numSamples; ++n)
     {
         float detector = 0.f;
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            float x = buffer.getSample(ch, n) * inputGain;
+            float x = channels[ch][n] * inputGain;
             detector += std::abs(x);
         }
         detector /= static_cast<float>(numChannels);
@@ -64,8 +84,9 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         
         if (allButtonsIn)
         {
-            float speedUp = juce::jmap(grEnv, 0.f, 20.f, 1.f, 0.35f);
-            attack = std::pow(attackCoeff, speedUp);
+            const auto speedUpAmountDb = juce::jlimit(0.f, 20.f, controlEnvDb);
+            const auto attackSpeedUp = juce::jmap(speedUpAmountDb, 0.f, 20.f, 1.f, 2.86f);
+            attack = std::pow(attackCoeff, attackSpeedUp);
         }
         
         if (detector > env)
@@ -74,12 +95,12 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         //dB Level
-        float levelDb = gainToDB(env);
+        float levelDb = AADspTools::gainToDB(env);
         
         //Threshold
-        float effectiveThreshold = -24.f;
+        float effectiveThreshold = -12.f;
         if (allButtonsIn)
-            effectiveThreshold -= grEnv * 0.25f;
+            effectiveThreshold -= controlEnvDb * 0.25f;
         
         float gainDb = 0.f;
         
@@ -96,41 +117,26 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
                 gainDb = -over * (1.f - (1.f / dynamicRatio));
             }
         }
-        
-        float gain = dBToGain(gainDb);
-        
-        //GR meter
-        float gainReductionDb = -gainDb;
-        
-        if (gainReductionDb > grEnv)
-            grEnv = grAttackCoeff * grEnv + (1.f - grAttackCoeff) * gainReductionDb;
+
+        gainReductionDb = -gainDb;
+        peakGainReductionDb = std::max (peakGainReductionDb, gainReductionDb);
+        if (gainReductionDb > controlEnvDb)
+            controlEnvDb = controlAttackCoeff * controlEnvDb + (1.f - controlAttackCoeff) * gainReductionDb;
         else
-            grEnv = grReleaseCoeff * grEnv + (1.f - grReleaseCoeff) * gainReductionDb;
-        
-        
+            controlEnvDb = controlReleaseCoeff * controlEnvDb + (1.f - controlReleaseCoeff) * gainReductionDb;
+
+        const float gain = AADspTools::dBToGain(gainDb);
+
         for (int ch = 0; ch < numChannels; ++ch)
         {
-            const float dry = buffer.getSample(ch, n);
+            const float dry = channels[ch][n];
             float x = dry * inputGain;
             float y = x * gain;
-            
-            float satDrive = 1.0f + grEnv * 0.06f;
-            if (allButtonsIn)
-                satDrive *= 1.4f;
-            
-            y = revASaturation(y, satDrive);
-            
+            y = asymClipper.process(y);
+            y = dcBlockers[static_cast<size_t>(ch)].process(y);
             y *= outputGain;
             y = dry * (1.f - mix) + y * mix;
-            buffer.setSample(ch, n, y);
+            channels[ch][n] = y;
         }
     }
 }
-
-float FET1176Compressor::revASaturation(float x, float drive)
-{
-    float k = juce::jlimit(1.0f, 6.0f, drive);
-    float y = std::tanh(k * x) / std::tanh(k);
-    return y;
-}
-

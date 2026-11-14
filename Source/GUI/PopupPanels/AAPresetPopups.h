@@ -13,8 +13,6 @@
 class AAPresetPopup : public juce::Component
 {
 public:
-    enum class Action { save, rename, remove };
-
     AAPresetPopup()
     {
         setAlwaysOnTop (true);
@@ -22,33 +20,32 @@ public:
 
         nameEditor.setJustification (juce::Justification::centred);
         nameEditor.setIndents(0, 0);
-        nameEditor.setInputRestrictions (VCLook::presetNameMaxLength);
+        nameEditor.setInputRestrictions (maxNameLength);
         nameEditor.setEscapeAndReturnKeysConsumed (false);
         setWantsKeyboardFocus (true);
         nameEditor.onTextChange = [this]
         {
-            confirmButton.setEnabled (juce::File::createLegalFileName (nameEditor.getText().trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (nameEditor.getText())));
+            updateConfirmEnabled (nameEditor.getText());
             isConfirmingOverwrite = false;
-            confirmButton.setButtonText (getConfirmText());
+            confirmButton.setButtonText ("Save");
         };
         addChildComponent (nameEditor);
 
         messageLabel.setJustificationType (juce::Justification::centred);
-        messageLabel.setColour (juce::Label::textColourId, VCColors::popupText);
+        messageLabel.setColour (juce::Label::textColourId, VCColors::popupLabelText);
         messageLabel.setInterceptsMouseClicks (false, false);
         addChildComponent (messageLabel);
 
         nameLabel.setJustificationType (juce::Justification::centred);
-        nameLabel.setColour (juce::Label::textColourId, VCColors::displayText);
+        nameLabel.setColour (juce::Label::textColourId, VCColors::popupLabelText);
         nameLabel.setInterceptsMouseClicks (false, false);
         addChildComponent (nameLabel);
 
         confirmButton.onClick = [this]
         {
-            const auto isRemove = action == Action::remove;
-            const auto presetName = isRemove ? preparedPresetName : nameEditor.getText();
+            const auto presetName = nameEditor.getText();
 
-            if (! isRemove && ! isConfirmingOverwrite && presetExists != nullptr && presetExists (presetName))
+            if (! isConfirmingOverwrite && presetExists != nullptr && presetExists (presetName))
             {
                 isConfirmingOverwrite = true;
                 confirmButton.setButtonText ("Overwrite");
@@ -61,7 +58,7 @@ public:
             }
 
             if (onConfirm != nullptr)
-                onConfirm (action, presetName);
+                onConfirm (presetName);
         };
         cancelButton.onClick = [this] { setVisible (false); };
 
@@ -84,13 +81,13 @@ public:
         juce::Path titleShape;
         titleShape.addRoundedRectangle (titleBounds.getX(), titleBounds.getY(), titleBounds.getWidth(), titleBounds.getHeight(), cornerSize, cornerSize,
                                         true, true, false, false);
-        g.setColour (VCColors::presetBoxBackground);
+        g.setColour (VCColors::popupRowHighlight);
         g.fillPath (titleShape);
 
         g.setColour (VCColors::popupOutline);
         g.fillRect (titleBounds.withTop (titleBounds.getBottom() - outlineThickness * 0.5f));
 
-        g.setColour (VCColors::popupText.withBrightness (2.f));
+        g.setColour (VCColors::popupTitleText);
         g.setFont (VCFonts::barlowCondensedSemiBold (titleBounds.getHeight() * VCLook::fontHeightPOH));
         g.drawText (title, titleBounds, juce::Justification::centred, true);
     }
@@ -100,20 +97,20 @@ public:
         const auto boundsF = getLocalBounds().toFloat();
         const auto boundsFWidth = boundsF.getWidth();
         const auto boundsFHeight = boundsF.getHeight();
-        const auto lineHeight = boundsFHeight * 0.18f;
+        const auto lineHeight = boundsFHeight / numRows;
         const auto fontHeight = lineHeight * VCLook::fontHeightPOH;
         titleBounds = boundsF.withHeight (boundsFHeight / numRows * VCLook::popupTitleRowRatio);
 
         const auto nameEditorWidth = boundsFWidth * 0.85f;
         const auto nameEditorHeight = boundsFHeight * 0.2f;
         const auto nameEditorBounds = boundsF.withSizeKeepingCentre (nameEditorWidth, nameEditorHeight);
-        nameEditor.applyFontToAllText (VCFonts::barlowCondensedMedium (fontHeight));
+        nameEditor.applyFontToAllText (VCFonts::barlowCondensedRegular (fontHeight));
         nameEditor.setBounds (nameEditorBounds.toNearestInt());
 
-        nameLabel.setFont (VCFonts::barlowCondensedMedium (fontHeight));
+        nameLabel.setFont (VCFonts::barlowCondensedRegular (fontHeight));
         nameLabel.setBounds (nameEditorBounds.withBottomY (nameEditorBounds.getY()).toNearestInt());
 
-        messageLabel.setFont (VCFonts::barlowCondensedMedium (fontHeight));
+        messageLabel.setFont (VCFonts::barlowCondensedRegular (fontHeight));
         messageLabel.setBounds (nameEditorBounds.toNearestInt());
 
         const auto buttonWidth = boundsFWidth * 0.35f;
@@ -139,54 +136,41 @@ public:
         return false;
     }
 
-    void prepare (const Action newAction, const juce::String& presetName)
+    void prepare (const juce::String& presetName)
     {
-        action = newAction;
-        preparedPresetName = presetName;
         isConfirmingOverwrite = false;
-        confirmButton.setButtonText (getConfirmText());
-
-        const auto isRemove = action == Action::remove;
-        title = isRemove ? "DELETE PRESET" : action == Action::save ? "SAVE PRESET" : "RENAME PRESET";
-        repaint();
-        nameEditor.setVisible (! isRemove);
-        messageLabel.setVisible (isRemove);
-        nameLabel.setVisible (! isRemove);
-
-        if (isRemove)
-        {
-            messageLabel.setText ("Delete \"" + presetName + "\"?", juce::dontSendNotification);
-            confirmButton.setEnabled (true);
-            grabKeyboardFocus();
-            return;
-        }
+        confirmButton.setButtonText ("Save");
+        nameEditor.setVisible (true);
+        nameLabel.setVisible (true);
+        messageLabel.setVisible (false);
 
         nameEditor.setText (presetName, juce::dontSendNotification);
-        confirmButton.setEnabled (juce::File::createLegalFileName (presetName.trim()).isNotEmpty() && ! (isNameReserved != nullptr && isNameReserved (presetName)));
+        updateConfirmEnabled (presetName);
         nameEditor.grabKeyboardFocus();
         nameEditor.selectAll();
     }
 
-    std::function<void (Action action, const juce::String& presetName)> onConfirm;
+    std::function<void (const juce::String& presetName)> onConfirm;
     std::function<bool (const juce::String& presetName)> presetExists;
     std::function<bool (const juce::String& presetName)> isNameReserved;
     float numRows {6.f};
 
 private:
-    juce::String getConfirmText() const
+    void updateConfirmEnabled (const juce::String& presetName)
     {
-        return action == Action::save ? "Save" : action == Action::rename ? "Rename" : "Delete";
+        const auto isLegalName = juce::File::createLegalFileName (presetName.trim()).isNotEmpty();
+        const auto isReserved = isNameReserved != nullptr && isNameReserved (presetName);
+        confirmButton.setEnabled (isLegalName && ! isReserved);
     }
 
-    Action action {Action::save};
     PresetPopupLAF presetPopupLAF;
-    juce::String title;
+    const juce::String title {"SAVE PRESET"};
+    static constexpr int maxNameLength {35};
     juce::Rectangle<float> titleBounds;
     juce::Label messageLabel {"messageLabel", ""};
     juce::Label nameLabel {"nameLabel", "New preset name"};
     juce::TextEditor nameEditor;
     juce::TextButton confirmButton, cancelButton {"Cancel"};
-    juce::String preparedPresetName;
     bool isConfirmingOverwrite {false};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AAPresetPopup)

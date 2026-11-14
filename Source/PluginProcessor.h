@@ -1,33 +1,29 @@
 #pragma once
 
-#include <JuceHeader.h>
+#include <juce_audio_processors/juce_audio_processors.h>
 #include <vector>
+
 #include "Utilities/ParamNames.h"
+#include "Utilities/AADspTools.h"
 #include "Utilities/PresetManager.h"
+#include "Utilities/AAUndoManager.h"
 #include "DSP/1176Compressor.h"
 #include "DSP/LA2ACompressor.h"
 
-//==============================================================================
-/**
-*/
 class VocalCompressorAudioProcessor  : public juce::AudioProcessor
 {
     public:
     //==============================================================================
     VocalCompressorAudioProcessor();
-    ~VocalCompressorAudioProcessor() override;
-    
+
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
     
-#ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
-#endif
-    
+
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-    void processBlock1176(juce::AudioBuffer<float>&);
-    void processBlockLA2A(juce::AudioBuffer<float>&);
+    juce::AudioProcessorParameter* getBypassParameter() const override;
     
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
@@ -57,19 +53,24 @@ class VocalCompressorAudioProcessor  : public juce::AudioProcessor
     juce::AudioProcessorValueTreeState apvts {*this, nullptr, "Parameters", createParameterLayout()};
 
     //======================= PRESETS =======================
-    juce::UndoManager undoManager;
+    AAUndoManager undoManager;
     PresetManager presetManager {apvts, undoManager};
 
-
-    
-    
-    float gR1176{0.f}, grLA2A {0.f};
-    bool allButtonsIn {false};
+    std::atomic<float> gr1176 {0.f}, grLA2A {0.f};
     
 private:
-    
     FET1176Compressor fet1176;
     LA2ACompressor la2aComp;
+
+    AADspTools::SmoothedBypass bypass1176, bypassLA2A, pluginBypass;
+
+    bool isOrderReversed {false};
+    FET1176Compressor fet1176Next;
+    LA2ACompressor la2aNext;
+    juce::AudioBuffer<float> orderFadeBuffer;
+    int orderFadeLength {1};
+    int orderFadeSamplesLeft {0};
+    AADspTools::Oversampler2x oversampler;
 
     juce::AudioParameterFloat* input1176Param {nullptr};
     juce::AudioParameterFloat* output1176Param {nullptr};
@@ -78,10 +79,13 @@ private:
     juce::AudioParameterFloat* mix1176Param {nullptr};
     juce::AudioParameterChoice* ratio1176Param {nullptr};
     juce::AudioParameterBool* bypass1176Param {nullptr};
+
     juce::AudioParameterFloat* gainLA2AParam {nullptr};
     juce::AudioParameterFloat* peakReductionLA2AParam {nullptr};
     juce::AudioParameterBool* modeLA2AParam {nullptr};
+    juce::AudioParameterFloat* mixLA2AParam {nullptr};
     juce::AudioParameterBool* bypassLA2AParam {nullptr};
+
     juce::AudioParameterBool* pluginBypassParam {nullptr};
     juce::AudioParameterBool* reverseSignalOrderParam {nullptr};
 
@@ -92,36 +96,26 @@ private:
     release1176ParamSmoother,
     mix1176ParamSmoother,
     gainLA2AParamSmoother,
-    peakReductionLA2AParamSmoother;
+    peakReductionLA2AParamSmoother,
+    mixLA2AParamSmoother;
 
     std::vector<std::pair<juce::AudioParameterFloat*, juce::SmoothedValue<float>*>> smootherBindings;
-    
-    
-    
-    
-    
+
 //  ======== PARAMETERS FUNCTIONS ========
-    template<typename ParamType, typename Params, typename Funcs>
-    void initCachedParams(Params paramsArray, Funcs funcsArray)
+    // === ParamGetter ===
+    template <typename ParamType>
+    ParamType* getParam(const juce::String& paramID)
     {
-        for (size_t i = 0 ; i < paramsArray.size(); ++i)
-        {
-            auto ptrToParamPtr = paramsArray[i];
-            auto* found = dynamic_cast<ParamType>(apvts.getParameter(funcsArray[i]()));
-            if (! found)
-            {
-                DBG("initCachedParams: failed to find param ID '" << funcsArray[i]() << "'");
-                jassertfalse; // debug-only
-                *ptrToParamPtr = nullptr;
-            }
-            else
-            {
-                *ptrToParamPtr = found;
-            }
-        }
+        auto* param = dynamic_cast<ParamType*>(apvts.getParameter(paramID));
+        jassert(param != nullptr);
+        return param;
     }
 
     void linkParameters();
+    void processBlock1176(juce::AudioBuffer<float>&, FET1176Compressor&);
+    void processBlockLA2A(juce::AudioBuffer<float>&, LA2ACompressor&);
+    void processChain(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor1176, LA2ACompressor& compressorLA2A, bool isReversed);
+    void processOrderCrossfade(juce::AudioBuffer<float>& buffer);
 
     enum class SmootherUpdateMode
     {

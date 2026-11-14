@@ -3,18 +3,19 @@
 //
 
 #pragma once
+#include <numbers>
 #include <juce_audio_processors/juce_audio_processors.h>
 
 class RotaryImageKnob : public juce::Slider
 {
 public:
     RotaryImageKnob(juce::RangedAudioParameter& parameter, const juce::Image& knobImageToUse, const juce::Image& rotorImageToUse = {})
-    : knobImage(knobImageToUse),
-      rotorImage(rotorImageToUse),
-      attachment(parameter, *this)
+    : knobImage(knobImageToUse), rotorImage(rotorImageToUse), attachment(parameter, *this)
     {
+        jassert (knobImage.isValid());
+
+        constexpr auto pi = std::numbers::pi_v<float>;
         setSliderStyle(juce::Slider::RotaryVerticalDrag);
-        setMouseDragSensitivity(300);
         setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
         setRotaryParameters(1.25f * pi, 2.75f * pi, true);
         setDoubleClickReturnValue(true, parameter.convertFrom0to1(parameter.getDefaultValue()));
@@ -42,11 +43,12 @@ public:
         g.drawImage(hasRotor ? rotorImage : knobImage, knobBounds, juce::RectanglePlacement::centred);
     }
 
+
 private:
-    const float pi = juce::MathConstants<float>::pi;
     juce::Image knobImage;
     juce::Image rotorImage;
     juce::SliderParameterAttachment attachment;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RotaryImageKnob)
 };

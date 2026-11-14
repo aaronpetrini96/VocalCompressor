@@ -11,17 +11,18 @@ namespace AAUITools
     }
 
     inline void setIconButtonImages (juce::DrawableButton& button, const void* iconData, const int iconDataSize,
-                                     const juce::Colour iconColour, const juce::Colour normalColour, const juce::Colour overColour, const juce::Colour activeColour)
+                                     const juce::Colour iconColour, const juce::Colour overColour, const juce::Colour activeColour, const juce::Colour activeOverColour)
     {
-        if (const auto icon = juce::Drawable::createFromImageData (iconData, (size_t) iconDataSize))
+        if (const auto iconNormal = juce::Drawable::createFromImageData (iconData,  static_cast<size_t>(iconDataSize)))
         {
-            const auto iconNormal = icon->createCopy();
-            const auto iconOver = icon->createCopy();
-            const auto iconActive = icon->createCopy();
-            iconNormal->replaceColour (iconColour, normalColour);
+            const auto iconOver = iconNormal->createCopy();
+            const auto iconActive = iconNormal->createCopy();
+            const auto iconActiveOver = iconNormal->createCopy();
             iconOver->replaceColour (iconColour, overColour);
             iconActive->replaceColour (iconColour, activeColour);
-            button.setImages (iconNormal.get(), iconOver.get(), iconActive.get(), nullptr, iconActive.get());
+            iconActiveOver->replaceColour (iconColour, activeOverColour);
+            button.setImages (iconNormal.get(), iconOver.get(), iconActive.get(), nullptr, iconActive.get(), iconActiveOver.get());
+            button.setEdgeIndent (0);
             button.setColour(juce::DrawableButton::ColourIds::backgroundColourId, juce::Colours::transparentBlack);
             button.setColour(juce::DrawableButton::ColourIds::backgroundOnColourId, juce::Colours::transparentBlack);
         }
@@ -35,13 +36,36 @@ namespace AAUITools
         g.drawRoundedRectangle (bounds.reduced (outlineThickness * 0.5f), cornerSize, outlineThickness);
     }
 
-    inline void drawKnobScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
-                               const int numberOfDots, const float dotSize, const float labelGap, const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour)
+    inline juce::Array<juce::Rectangle<float>> getKnobScaleLabelBounds (const juce::Slider& knob, const float knobInset, const float dotSize, const float labelGap,
+                                                                        const juce::StringArray& labels, const juce::Font& font)
     {
+        const auto knobBounds = knob.getBounds().toFloat().reduced (knobInset);
+        const auto startAngle = knob.getRotaryParameters().startAngleRadians;
+        const auto endAngle = knob.getRotaryParameters().endAngleRadians;
         const auto centre = knobBounds.getCentre();
         const auto fontHeight = font.getHeight();
         const auto dotRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + dotSize * 1.5f;
         const auto labelRadius = dotRadius + dotSize * 0.5f + labelGap + fontHeight * 0.5f;
+
+        juce::Array<juce::Rectangle<float>> labelBounds;
+        for (int labelIndex = 0; labelIndex < labels.size(); ++labelIndex)
+        {
+            const auto angle = juce::jmap (static_cast<float> (labelIndex), 0.0f, static_cast<float> (labels.size() - 1), startAngle, endAngle);
+            const auto textWidth = juce::GlyphArrangement::getStringWidth (font, labels[labelIndex]);
+            labelBounds.add (juce::Rectangle<float> (textWidth, fontHeight).withCentre (centre.getPointOnCircumference (labelRadius, angle)));
+        }
+        return labelBounds;
+    }
+
+    inline void drawKnobScale (juce::Graphics& g, const juce::Slider& knob, const float knobInset,
+                               const int numberOfDots, const float dotSize, const float labelGap,
+                               const juce::StringArray& labels, const juce::Font& font, const juce::Colour colour = juce::Colours::white)
+    {
+        const auto knobBounds = knob.getBounds().toFloat().reduced (knobInset);
+        const auto startAngle = knob.getRotaryParameters().startAngleRadians;
+        const auto endAngle = knob.getRotaryParameters().endAngleRadians;
+        const auto centre = knobBounds.getCentre();
+        const auto dotRadius = juce::jmin (knobBounds.getWidth(), knobBounds.getHeight()) * 0.5f + dotSize * 1.5f;
 
         g.setColour (colour);
         g.setFont (font);
@@ -52,12 +76,9 @@ namespace AAUITools
             g.fillEllipse (juce::Rectangle<float> (dotSize, dotSize).withCentre (centre.getPointOnCircumference (dotRadius, angle)));
         }
 
+        const auto labelBounds = getKnobScaleLabelBounds (knob, knobInset, dotSize, labelGap, labels, font);
         for (int labelIndex = 0; labelIndex < labels.size(); ++labelIndex)
-        {
-            const auto angle = juce::jmap (static_cast<float> (labelIndex), 0.0f, static_cast<float> (labels.size() - 1), startAngle, endAngle);
-            const auto labelBounds = juce::Rectangle<float> (fontHeight * 2.0f, fontHeight).withCentre (centre.getPointOnCircumference (labelRadius, angle));
-            g.drawText (labels[labelIndex], labelBounds, juce::Justification::centred, false);
-        }
+            g.drawText (labels[labelIndex], labelBounds[labelIndex], juce::Justification::centred, false);
     }
 
     inline void drawKnobArcScale (juce::Graphics& g, const juce::Rectangle<float> knobBounds, const float startAngle, const float endAngle,
