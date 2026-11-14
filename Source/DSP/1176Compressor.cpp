@@ -8,12 +8,17 @@ void FET1176Compressor::prepare(double newSampleRate)
     // control envelope ballistics
     controlAttackCoeff  = std::exp(-1.f / (0.015f * sampleRate)); // ~15 ms
     controlReleaseCoeff = std::exp(-1.f / (0.20f  * sampleRate)); // ~200 ms
+
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.prepare(newSampleRate);
 }
 void FET1176Compressor::reset()
 {
     env = 0.f;
     controlEnvDb = 0.f;
     gainReductionDb = 0.f;
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.reset();
 }
 
 float FET1176Compressor::taperedKnobToDB (float normValue, float minDB, float maxDB, float taper)
@@ -49,6 +54,13 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
     const bool allButtonsIn = ratio > 20.f;
+
+    jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+
+    auto satDrive = 1.0f + controlEnvDb * 0.06f;
+    if (allButtonsIn)
+        satDrive *= 1.4f;
+    asymClipper.setParameters(0.5f / satDrive, 12.0f, 0.06f);
     
     for (int n = 0; n < numSamples; ++n)
     {
@@ -98,40 +110,25 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
                 gainDb = -over * (1.f - (1.f / dynamicRatio));
             }
         }
-        
-        float gain = AADspTools::dBToGain(gainDb);
-        
-        //Control envelope
-        gainReductionDb = -gainDb;
 
+        gainReductionDb = -gainDb;
         if (gainReductionDb > controlEnvDb)
             controlEnvDb = controlAttackCoeff * controlEnvDb + (1.f - controlAttackCoeff) * gainReductionDb;
         else
             controlEnvDb = controlReleaseCoeff * controlEnvDb + (1.f - controlReleaseCoeff) * gainReductionDb;
 
-        float satDrive = 1.0f + controlEnvDb * 0.06f;
-        if (allButtonsIn)
-            satDrive *= 1.4f;
+        const float gain = AADspTools::dBToGain(gainDb);
 
         for (int ch = 0; ch < numChannels; ++ch)
         {
             const float dry = buffer.getSample(ch, n);
             float x = dry * inputGain;
             float y = x * gain;
-
-            y = revASaturation(y, satDrive);
-            
+            y = asymClipper.process(y);
+            y = dcBlockers[static_cast<size_t>(ch)].process(y);
             y *= outputGain;
             y = dry * (1.f - mix) + y * mix;
             buffer.setSample(ch, n, y);
         }
     }
 }
-
-float FET1176Compressor::revASaturation(float x, float drive)
-{
-    float k = juce::jlimit(1.0f, 6.0f, drive);
-    float y = std::tanh(k * x) / k;
-    return y;
-}
-

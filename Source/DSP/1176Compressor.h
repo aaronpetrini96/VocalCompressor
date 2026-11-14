@@ -1,5 +1,7 @@
 #pragma once
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <array>
+#include "../Utilities/AADspTools.h"
 
 class FET1176Compressor
 {
@@ -13,27 +15,28 @@ public:
     float getGainReductionDB() const {return gainReductionDb;}
 
 private:
+//    Set in prepare
     float sampleRate = 44100.f;
-
-//    Control Envelope (drives ALL-mode threshold, attack speed-up and saturation drive)
-    float controlEnvDb = 0.0f;
     float controlAttackCoeff = 0.0f;
     float controlReleaseCoeff = 0.0f;
-    float gainReductionDb = 0.0f;
 
-//    Params
+//    Set in setParameters
     float inputGain = 1.f;
     float outputGain = 1.f;
     float attackCoeff = 0.f;
     float releaseCoeff = 0.f;
     float ratio = 4.f;
     float mix = 1.f;
-    
-//    Envelope Follower
+
+//    State (changes while processing)
     float env = 0.f;
-    
+//    Control Envelope (drives ALL-mode threshold, attack speed-up and saturation drive)
+    float controlEnvDb = 0.0f;
+    float gainReductionDb = 0.0f;
+    AADspTools::AsymmetricSoftClipper asymClipper;
+    std::array<AADspTools::DCBlocker, 2> dcBlockers;
+
 //    Helper Funcs
-    float revASaturation(float x, float drive);
     static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
     static float knobToTimeMs (float normValue, float slowestMs, float fastestMs);
 };
