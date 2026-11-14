@@ -84,3 +84,4 @@ DerivedData/
 *.swp
 *~
 .idea
+build-ninja-mac
