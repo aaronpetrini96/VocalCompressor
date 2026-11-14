@@ -7,6 +7,9 @@ void LA2ACompressor::prepare(double newSampleRate)
     attackCoeff  = std::exp(-1.0f / (0.01f * sampleRate));
     relFastCoeff = std::exp(-1.0f / (0.06f * sampleRate));
     relSlowCoeff = std::exp(-1.0f / (2.0f  * sampleRate));
+    asymClipper.setParameters(0.8f, 3.0f, 0.02f);
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.prepare(newSampleRate);
     reset();
 }
 
@@ -14,6 +17,8 @@ void LA2ACompressor::reset()
 {
     env = 0.f;
     gainReduction = 0.f;
+    for (auto& dcBlocker : dcBlockers)
+        dcBlocker.reset();
 }
 
 void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
@@ -30,7 +35,9 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
 {
     const int numChannels = buffer.getNumChannels();
     const int numSamples = buffer.getNumSamples();
-    
+
+    jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+
     for (int n = 0; n < numSamples; ++n)
     {
         //Level detection
@@ -69,17 +76,12 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
         {
             const float dry = buffer.getSample(ch, n);
             float y = dry * gain;
-            y = tubeSaturation(y, 0.4f);
+            y = asymClipper.process(y);
+            y = dcBlockers[static_cast<size_t>(ch)].process(y);
             y *= outputGain;
             buffer.setSample(ch, n, dry * (1.f - mix) + y * mix);
         }
         
         gainReduction = -gainDB;
     }
-}
-
-float LA2ACompressor::tubeSaturation(float x, float drive)
-{
-    float k = juce::jmap(drive, 0.0f, 1.0f, 1.0f, 2.5f);
-    return std::tanh(k * x) / k;
 }

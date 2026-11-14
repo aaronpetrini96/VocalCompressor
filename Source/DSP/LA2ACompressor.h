@@ -1,6 +1,8 @@
 #pragma once
 
 #include <juce_audio_basics/juce_audio_basics.h>
+#include <array>
+#include "../Utilities/AADspTools.h"
 
 class LA2ACompressor
 {
@@ -15,8 +17,9 @@ public:
     
 private:
 //    SAT
-    float tubeSaturation(float x, float drive);
-    
+    AADspTools::AsymmetricSoftClipper asymClipper;
+    std::array<AADspTools::DCBlocker, 2> dcBlockers;
+
 //    params
     float attackCoeff  = 0.f;
     float relFastCoeff = 0.f;
