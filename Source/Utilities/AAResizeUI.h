@@ -28,9 +28,9 @@ public:
     float getCurrentScale() const { return currentScale; }
     void setCurrentScale (const float newScale) { currentScale = newScale; }
 
-    juce::Rectangle<int> getEditorSize (const juce::Rectangle<int> editorScreenBounds, const float extraHeightRatio) const
+    juce::Rectangle<int> getEditorSize (const juce::Rectangle<int> editorScreenBounds) const
     {
-        const auto defaultEditorHeight = (float) defaultHeight * (1.0f + extraHeightRatio);
+        const auto defaultEditorHeight = (float) defaultHeight;
         auto effectiveScale = currentScale;
 
         if (const auto* display = juce::Desktop::getInstance().getDisplays().getDisplayForRect (editorScreenBounds))

@@ -53,13 +53,6 @@ namespace VCFonts
             BinaryData::BarlowCondensedSemiBoldItalic_ttf, BinaryData::BarlowCondensedSemiBoldItalic_ttfSize);
         return AAUITools::makeFont(typeface, fontHeight);
     }
-
-    inline juce::Font barlowCondensedBold(const float fontHeight)
-    {
-        static const juce::Typeface::Ptr typeface = juce::Typeface::createSystemTypefaceFor(
-            BinaryData::BarlowCondensedBold_ttf, BinaryData::BarlowCondensedBold_ttfSize);
-        return AAUITools::makeFont(typeface, fontHeight);
-    }
 }
 
 namespace VCLook
@@ -69,12 +62,4 @@ namespace VCLook
     inline constexpr float fontHeightPOH {0.75f};
     inline constexpr float popupTitleRowRatio {1.05f};
     inline constexpr float rowPOH {0.045f};
-
-    inline void setupLabel(juce::Label& label, const juce::Colour& labelColour = juce::Colours::white, const juce::Justification justification = juce::Justification::centred)
-    {
-        label.setText(label.getName(), juce::dontSendNotification);
-        label.setColour(juce::Label::ColourIds::textColourId, labelColour);
-        label.setJustificationType(justification);
-        label.setMinimumHorizontalScale(1.0f);
-    }
 }

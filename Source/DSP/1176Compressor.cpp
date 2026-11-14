@@ -1,5 +1,4 @@
 #include "1176Compressor.h"
-#include "../Utilities/AADspTools.h"
 
 void FET1176Compressor::prepare(double newSampleRate)
 {

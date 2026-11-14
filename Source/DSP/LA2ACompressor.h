@@ -7,8 +7,6 @@
 class LA2ACompressor
 {
 public:
-    LA2ACompressor() = default;
-    
     void prepare(double sampleRate);
     void reset();
     void setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix);

@@ -166,7 +166,7 @@ void VocalCompressorAudioProcessorEditor::componentVisibilityChanged(juce::Compo
 
 void VocalCompressorAudioProcessorEditor::updateEditorSize()
 {
-    const auto editorSize = uiResize.getEditorSize(getScreenBounds(), 0.0f);
+    const auto editorSize = uiResize.getEditorSize(getScreenBounds());
     setSize(editorSize.getWidth(), editorSize.getHeight());
 }
 

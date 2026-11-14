@@ -1,5 +1,4 @@
 #include "LA2ACompressor.h"
-#include "../Utilities/AADspTools.h"
 
 void LA2ACompressor::prepare(double newSampleRate)
 {
