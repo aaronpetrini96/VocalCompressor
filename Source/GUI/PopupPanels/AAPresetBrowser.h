@@ -97,7 +97,7 @@ public:
             return;
         }
 
-        presetFiles = presetManager.getPresetFiles (selectedPresetType);
+        const auto presetFiles = presetManager.getPresetFiles (selectedPresetType);
         const auto currentPresetName = presetManager.getCurrentPresetName();
 
         rows.clear();
@@ -135,7 +135,6 @@ private:
     PresetBrowserLAF presetBrowserLAF;
     PresetManager& presetManager;
     PresetManager::PresetType selectedPresetType {PresetManager::PresetType::factory};
-    juce::Array<juce::File> presetFiles;
 
     juce::TextButton defaultTabButton {"Factory"}, userTabButton {"User"};
     juce::Component rowsHolder;
