@@ -11,14 +11,9 @@ public:
     void reset();
     void setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix);
     void process(juce::AudioBuffer<float>& buffer);
-    
     float getGainReduction() const {return gainReduction;}
     
-    
-    private:
-//    UTILITIES
-    float dBToGain(float dB) const { return std::pow(10.0f, dB / 20.0f); }
-    float gainToDB(float g) const { return 20.0f * std::log10(std::max(g, 1.0e-6f)); }
+private:
 //    SAT
     float tubeSaturation(float x, float drive);
     

@@ -1,4 +1,5 @@
 #include "1176Compressor.h"
+#include "../Utilities/AADspTools.h"
 
 void FET1176Compressor::prepare(double newSampleRate)
 {
@@ -31,8 +32,8 @@ void FET1176Compressor::setParameters(float inputNormValue, float outputNormValu
     for ([[maybe_unused]] const auto normValue : {inputNormValue, outputNormValue, attackNormValue, releaseNormValue})
         jassert (juce::isPositiveAndNotGreaterThan (normValue, 1.f));
 
-    inputGain = dBToGain(taperedKnobToDB (inputNormValue, -22.f, 32.f, 1.6f));
-    outputGain = dBToGain(taperedKnobToDB (outputNormValue, -84.f, 16.f, 2.4f));
+    inputGain = AADspTools::dBToGain(taperedKnobToDB (inputNormValue, -22.f, 32.f, 1.6f));
+    outputGain = AADspTools::dBToGain(taperedKnobToDB (outputNormValue, -84.f, 16.f, 2.4f));
     ratio = newRatio;
     mix = newMix;
 
@@ -75,7 +76,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         //dB Level
-        float levelDb = gainToDB(env);
+        float levelDb = AADspTools::gainToDB(env);
         
         //Threshold
         float effectiveThreshold = -12.f;
@@ -98,7 +99,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
             }
         }
         
-        float gain = dBToGain(gainDb);
+        float gain = AADspTools::dBToGain(gainDb);
         
         //Control envelope
         gainReductionDb = -gainDb;

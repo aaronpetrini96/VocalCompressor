@@ -11,9 +11,11 @@
 #include <numbers>
 #include <numeric>
 
-
 namespace AADspTools
 {
+    inline float dBToGain(const float dBValue) { return std::pow(10.0f, dBValue / 20.0f); }
+    inline float gainToDB(const float gainValue) { return 20.0f * std::log10(std::max(gainValue, 1.0e-6f)); }
+
     class SmoothedBypass
     {
     public:

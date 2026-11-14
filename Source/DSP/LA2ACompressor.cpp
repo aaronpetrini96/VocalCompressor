@@ -1,4 +1,5 @@
 #include "LA2ACompressor.h"
+#include "../Utilities/AADspTools.h"
 
 void LA2ACompressor::prepare(double newSampleRate)
 {
@@ -18,7 +19,7 @@ void LA2ACompressor::reset()
 void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
 {
     peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 48.f);
-    outputGain = dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
+    outputGain = AADspTools::dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
     
     isLimit = limitMode;
     ratio = isLimit ? 10.f : 5.f;
@@ -49,7 +50,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             env = releaseCoeff * env + (1.0f - releaseCoeff) * detector;
         
         // --- Gain Reduction ---
-        const auto envDB = gainToDB(env);
+        const auto envDB = AADspTools::gainToDB(env);
         const auto thresholdDb = -4.f - peakReduction;
         const auto over = envDB - thresholdDb;
         float gainDB = 0.0f;
@@ -61,7 +62,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             gainDB = -compAmount * (1.0f - 1.0f / ratio) * over;
         }
         
-        const float gain = dBToGain(gainDB);
+        const float gain = AADspTools::dBToGain(gainDB);
         
         // --- Apply Gain & Tube Character ---
         for (int ch = 0; ch < numChannels; ++ch)

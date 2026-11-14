@@ -10,11 +10,9 @@ public:
     // Input, output, attack and release are expected normalised 0-1
     void setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
-
     float getGainReductionDB() const {return gainReductionDb;}
 
-
-    private:
+private:
     float sampleRate = 44100.f;
 
 //    Control Envelope (drives ALL-mode threshold, attack speed-up and saturation drive)
@@ -36,8 +34,6 @@ public:
     
 //    Helper Funcs
     float revASaturation(float x, float drive);
-    float dBToGain(float dB) {return std::pow(10.0f, dB/20.0f);}
-    float gainToDB(float g) {return 20.f * std::log10(std::max(g, 1.0e-6f));}
     static float taperedKnobToDB (float normValue, float minDB, float maxDB, float taper);
     static float knobToTimeMs (float normValue, float slowestMs, float fastestMs);
 };
