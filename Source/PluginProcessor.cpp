@@ -1,36 +1,16 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 //==============================================================================
 VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
-#endif
+                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true))
 {
     linkParameters();
     undoManager.trackParameters(*this);
     PresetManager::installFactoryPresets();
     presetManager.setCurrentPresetName("Default");
-}
-
-
-VocalCompressorAudioProcessor::~VocalCompressorAudioProcessor()
-{
 }
 
 
@@ -91,29 +71,17 @@ const juce::String VocalCompressorAudioProcessor::getName() const
 
 bool VocalCompressorAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
     return false;
-   #endif
 }
 
 bool VocalCompressorAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
     return false;
-   #endif
 }
 
 bool VocalCompressorAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
     return false;
-   #endif
 }
 
 double VocalCompressorAudioProcessor::getTailLengthSeconds() const
@@ -123,8 +91,7 @@ double VocalCompressorAudioProcessor::getTailLengthSeconds() const
 
 int VocalCompressorAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+    return 1;
 }
 
 int VocalCompressorAudioProcessor::getCurrentProgram()
@@ -222,35 +189,16 @@ void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int sample
 
 void VocalCompressorAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
 bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
      && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
-    return true;
-  #endif
+    return layouts.getMainOutputChannelSet() == layouts.getMainInputChannelSet();
 }
-#endif
 
 void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor)
 {
@@ -419,7 +367,7 @@ juce::AudioProcessorParameter* VocalCompressorAudioProcessor::getBypassParameter
 //==============================================================================
 bool VocalCompressorAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* VocalCompressorAudioProcessor::createEditor()

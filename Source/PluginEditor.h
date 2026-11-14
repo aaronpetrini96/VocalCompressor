@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include "PluginProcessor.h"
@@ -17,14 +9,10 @@
 #include "GUI/PopupPanels/AAPresetPopups.h"
 #include "Utilities/AAUITools.h"
 
-//==============================================================================
-/**
-*/
 class VocalCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::ComponentListener
 {
 public:
     VocalCompressorAudioProcessorEditor (VocalCompressorAudioProcessor&);
-    ~VocalCompressorAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;

@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -73,10 +65,6 @@ VocalCompressorAudioProcessorEditor::VocalCompressorAudioProcessorEditor (VocalC
     addMouseListener(this, true);
     setResizable(false, false);
     updateEditorSize();
-}
-
-VocalCompressorAudioProcessorEditor::~VocalCompressorAudioProcessorEditor()
-{
 }
 
 //==============================================================================
