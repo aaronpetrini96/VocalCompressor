@@ -17,6 +17,7 @@ void FET1176Compressor::reset()
     env = 0.f;
     controlEnvDb = 0.f;
     gainReductionDb = 0.f;
+    peakGainReductionDb = 0.f;
     for (auto& dcBlocker : dcBlockers)
         dcBlocker.reset();
 }
@@ -56,6 +57,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
     const bool allButtonsIn = ratio > 20.f;
 
     jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+    peakGainReductionDb = 0.f;
 
     float satDrive = 0.9f;
     if (allButtonsIn)
@@ -117,6 +119,7 @@ void FET1176Compressor::process(juce::AudioBuffer<float>& buffer)
         }
 
         gainReductionDb = -gainDb;
+        peakGainReductionDb = std::max (peakGainReductionDb, gainReductionDb);
         if (gainReductionDb > controlEnvDb)
             controlEnvDb = controlAttackCoeff * controlEnvDb + (1.f - controlAttackCoeff) * gainReductionDb;
         else

@@ -12,7 +12,7 @@ public:
     // Input, output, attack and release are expected normalised 0-1
     void setParameters(float inputNormValue, float outputNormValue, float attackNormValue, float releaseNormValue, float ratio, float mix);
     void process(juce::AudioBuffer<float>& buffer);
-    float getGainReductionDb() const {return gainReductionDb;}
+    float getGainReductionDb() const {return peakGainReductionDb;}
 
 private:
 //    Set in prepare
@@ -33,6 +33,7 @@ private:
 //    Control Envelope (drives ALL-mode threshold and attack speed-up)
     float controlEnvDb = 0.0f;
     float gainReductionDb = 0.0f;
+    float peakGainReductionDb = 0.0f;
     AADspTools::AsymmetricSoftClipper asymClipper;
     std::array<AADspTools::DCBlocker, 2> dcBlockers;
 

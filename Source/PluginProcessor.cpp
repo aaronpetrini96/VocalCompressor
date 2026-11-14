@@ -228,7 +228,9 @@ void VocalCompressorAudioProcessor::processBlock1176(juce::AudioBuffer<float>& b
                            compressor.process(chunkBuffer);
                        });
 
-    gr1176.store (isBypassed ? 0.f : compressor.getGainReductionDb());
+    const auto gainReductionDb = compressor.getGainReductionDb();
+    if (! isBypassed && gainReductionDb > gr1176.load())
+        gr1176.store (gainReductionDb);
 }
 
 void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& buffer, LA2ACompressor& compressor)
@@ -255,7 +257,9 @@ void VocalCompressorAudioProcessor::processBlockLA2A(juce::AudioBuffer<float>& b
                            compressor.process(chunkBuffer);
                        });
 
-    grLA2A.store (isBypassed ? 0.f : compressor.getGainReductionDb());
+    const auto gainReductionDb = compressor.getGainReductionDb();
+    if (! isBypassed && gainReductionDb > grLA2A.load())
+        grLA2A.store (gainReductionDb);
 }
 
 void VocalCompressorAudioProcessor::processChain(juce::AudioBuffer<float>& buffer, FET1176Compressor& compressor1176, LA2ACompressor& compressorLA2A, const bool isReversed)

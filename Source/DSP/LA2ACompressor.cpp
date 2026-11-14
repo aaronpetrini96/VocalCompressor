@@ -37,6 +37,7 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
     const int numSamples = buffer.getNumSamples();
 
     jassert (numChannels <= static_cast<int> (dcBlockers.size()));
+    gainReduction = 0.f;
     auto* const* channels = buffer.getArrayOfWritePointers();
 
     for (int n = 0; n < numSamples; ++n)
@@ -83,6 +84,6 @@ void LA2ACompressor::process(juce::AudioBuffer<float>& buffer)
             channels[ch][n] = dry * (1.f - mix) + y * mix;
         }
         
-        gainReduction = -gainDB;
+        gainReduction = std::max (gainReduction, -gainDB);
     }
 }

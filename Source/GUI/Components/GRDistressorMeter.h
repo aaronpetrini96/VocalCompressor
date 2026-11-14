@@ -38,7 +38,7 @@ public:
 private:
     void timerCallback() override
     {
-        const auto targetDb = gainReductionSource.load();
+        const auto targetDb = gainReductionSource.exchange (0.f);
         const auto previousDb = gainReductionDb;
         gainReductionDb = juce::jmax (targetDb, gainReductionDb + (targetDb - gainReductionDb) * smoothingCoefficient);
 
