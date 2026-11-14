@@ -16,6 +16,68 @@ namespace AADspTools
     inline float dBToGain(const float dBValue) { return std::pow(10.0f, dBValue / 20.0f); }
     inline float gainToDB(const float gainValue) { return 20.0f * std::log10(std::max(gainValue, 1.0e-6f)); }
 
+    // Sharp-knee soft clip shifted off-centre: adds even and odd harmonics, 0 in gives 0 out, unity gain for small signals
+    class AsymmetricSoftClipper
+    {
+    public:
+        void setParameters (const float newCeiling, const float newKneeSharpness, const float newBias)
+        {
+            if (std::abs (newCeiling - ceiling) < tolerance
+                && std::abs (newKneeSharpness - kneeSharpness) < tolerance
+                && std::abs (newBias - bias) < tolerance)
+                return;
+
+            ceiling = newCeiling;
+            kneeSharpness = newKneeSharpness;
+            bias = newBias;
+            biasOffset = clip (bias);
+            const auto biasRatio = std::pow (std::abs (bias / ceiling), kneeSharpness);
+            smallSignalGain = std::pow (1.0f + biasRatio, -1.0f / kneeSharpness - 1.0f);
+        }
+
+        float process (const float x) const
+        {
+            return (clip (x + bias) - biasOffset) / smallSignalGain;
+        }
+
+    private:
+        float clip (const float x) const
+        {
+            return x / std::pow (1.0f + std::pow (std::abs (x / ceiling), kneeSharpness), 1.0f / kneeSharpness);
+        }
+
+        static constexpr float tolerance {0.001f};
+        float ceiling {1.0f};
+        float kneeSharpness {2.0f};
+        float bias {0.0f};
+        float biasOffset {0.0f};
+        float smallSignalGain {1.0f};
+    };
+
+    // One-pole high-pass that removes the DC offset the asymmetric clipper creates
+    class DCBlocker
+    {
+    public:
+        void prepare (const double sampleRate, const double cutoffHz = 5.0)
+        {
+            coefficient = static_cast<float> (1.0 - 2.0 * std::numbers::pi * cutoffHz / sampleRate);
+            reset();
+        }
+
+        void reset() { previousInput = previousOutput = 0.0f; }
+
+        float process (const float x)
+        {
+            const auto y = x - previousInput + coefficient * previousOutput;
+            previousInput = x;
+            previousOutput = y;
+            return y;
+        }
+
+    private:
+        float coefficient {0.999f}, previousInput {0.0f}, previousOutput {0.0f};
+    };
+
     class SmoothedBypass
     {
     public:
