@@ -2,8 +2,8 @@
 <Parameters>
   <PARAM id="FET76Input" value="0.4"/>
   <PARAM id="FET76Output" value="0.6"/>
-  <PARAM id="FET76Attack" value="5"/>
-  <PARAM id="FET76Release" value="3"/>
+  <PARAM id="FET76Attack" value="3"/>
+  <PARAM id="FET76Release" value="5"/>
   <PARAM id="FET76Ratio" value="0"/>
   <PARAM id="FET76Mix" value="1"/>
   <PARAM id="FET76Bypass" value="0"/>
