@@ -42,7 +42,7 @@ void Panel1176::paint(juce::Graphics& g)
 void Panel1176::resized()
 {
     const auto bounds = getLocalBounds().toFloat();
-    const auto grMeterWidth = bounds.getWidth() * 0.6f;
+    const auto grMeterWidth = bounds.getWidth() * 0.65f;
     const auto grMeterHeight = bounds.getHeight() * 0.13f;
     const auto grMeterBounds = bounds.withSizeKeepingCentre(grMeterWidth, grMeterHeight).withY(bounds.getHeight() * 0.01f);
     grMeter1176.setBounds(grMeterBounds.toNearestInt());

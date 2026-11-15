@@ -40,7 +40,7 @@ private:
     {
         const auto targetDb = gainReductionSource.exchange (0.f);
         const auto previousDb = gainReductionDb;
-        gainReductionDb = juce::jmax (targetDb, gainReductionDb + (targetDb - gainReductionDb) * smoothingCoefficient);
+        gainReductionDb += (targetDb - gainReductionDb) * smoothingCoefficient;
 
         if (std::abs (gainReductionDb - previousDb) > repaintThresholdDb)
             repaint();
@@ -48,7 +48,7 @@ private:
 
     void paintLight (juce::Graphics& g, juce::Rectangle<float> columnBounds, size_t index, bool isGlowPass)
     {
-        const auto lightDiameter = columnBounds.getHeight() * 0.75f;
+        const auto lightDiameter = columnBounds.getHeight() * 0.8f;
         const auto ledCentre = columnBounds.getCentre();
         const auto ledDiameter = lightDiameter * 0.8f;
         const auto previousThresholdDb = index == 0 ? 0.f : lightThresholdsDb[index - 1];
@@ -80,7 +80,7 @@ private:
     }
 
     const int refreshRateHz {30};
-    const float smoothingTimeSeconds {0.04f};
+    const float smoothingTimeSeconds {0.065f};
     const float repaintThresholdDb {0.01f};
     float smoothingCoefficient {0.f};
 
