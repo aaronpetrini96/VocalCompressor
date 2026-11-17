@@ -18,6 +18,8 @@ public:
 private:
     VocalCompressorAudioProcessor& audioProcessor;
     float knobSize {0.f};
+    const int bigKnobMouseDragSensitivity{400};
+    const int smallKnobMouseDragSensitivity {250};
     float smallKnobsSize{0.f};
     const juce::StringArray bigKnobsScale {juce::String(juce::CharPointer_UTF8("\xe2\x88\x9e")),"48", "36", "24", "12", "0"};
     const juce::StringArray smallKnobsScale {"1", "3", "5", "7"};

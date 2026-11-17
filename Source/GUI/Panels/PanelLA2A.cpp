@@ -9,7 +9,7 @@ PanelLA2A::PanelLA2A(VocalCompressorAudioProcessor& processor) : audioProcessor(
 
     for (auto* imageKnob : {&la2aGainDial, &la2aPeakReductionDial})
     {
-        imageKnob->setMouseDragSensitivity(300);
+        imageKnob->setMouseDragSensitivity(bigKnobMouseDragSensitivity);
         addAndMakeVisible(*imageKnob);
     }
 

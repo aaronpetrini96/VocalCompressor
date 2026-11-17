@@ -9,10 +9,10 @@ Panel1176::Panel1176(VocalCompressorAudioProcessor& processor) : audioProcessor(
     for (auto* imageKnob : {&input1176Dial, &output1176Dial, &attack1176Dial, &release1176Dial})
         addAndMakeVisible(*imageKnob);
 
-    input1176Dial.setMouseDragSensitivity(300);
-    output1176Dial.setMouseDragSensitivity(300);
-    attack1176Dial.setMouseDragSensitivity(250);
-    release1176Dial.setMouseDragSensitivity(250);
+    input1176Dial.setMouseDragSensitivity(bigKnobMouseDragSensitivity);
+    output1176Dial.setMouseDragSensitivity(bigKnobMouseDragSensitivity);
+    attack1176Dial.setMouseDragSensitivity(smallKnobMouseDragSensitivity);
+    release1176Dial.setMouseDragSensitivity(smallKnobMouseDragSensitivity);
 
     mix1176Knob.setColour(juce::Slider::rotarySliderFillColourId, VCColors::almostWhiteText);
     mix1176Knob.setColour(juce::Slider::thumbColourId, juce::Colours::black);

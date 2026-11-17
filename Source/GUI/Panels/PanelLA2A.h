@@ -15,6 +15,7 @@ public:
 
 private:
     float knobSize {0.f};
+    const int bigKnobMouseDragSensitivity{400};
     VocalCompressorAudioProcessor& audioProcessor;
 
 //   IMAGE LOADING
