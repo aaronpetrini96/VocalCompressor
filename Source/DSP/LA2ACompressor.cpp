@@ -23,8 +23,7 @@ void LA2ACompressor::reset()
 void LA2ACompressor::setParameters(float normGain, float normPeakReduction, bool limitMode, float newMix)
 {
     peakReduction = juce::jmap(normPeakReduction, 0.f, 1.f, 0.f, 48.f);
-    outputGain = AADspTools::dBToGain(juce::jmap(normGain, 0.f, 1.f, -10.f, 40.f));
-    
+    outputGain = AADspTools::dBToGain(30.f) * normGain * normGain * normGain;
     isLimit = limitMode;
     ratio = isLimit ? 10.f : 5.f;
     mix = newMix;
